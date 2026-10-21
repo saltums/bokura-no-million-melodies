@@ -88,6 +88,8 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 
 /* candidates */
 .cand { background: var(--surface); border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.cand.tap { cursor: pointer; } .cand.tap:active { transform: scale(.985); } .cand.mine { background: var(--accent); color: var(--accent-ink); border: 2px dashed var(--accent-ink); cursor: pointer; text-align: center; align-items: center; padding: 18px 14px; } .cand.mine .nm { font-size: 20px; } .cand.mine .small { color: var(--accent-ink); }
+.mdl { position: fixed; inset: 0; z-index: 60; background: rgba(8,10,14,.62); display: flex; align-items: center; justify-content: center; padding: 20px; } .mdl .box { background: var(--surface); color: var(--fg); border: 2px solid var(--fg); max-width: 420px; width: 100%; padding: 18px; display: flex; flex-direction: column; gap: 12px; max-height: 88vh; overflow: auto; } .mdl .row { display: flex; gap: 10px; } .mdl .row .btn { flex: 1; }
 .cand .nm { font: 400 22px/1.3 var(--f-d); overflow-wrap: anywhere; }
 .erow { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 } .chip { padding: 6px 12px; border: 1px solid var(--line, #444); border-radius: 999px; background: transparent; color: inherit; font: inherit; font-size: 13px } .chip.on { background: var(--accent, #f5c518); color: #111; border-color: transparent }
 .cbox { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px }
@@ -327,6 +329,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
     </div>
     <p class="lead">バンド、シンガー、ラッパー、DJ。いろいろなミュージシャンの人生を、分かれ道ごとの選択で追体験します。売れるか売れないかは、性格と時代と運しだいです。</p>
     <button class="btn primary" id="b-start" type="button">はじめる</button>
+    <button class="btn" id="b-zk" type="button">図鑑・殿堂を見る</button>
     <button class="btn line" id="b-debug" type="button">デバッグ: 大成功ルートを見る</button>
     <button class="btn line" id="b-dbg2" type="button">デバッグ: 原始の人生を見る</button>
     <button class="btn line" id="b-dbg6" type="button">デバッグ: 3000年の人生を見る</button>
@@ -335,6 +338,18 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
     <p class="small">時代ごとのBGMが流れます。右上の♪で切り替えられます。</p>
   </section>
 
+  <section class="scr" id="s-zukan" hidden>
+    <div class="mast"><span class="kick">図鑑・殿堂</span><h2 style="margin:0;font:900 26px/1.3 var(--f-b)">たどった人生の記録</h2></div>
+    <p class="small">記録は、いま使っているこのブラウザの中だけに保存されます。ブラウザのデータを消すと消えるので、大事な記録は「引き継ぎコード」で控えてください。</p>
+    <div id="zk-sum" class="card"></div>
+    <span class="lab">殿堂入りと最近の人生(★で残す・最大100件)</span>
+    <div id="zk-list" class="scr"></div>
+    <span class="lab">出会った称号</span>
+    <div id="zk-crowns" class="card"></div>
+    <span class="lab">引き継ぎコード</span>
+    <div class="card"><button class="btn line" id="zk-exp" type="button">コードをコピー</button><textarea id="zk-code" class="nin" rows="3" placeholder="ここにコードを貼って「読み込む」" style="min-height:70px"></textarea><button class="btn line" id="zk-imp" type="button">読み込む</button><p class="small" id="zk-msg"></p></div>
+    <button class="btn" id="zk-back" type="button">もどる</button>
+  </section>
   <section class="scr" id="s-top" hidden>
     <span class="kick">最初の選択</span>
     <h2>グループで? ひとりで?</h2>
@@ -358,7 +373,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
   </section>
 
   <section class="scr" id="s-custom" hidden>
-    <button class="back" type="button" data-go="s-mode">← もどる</button>
+    <button class="back" type="button" data-go="s-cand">← もどる</button>
     <span class="kick" id="k-custom"></span>
     <h2>カスタムで作る</h2>
     <div class="cbox"><span class="lab">① 名前</span>
@@ -375,7 +390,8 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
   <section class="scr" id="s-cand" hidden>
     <button class="back" type="button" data-go="s-style">← もどる</button>
     <span class="kick" id="k-cand"></span>
-    <h2>この3人から選ぶ</h2>
+    <h2>気になる人を、タップ</h2>
+    <span class="small">カードをタップすると、くわしい確認が出ます。決めたいときは「自分で作る」へ。</span>
     <div class="scr" id="cand-list"></div>
     <button class="btn line" id="b-reroll" type="button">引き直す</button>
   </section>
@@ -437,7 +453,7 @@ function jacket(title) {
 function tc(tier) { return 'var(--t' + tier + ')'; }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
-const screens = ['s-title', 's-top', 's-style', 's-mode', 's-custom', 's-cand', 's-game'];
+const screens = ['s-zukan', 's-title', 's-top', 's-style', 's-mode', 's-custom', 's-cand', 's-game'];
 // ---- 時代ごとのBGM(WebAudioで合成。外部ファイルなし) ----
 const BGM = (() => {
   let ctx = null, master = null, echo = null, timer = null, step = 0, nextT = 0, cfg = null, phrase = [], on = true, nz = null, era0 = null;
@@ -658,7 +674,7 @@ $('#b-dbg2').onclick = () => startRare(-2); $('#b-dbg6').onclick = () => startRa
 $('#b-bgm').onclick = () => { const o = BGM.toggle(); $('#b-bgm').textContent = o ? '♪' : '♪×'; };
 $('#b-bgm').textContent = BGM.on ? '♪' : '♪×';
 $('#b-debug').onclick = () => {
-  let best = null; DATA.forEach((d) => { if (!d.m.rare && !d.m.real && (!best || bestSum(d.t) > bestSum(best.t))) best = d; });
+  const L0 = DATA.filter((d) => !d.m.rare && !d.m.real); const best = L0[Math.floor(Math.random() * L0.length)];
   S.auto = true; S.top = best.m.top; S.style = best.m.st; startTree(best);
 };
 document.querySelectorAll('[data-top]').forEach((b) => { b.onclick = () => { S.top = b.dataset.top; renderStyles(); show('s-style'); }; });
@@ -671,7 +687,7 @@ function renderStyles() {
   keys.forEach((k) => {
     const b = el('button', 'btn'); b.type = 'button'; b.append(STYLE_LABEL[k] || k);
     const d = el('span', 'd', STYLE_DESC[k] || ''); b.append(d);
-    b.onclick = () => { S.style = k; S.eraF = null; S.sz = null; $('#nm-in').value = ''; $('#k-mode').textContent = S.top + ' / ' + (STYLE_LABEL[k] || k); show('s-mode'); };
+    b.onclick = () => { S.style = k; S.eraF = null; S.sz = null; $('#nm-in').value = ''; renderCands(); show('s-cand'); };
     box.append(b);
   });
 }
@@ -733,16 +749,28 @@ $('#b-cgo').onclick = () => {
   if (!pl.length) pl = cPool();
   let d = pl[Math.floor(Math.random() * pl.length)];
   if (rares.length && Math.random() < 0.08) d = rares[Math.floor(Math.random() * rares.length)];
-  startTree(renameTo(reskin(d), $('#nm-in').value));
+  hydrate(d).then(() => startTree(renameTo(reskin(d), $('#nm-in').value))).catch(() => {});
 };
 function renderCands() {
   $('#k-cand').textContent = S.top + ' / ' + STYLE_LABEL[S.style];
   const box = $('#cand-list'); box.textContent = '';
-  const ef = () => true; let base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real && ef(d)); if (!base.length) { S.eraF = null; base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real); } const pick = shuffle(base).slice(0, 3).map(reskin);
+  const ef = () => true; let base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real && ef(d)); if (!base.length) { S.eraF = null; base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real); } const pick = shuffle(base).slice(0, 3);
   { const reals = DATA.filter((d) => d.m.st === S.style && d.m.real && d.m.era !== undefined && ef(d)); if (reals.length && Math.random() < 0.45) pick[Math.floor(Math.random() * pick.length)] = reals[Math.floor(Math.random() * reals.length)]; }
   { const rares = DATA.filter((d) => d.m.st === S.style && d.m.rare); if (rares.length && Math.random() < 0.08) pick[Math.floor(Math.random() * pick.length)] = rares[Math.floor(Math.random() * rares.length)]; }
+  Promise.all(pick.map(hydrate)).then(() => renderCands2(pick.map(reskin))).catch(() => {});
+}
+function confirmStart(d) {
+  const m = d.m; const o = el('div', 'mdl'); const bx = el('div', 'box');
+  bx.append(el('span', 'lab', 'この人生で始めますか?'), el('div', 'nm', m.a));
+  bx.lastChild.style.cssText = 'font:400 24px/1.3 var(--f-d);overflow-wrap:anywhere';
+  const tg = el('div', 'tags'); tg.append(el('span', 'tag p', m.pe), el('span', 'tag', m.es), el('span', 'tag', m.ge), el('span', 'tag', m.sa)); if (m.real) tg.append(el('span', 'tag p', '着想型')); bx.append(tg, el('p', 'small', m.tx + '。'));
+  const row = el('div', 'row'); const no = el('button', 'btn line', 'キャンセル'); no.type = 'button'; const ok = el('button', 'btn primary', 'OK'); ok.type = 'button';
+  no.onclick = () => o.remove(); ok.onclick = () => { o.remove(); startTree(d); }; row.append(no, ok); bx.append(row); o.append(bx); o.onclick = (e) => { if (e.target === o) o.remove(); }; document.body.append(o);
+}
+function renderCands2(pick) {
+  const box = $('#cand-list'); box.textContent = '';
   pick.forEach((d) => {
-    const m = d.m; const c = el('div', 'cand');
+    const m = d.m; const c = el('div', 'cand tap'); c.setAttribute('role', 'button'); c.tabIndex = 0;
     c.append(el('div', 'nm', m.a));
     const tg = el('div', 'tags');
     tg.append(el('span', 'tag p', m.pe));
@@ -753,15 +781,24 @@ function renderCands() {
     if (m.ai) tg.append(el('span', 'tag', 'AI: ' + m.ai));
     c.append(tg);
     c.append(el('p', 'small', m.tx + '。'));
-    const b = el('button', 'btn primary', 'この人で始める'); b.type = 'button'; b.onclick = () => startTree(d);
-    c.append(b); box.append(c);
+    c.onclick = () => confirmStart(d); c.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); confirmStart(d); } };
+    box.append(c);
   });
+  const mine = el('div', 'cand mine'); mine.setAttribute('role', 'button'); mine.tabIndex = 0; mine.append(el('div', 'nm', '＋ 自分で作る'), el('span', 'small', '名前・人数・年代を自分で決める。あとは運しだい'));
+  const go = () => { S.eraF = null; S.sz = null; $('#nm-in').value = ''; nameExamples(); renderCustom(); show('s-custom'); }; mine.onclick = go; mine.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
+  box.append(mine);
 }
 $('#b-reroll').onclick = renderCands;
 
 /* ---- 人生を進める ---- */
 function clearTimers() { S.timers.forEach(clearTimeout); S.timers = []; }
+const PK = {};
+const hydrate = (d) => (d.t || !d.m.lz) ? Promise.resolve(d) : (PK[d.m.lz] || (PK[d.m.lz] = fetch(d.m.lz).then((r) => r.json()))).then((o) => { d.t = o[d.m.lk]; return d; });
 function startTree(entry) {
+  if (!entry.t && entry.m.lz) { hydrate(entry).then(() => startTree0(entry)).catch(() => { alert('データの読み込みに失敗しました'); }); return; }
+  startTree0(entry);
+}
+function startTree0(entry) {
   clearTimers(); try { BGM.start(entry.m.era, entry.m.id); } catch (_) {}
   S.entry = entry; S.awP = 0; S.stg = 0; S.rtN = 0; S.rtW = -1; S.fesN = 0; S.fesOk = 0; S.evN = 0; S.evUsed = new Set(); S.evFam = new Set(); TIER = entry.m.tn || TIER_D; S.works = 0; S.best = 999; S.skip = false; S.heat = 0; S.tiers = []; S.ms = {}; S.dn = 0; S.path = []; S.log = []; S.lastY = null; S.mem = JSON.parse(JSON.stringify(entry.m.mm || [])); S.exMem = []; S.inMem = []; S.curEl = null; $('#gcols').classList.remove('done'); $('#gcols').classList.remove('deciding');
   $('#feed').textContent = ''; $('#tail').textContent = '';
@@ -1298,7 +1335,7 @@ function renderTimeline() {
   const len = line.getTotalLength ? line.getTotalLength() : 1000; line.style.setProperty('--len', Math.ceil(len) + 'px');
   return wrap;
 }
-const SHARE_URL = 'https://claude.ai/artifact/H9fGP3vezodUVxAWR5Deqd';
+const SHARE_URL = 'https://saltums.github.io/bokura-no-thousand-melodies/';
 function makeCard(dr, m, topTitle) {
   const W = 720, H = 900, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
   const F = (w, px) => w + ' ' + px + 'px "Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif';
@@ -1319,6 +1356,49 @@ function makeCard(dr, m, topTitle) {
   g.fillStyle = '#fff'; g.font = F(700, 32); const words = dr.cm.split(''); let line = '', y = 715; words.forEach((ch) => { if (g.measureText(line + ch).width > W - 96) { g.fillText(line, 48, y); y += 46; line = ''; } line += ch; }); g.fillText(line, 48, y);
   g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText('代表曲「' + (topTitle || '').slice(0, 20) + '」', 48, H - 84); g.fillText('#ぼくらのサウザンドメロディズ', 48, H - 42);
   return cv;
+}
+
+function makeCards(dr, m, e, topW) {
+  const W = 720, H = 900; const FF = '"Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif'; const F = (w, px) => w + ' ' + px + 'px ' + FF;
+  const base = (sub, idx) => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.textBaseline = 'alphabetic';
+    g.fillStyle = '#14181F'; g.fillRect(0, 0, W, H); g.fillStyle = '#FFD21F'; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
+    g.fillStyle = '#9aa4b2'; g.font = F(700, 24); g.fillText('ぼくらのサウザンドメロディズ', 48, 64); g.textAlign = 'right'; g.fillText(sub + '  ' + idx + '/4', W - 48, 64); g.textAlign = 'left';
+    g.fillStyle = '#aab3c2'; g.font = F(700, 27); g.fillText('※この人生はフィクションです', 48, H - 62); g.fillStyle = '#7d8696'; g.font = F(500, 22); g.fillText('#ぼくらのサウザンドメロディズ', 48, H - 32); return [cv, g]; };
+  const fit = (g, t, w) => { let x = t; while (g.measureText(x).width > w && x.length > 2) x = x.slice(0, -1); return x + (x !== t ? '…' : ''); };
+  const wrap = (g, t, x, y, w, lh, max) => { let line = '', n = 0; for (const ch of t) { if (g.measureText(line + ch).width > w) { g.fillText(line, x, y); y += lh; line = ''; n++; if (n >= max) return y; } line += ch; } g.fillText(line, x, y); return y + lh; };
+  const out = [];
+  // 1 表紙
+  { const [cv, g] = base('表紙', 1);
+    g.fillStyle = '#c8cfda'; g.font = F(500, 30); g.fillText(m.es + ' ・ ' + m.sn, 48, 150);
+    g.fillStyle = '#fff'; g.font = F(900, 78); let nm = m.a; const lines = []; while (nm.length && lines.length < 3) { let k = nm.length; while (g.measureText(nm.slice(0, k)).width > W - 96 && k > 1) k--; lines.push(nm.slice(0, k)); nm = nm.slice(k); }
+    lines.forEach((l, i) => g.fillText(l, 48, 250 + i * 92));
+    g.fillStyle = '#FFD21F'; g.font = F(900, 190); g.fillText(String(dr.total), 48, 640); const tw = g.measureText(String(dr.total)).width; g.fillStyle = '#c8cfda'; g.font = F(700, 36); g.fillText('/ 400', 48 + tw + 16, 640);
+    g.fillStyle = '#fff'; g.font = F(900, 52); g.fillText('「' + dr.tl + '」', 48, 716);
+    g.fillStyle = '#c8cfda'; g.font = F(700, 30); wrap(g, dr.cm, 48, 764, W - 96, 40, 1);
+    g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText(fit(g, '代表曲「' + (topW.ti || '') + '」', W - 96), 48, 800); out.push(cv); }
+  // 2 メンバー
+  { const [cv, g] = base('メンバー', 2); g.fillStyle = '#fff'; g.font = F(900, 44); g.fillText(fit(g, m.a, W - 96), 48, 130);
+    const grp = S.top === 'グループ'; const all = []; if (!grp) all.push({ n: m.a, r: '本人', self: true }); (S.mem || []).forEach((x) => all.push(x)); (S.exMem || []).forEach((x) => all.push(Object.assign({ gone: true }, x)));
+    const cols = all.length <= 4 ? 2 : 3, cw = (W - 96) / cols, sc = cols === 2 ? 6 : 5; const rows = Math.ceil(all.length / cols); const rh = Math.min(300, (H - 260) / Math.max(1, rows));
+    g.imageSmoothingEnabled = false;
+    all.forEach((x, i) => { const cx = 48 + (i % cols) * cw, cy = 170 + Math.floor(i / cols) * rh; const ic = iconOf(x.self ? null : x, !!x.gone); g.save(); if (x.gone) g.globalAlpha = 0.45;
+      const iw = 30 * sc, ih = 27 * sc; g.fillStyle = '#1b212b'; g.fillRect(cx + (cw - iw) / 2 - 6, cy, iw + 12, ih + 8); g.drawImage(ic, cx + (cw - iw) / 2, cy + 4, iw, ih);
+      g.fillStyle = '#fff'; g.font = F(900, 26); g.textAlign = 'center'; g.fillText(fit(g, x.n, cw - 12), cx + cw / 2, cy + ih + 40); g.fillStyle = '#9aa4b2'; g.font = F(700, 22); g.fillText(x.r + (x.gone ? ' ・ 脱退' : ''), cx + cw / 2, cy + ih + 68); g.textAlign = 'left'; g.restore(); });
+    out.push(cv); }
+  // 3 評価
+  { const [cv, g] = base('評価', 3); const cx = W / 2, cy = 330, R = 112; const ax = [['レア', dr.rare, dr.rl], ['ドラマチック', dr.sc], ['愛され', dr.love], ['売れ度', dr.ure]];
+    const pt = (k, v) => { const an = -Math.PI / 2 + k * Math.PI / 2; return [cx + Math.cos(an) * R * v / 100, cy + Math.sin(an) * R * v / 100]; };
+    g.strokeStyle = '#3a4352'; g.lineWidth = 2; [25, 50, 75, 100].forEach((lv) => { g.beginPath(); [0, 1, 2, 3].forEach((k, i) => { const q = pt(k, lv); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.closePath(); g.stroke(); }); [0, 1, 2, 3].forEach((k) => { const q = pt(k, 100); g.beginPath(); g.moveTo(cx, cy); g.lineTo(q[0], q[1]); g.stroke(); });
+    g.beginPath(); ax.forEach((x, k) => { const q = pt(k, Math.max(4, x[1])); k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.closePath(); g.fillStyle = 'rgba(255,210,31,.55)'; g.fill(); g.strokeStyle = '#FFD21F'; g.lineWidth = 4; g.stroke();
+    g.font = F(700, 26); g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText('レア ' + dr.rl, cx, cy - R - 22); g.fillText('愛され ' + dr.love, cx, cy + R + 48); g.textAlign = 'left'; g.fillText('ドラマ ' + dr.sc, cx + R + 10, cy + 10); g.textAlign = 'right'; g.fillText('売れ度 ' + dr.ure, cx - R - 10, cy + 10); g.textAlign = 'left';
+    g.fillStyle = '#FFD21F'; g.font = F(900, 64); g.fillText(dr.total + ' / 400', 48, 600); g.fillStyle = '#fff'; g.font = F(700, 30); wrap(g, e.tx, 48, 664, W - 96, 44, 4); out.push(cv); }
+  // 4 ディスコグラフィー
+  { const [cv, g] = base('ディスコグラフィー', 4); g.fillStyle = '#fff'; g.font = F(900, 40); g.fillText(fit(g, m.a, W - 96), 48, 126);
+    const ws = e.w.slice(0, 14), lh = Math.min(52, Math.floor((H - 300) / Math.max(1, ws.length)));
+    ws.forEach((w, i) => { const y = 190 + i * lh; g.fillStyle = '#9aa4b2'; g.font = F(700, 22); g.fillText(String(w.y), 48, y); g.fillStyle = '#fff'; g.font = F(700, 28); g.fillText(fit(g, '「' + w.ti + '」', 360), 124, y);
+      g.fillStyle = w.tr >= 3 ? '#FFD21F' : '#7d8696'; g.font = F(700, 22); g.textAlign = 'right'; g.fillText((TIER[w.tr] || ''), W - 48, y); g.textAlign = 'left'; });
+    if (e.w.length > ws.length) { g.fillStyle = '#9aa4b2'; g.font = F(500, 22); g.fillText('ほか ' + (e.w.length - ws.length) + '作', 48, H - 100); } out.push(cv); }
+  return out;
 }
 function dramaOf(e) {
   const T = e.w.map((w) => w.tr); let sc = 0; const why = [];
@@ -1355,6 +1435,78 @@ function dramaOf(e) {
   const tl = total >= 330 ? '伝説' : total >= 260 ? '名人生' : total >= 190 ? '味わい深い' : total >= 120 ? 'ふつう' : 'ひっそり';
   return { sc, lab, why: why.slice(0, 4), ure, love, rare, rl, total, cm, tl };
 }
+const SFX = (() => {
+  let ctx = null;
+  const ok = () => { try { return BGM.on !== false && localStorage.getItem('bgm') !== '0'; } catch (_) { return true; } };
+  const C = () => { if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ctx = new A(); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+  const tn = (t, f, d, ty, v, f2) => { const c = ctx, o = c.createOscillator(), g = c.createGain(); o.type = ty || 'sine'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d * .8); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v || .12, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .02); };
+  const mf = (n) => 440 * Math.pow(2, (n - 69) / 12);
+  const play = (fn) => { if (!ok()) return; try { if (!C()) return; fn(ctx.currentTime + .005); } catch (_) {} };
+  const kinds = {
+    pop: (t) => { tn(t, 620, .09, 'sine', .11, 900); },
+    pick: (t) => { tn(t, 880, .07, 'triangle', .11, 1320); tn(t + .06, 1320, .1, 'triangle', .09, 1760); },
+    back: (t) => { tn(t, 520, .1, 'sine', .1, 330); }
+  };
+  const jingle = (total) => play((t) => {
+    const lv = total >= 390 ? 5 : total >= 320 ? 4 : total >= 240 ? 3 : total >= 160 ? 2 : 1;
+    const sc = [[60, 63, 67, 70], [62, 65, 69, 72], [60, 64, 67, 71], [60, 64, 67, 72, 76], [60, 64, 67, 72, 76, 79, 84]][Math.min(lv, 5) - 1 === 4 ? 4 : lv - 1];
+    const ty = lv <= 2 ? 'sine' : 'triangle'; const gap = lv === 1 ? .34 : lv === 2 ? .26 : lv === 3 ? .2 : lv === 4 ? .15 : .1;
+    if (lv === 1) { [64, 62, 60].forEach((n, i) => tn(t + i * gap, mf(n), .7, ty, .1)); tn(t + .1, mf(48), 1.4, 'sine', .08); return; }
+    if (lv === 2) { [60, 64, 67].forEach((n, i) => tn(t + i * gap, mf(n), .6, ty, .1)); tn(t + .8, mf(72), 1.2, ty, .09); return; }
+    sc.forEach((n, i) => tn(t + i * gap, mf(n + 12 * (lv >= 4 ? 0 : 0)), .5, ty, .1));
+    const e = t + sc.length * gap; [0, 4, 7, 12].forEach((d) => tn(e, mf(60 + d), 1.8, ty, .08));
+    if (lv >= 4) [72, 76, 79, 84].forEach((n, i) => tn(e + .1 + i * .06, mf(n), 1.2, 'sine', .07));
+    if (lv === 5) { for (let i = 0; i < 10; i++) tn(e + .5 + i * .07, mf(84 + (i % 5) * 2), .25, 'sine', .05); tn(e, mf(36), 2.2, 'sine', .12); }
+  });
+  document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('button,.opt,.cand,.card,[role=button]'); if (!b || b.id === 'b-bgm') return;
+    play(kinds[b.classList.contains('back') || /戻る|もどる/.test(b.textContent || '') ? 'back' : (b.classList.contains('opt') || b.classList.contains('cand') || b.classList.contains('primary') || b.classList.contains('chip')) ? 'pick' : 'pop']);
+  }, true);
+  return { jingle, play: (k) => play(kinds[k] || kinds.pop) };
+})();
+
+/* ---- 図鑑・殿堂 (localStorage: hit30000_zukan) ---- */
+const ZK = (() => {
+  const KEY = 'hit30000_zukan', MAX = 100;
+  const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (d && d.v === 1 && Array.isArray(d.lives)) return d; } catch (_) {} return { v: 1, lives: [], crowns: {}, ids: {} }; };
+  const save = (d) => { try { localStorage.setItem(KEY, JSON.stringify(d)); return true; } catch (_) { return false; } };
+  const record = (r) => {
+    const d = load(); d.lives.unshift(r); d.crowns[r.cr] = (d.crowns[r.cr] || 0) + 1; d.ids[r.id] = (d.ids[r.id] || 0) + 1;
+    while (d.lives.length > MAX) { let i = d.lives.length - 1; while (i >= 0 && d.lives[i].fav) i--; if (i < 0) break; d.lives.splice(i, 1); }
+    save(d);
+  };
+  const toggle = (ts) => { const d = load(); const x = d.lives.find((l) => l.ts === ts); if (!x) return; x.fav = !x.fav; save(d); };
+  const del = (ts) => { const d = load(); d.lives = d.lives.filter((l) => l.ts !== ts); save(d); };
+  const exp = () => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(load())))); } catch (_) { return ''; } };
+  const imp = (c) => { try { const d = JSON.parse(decodeURIComponent(escape(atob(c.trim())))); if (!d || d.v !== 1 || !Array.isArray(d.lives)) return false; const cur = load(); const have = new Set(cur.lives.map((l) => l.ts)); d.lives.forEach((l) => { if (!have.has(l.ts)) cur.lives.push(l); }); cur.lives.sort((a, b) => b.ts - a.ts); while (cur.lives.length > MAX) { let i = cur.lives.length - 1; while (i >= 0 && cur.lives[i].fav) i--; if (i < 0) break; cur.lives.splice(i, 1); } Object.entries(d.crowns || {}).forEach(([k, v]) => { cur.crowns[k] = Math.max(cur.crowns[k] || 0, v); }); Object.entries(d.ids || {}).forEach(([k, v]) => { cur.ids[k] = Math.max(cur.ids[k] || 0, v); }); return save(cur); } catch (_) { return false; } };
+  const render = () => {
+    const d = load(); const sum = $('#zk-sum'); sum.textContent = '';
+    const totalReal = DATA.filter((x) => x.m.real).length; const ids = Object.keys(d.ids).length; const best = d.lives.reduce((m, l) => Math.max(m, l.tot), 0);
+    const row = el('div'); row.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center';
+    [[d.lives.reduce((a, l) => a + 1, 0) + '件', '記録中の人生'], [Object.keys(d.crowns).length + '種', '出会った称号'], [best ? best + '/400' : '—', '最高の評価']].forEach(([v, l]) => { const c = el('div'); c.append(el('div', null, v), el('div', 'small', l)); c.firstChild.style.cssText = 'font:900 22px/1.3 var(--f-b)'; row.append(c); });
+    sum.append(row); sum.append(el('p', 'small', '出会った人生: ' + ids + ' / ' + DATA.length + '種'));
+    const L = $('#zk-list'); L.textContent = '';
+    if (!d.lives.length) L.append(el('p', 'small', 'まだ記録がありません。人生をひとつ最後までたどると、ここに載ります。'));
+    d.lives.slice().sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || b.ts - a.ts).forEach((l) => {
+      const c = el('div', 'card'); const h = el('div'); h.style.cssText = 'display:flex;gap:10px;align-items:flex-start';
+      const b = el('div'); b.style.cssText = 'flex:1;min-width:0'; b.append(el('div', null, l.a), el('div', 'small', l.cr + ' · ' + l.es + ' · ' + l.sn + ' · 作品' + l.w + '・' + l.bt + ' · ' + l.tot + '/400'));
+      b.firstChild.style.cssText = 'font-weight:900;overflow-wrap:anywhere';
+      const st = el('button', 'btn line', l.fav ? '★' : '☆'); st.type = 'button'; st.style.cssText = 'width:auto;min-width:48px;padding:8px 12px'; st.setAttribute('aria-label', '殿堂に残す');
+      st.onclick = () => { toggle(l.ts); render(); };
+      h.append(b, st); c.append(h);
+      if (!l.fav) { const x = el('button', 'btn line', '削除'); x.type = 'button'; x.style.cssText = 'font-size:12px;padding:6px 10px'; x.onclick = () => { del(l.ts); render(); }; c.append(x); }
+      L.append(c);
+    });
+    const C = $('#zk-crowns'); C.textContent = ''; const ks = Object.entries(d.crowns).sort((a, b) => b[1] - a[1]);
+    if (!ks.length) C.append(el('p', 'small', 'まだ称号はありません。')); else ks.forEach(([k, v]) => { C.append(el('div', null, k + '  ×' + v)); });
+  };
+  return { record, render, exp, imp };
+})();
+$('#b-zk').onclick = () => { ZK.render(); show('s-zukan'); };
+$('#zk-back').onclick = () => show('s-title');
+$('#zk-exp').onclick = () => { const c = ZK.exp(); $('#zk-code').value = c; const m = $('#zk-msg'); try { navigator.clipboard.writeText(c).then(() => { m.textContent = 'コードをコピーしました。メモなどに貼って控えてください。'; }, () => { $('#zk-code').select(); m.textContent = '下のコードを選択してコピーしてください。'; }); } catch (_) { $('#zk-code').select(); m.textContent = '下のコードを選択してコピーしてください。'; } };
+$('#zk-imp').onclick = () => { const ok = ZK.imp($('#zk-code').value); $('#zk-msg').textContent = ok ? '読み込みました。' : '読み込めませんでした。コードを確認してください。'; if (ok) ZK.render(); };
+
 function finale() {
   const ov = el('div', 'fin'); const ys = (S.log || []).filter((x) => x.t === 'r').map((x) => x.y);
   for (let i = 0; i < 14; i++) { const sp = el('i'); sp.style.cssText = 'left:' + ((i * 37 + 11) % 96) + '%;top:' + ((i * 53 + 7) % 90) + '%;animation-delay:' + ((i % 7) * 0.18).toFixed(2) + 's'; ov.append(sp); }
@@ -1421,15 +1573,24 @@ function showEnding(e) {
   const topW = e.w.reduce((m_, w) => (w.tr > m_.tr ? w : m_), e.w[0] || { tr: 0, ti: '' });
   const bars = (v) => '★'.repeat(Math.max(1, Math.round(v / 20))) + '☆'.repeat(5 - Math.max(1, Math.round(v / 20)));
   const xt = ['『' + S.entry.m.a + '』(' + S.entry.m.es + '・' + S.entry.m.sn + ')', '総合' + dr.total + '/400「' + dr.tl + '」 ' + dr.cm, 'レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure, '代表曲「' + topW.ti + '」', '#ぼくらのサウザンドメロディズ'].join('\n');
-  const bx = el('a', 'btn primary', 'Xでポスト'); bx.target = '_blank'; bx.rel = 'noopener noreferrer'; bx.href = 'https://x.com/intent/post?text=' + encodeURIComponent(xt) + '&url=' + encodeURIComponent(SHARE_URL); bx.style.textAlign = 'center'; bx.style.textDecoration = 'none';
+  const bx = el('a', 'btn line', 'Xに文章だけポスト'); bx.target = '_blank'; bx.rel = 'noopener noreferrer'; bx.href = 'https://x.com/intent/post?text=' + encodeURIComponent(xt) + '&url=' + encodeURIComponent(SHARE_URL); bx.style.textAlign = 'center'; bx.style.textDecoration = 'none';
   const note = el('p', 'xnote'); note.hidden = true; note.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)';
   bx.addEventListener('click', () => { const full = xt + '\n' + SHARE_URL; try { navigator.clipboard.writeText(full).catch(() => {}); } catch (_) {} note.textContent = 'Xが開かないときは、文面をコピーしたので、Xの投稿画面に貼り付けてください。'; note.hidden = false; });
-  const bimg = el('button', 'btn line', '結果を画像にする'); bimg.type = 'button'; const imgBox = el('div'); imgBox.style.cssText = 'display:grid;gap:8px;margin-top:12px';
-  bimg.onclick = () => { imgBox.textContent = ''; const cv = makeCard(dr, S.entry.m, topW.ti); const im = new Image(); im.src = cv.toDataURL('image/png'); im.alt = '結果の画像'; im.style.cssText = 'width:100%;max-width:360px;border:1px solid var(--line)';
-    const nt = el('p'); nt.style.cssText = 'margin:0;font-size:12px;line-height:1.6;color:var(--muted)'; nt.textContent = '画像を長押しで保存、またはスクリーンショットで残して、Xの投稿に添付してください。';
-    imgBox.append(im, nt);
-    try { cv.toBlob((bl) => { try { navigator.clipboard.write([new ClipboardItem({ 'image/png': bl })]).then(() => { nt.textContent = '画像をコピーしました。Xの投稿画面で貼り付けてください(貼れないときは、長押しで保存かスクリーンショットで)。'; }, () => {}); } catch (_) {} }, 'image/png'); } catch (_) {} };
-  a.append(bx, bimg, b1, b2, b3, note); tail.append(a); tail.append(imgBox); finale();
+  const imgBox = el('div'); imgBox.style.cssText = 'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px';
+  const bimg = el('button', 'btn primary', '画像つきでシェア(4枚)'); bimg.type = 'button';
+  bimg.onclick = async () => {
+    bimg.textContent = '画像を作っています…'; imgBox.textContent = '';
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (_) {}
+    const cvs = makeCards(dr, S.entry.m, e, topW); const blobs = await Promise.all(cvs.map((c) => new Promise((r) => c.toBlob(r, 'image/png'))));
+    const files = blobs.map((b, i) => new File([b], 'melodies_' + (i + 1) + '.png', { type: 'image/png' })); const text = xt + '\n' + SHARE_URL;
+    let shared = false;
+    try { if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files, text }); shared = true; } } catch (err) { if (err && err.name === 'AbortError') shared = true; }
+    bimg.textContent = '画像つきでシェア(4枚)'; if (shared) return;
+    cvs.forEach((c, i) => { const im = new Image(); im.src = c.toDataURL('image/png'); im.alt = '結果の画像 ' + (i + 1); im.style.cssText = 'width:100%;border:1px solid var(--line)'; imgBox.append(im); });
+    const nt = el('p'); nt.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)'; nt.textContent = 'この端末では画像の直接シェアができません。4枚を長押しで保存して、Xの投稿に添付してください(Xは画像4枚まで)。';
+    imgBox.append(nt); try { navigator.clipboard.writeText(text).catch(() => {}); } catch (_) {} };
+  a.append(bimg, bx, b1, b2, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
+  try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false }); } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
 </script>

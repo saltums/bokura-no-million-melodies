@@ -1,0 +1,31 @@
+import json, glob
+p = '/home/claude/namebank.json'
+b = json.load(open(p, encoding='utf-8'))
+# events
+seen = {e['t'] for e in b['ev']}; n0 = len(b['ev'])
+for f in sorted(glob.glob('/home/claude/add_ev/ev_*.json')):
+    try: d = json.load(open(f, encoding='utf-8'))
+    except Exception as ex: print('SKIP', f, ex); continue
+    for e in d:
+        if not isinstance(e, dict) or not e.get('t') or e['t'] in seen: continue
+        if e.get('k') not in ('a', 'g', 's') or e.get('m') not in ('any', 'up', 'down') or e.get('e') not in ('all', 'old', 'mid', 'new'): continue
+        e.setdefault('f', 'x_' + e['t'][:3]); seen.add(e['t']); b['ev'].append({k: e[k] for k in ('t', 'k', 'm', 'e', 'f')})
+print('ev', n0, '->', len(b['ev']))
+# titles
+for f in sorted(glob.glob('/home/claude/add_t/t_*.json')):
+    try: d = json.load(open(f, encoding='utf-8'))
+    except Exception as ex: print('SKIP', f, ex); continue
+    ps = set(b['pt']); b['pt'] += [x for x in dict.fromkeys(d.get('pt', [])) if x not in ps]
+    for e in ('old', 'mid', 'new'):
+        s = set(b['t'][e]); b['t'][e] += [x for x in dict.fromkeys(d.get(e, [])) if x not in s and 1 < len(x) <= 24]
+print('pt', len(b['pt']), {e: len(v) for e, v in b['t'].items()})
+# artist names
+for f in sorted(glob.glob('/home/claude/add_a/a_*.json')):
+    try: d = json.load(open(f, encoding='utf-8'))
+    except Exception as ex: print('SKIP', f, ex); continue
+    for st, cells in d.items():
+        if st not in b['a'] or not isinstance(cells, dict): continue
+        for e in ('old', 'mid', 'new'):
+            s = set(b['a'][st].get(e, [])); b['a'][st].setdefault(e, []); b['a'][st][e] += [x for x in dict.fromkeys(cells.get(e, [])) if x not in s]
+print('a', {st: {e: len(v) for e, v in d.items()} for st, d in list(b['a'].items())[:3]})
+json.dump(b, open(p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))

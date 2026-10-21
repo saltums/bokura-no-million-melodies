@@ -134,6 +134,8 @@ def main():
     pool += rare_gen.trees(4)
     pool.append(real_gen.build())
     pool += arcs_gen.build_all()
+    import arcs2_gen
+    _a2 = arcs2_gen.build_all(); [x['m'].__setitem__('_lz', 1) for x in _a2]; pool += _a2
     import random as _r
     for _e in pool:
         _b = _e["m"].get("bio") or {}
@@ -142,6 +144,18 @@ def main():
             _c = [x for x in _c if x]
             if _c and _b["fd"] not in _c:
                 _b["fd"] = _r.Random(str(_e["m"]["id"])).choice(_c)
+    import os
+    os.makedirs('/home/claude/dshards', exist_ok=True)
+    for _f in os.listdir('/home/claude/dshards'): os.remove('/home/claude/dshards/' + _f)
+    ids = [e['m']['id'] for e in pool]; import collections as _c; _d = [k for k, v in _c.Counter(ids).items() if v > 1]; print('DUPS', _d[:20])
+    _pk = {}; _n = 0
+    for _e in pool:
+        _e['m'].pop('_lz', None)
+        if not _e['m'].get('rare'):
+            _g = _n // 3; _n += 1; _pk.setdefault(_g, {})[str(_n - 1)] = _e['t']; _e['m']['lk'] = str(_n - 1)
+            _e['m']['lz'] = 'd/p' + str(_g) + '.json'; _e['t'] = None
+    for _g, _o in _pk.items():
+        open('/home/claude/dshards/p' + str(_g) + '.json', 'w', encoding='utf-8').write(json.dumps(_o, ensure_ascii=False, separators=(',', ':')))
     out = json.dumps(pool, ensure_ascii=False, separators=(',', ':'))
     open('/home/claude/proto_data.json', 'w', encoding='utf-8').write(out)
     print("trees", len(pool), "bytes", len(out.encode('utf-8')))
