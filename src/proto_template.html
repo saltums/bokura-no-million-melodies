@@ -1,0 +1,1435 @@
+<title>ぼくらのサウザンドメロディズ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=DM+Mono:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+/* 構成: 1カラム(最大560px)。画面は「タイトル → 形 → 3人から選ぶ → 人生 → 結末」の順に入れ替わる。
+   順位は週間チャート風に表示し、ジャケットは作品名から決まる色の円盤にする。 */
+:root {
+  --bg: #ECEEF1;
+  --surface: #F7F8FA;
+  --fg: #14181F;
+  --muted: #566070;
+  --line: #CBD1DA;
+  --accent: #FFD21F;
+  --accent-ink: #14181F;
+  --pick: #2A47F0;
+  --pick-ink: #FFFFFF;
+  --ok: #19744D;
+  --ng: #B93636;
+  --t0: #5E6672;
+  --t1: #6C4AD7;
+  --t2: #117168;
+  --t3: #8A5D00;
+  --t4: #B23D19;
+  --t5: #BC286E;
+  --hudh: 84px;
+  --f-d: 'Dela Gothic One', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+  --f-b: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', sans-serif;
+  --f-l: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --f-m: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1217; --surface: #181C23; --fg: #ECEEF1; --muted: #9AA3AF; --line: #2B313B;
+    --accent: #FFD21F; --accent-ink: #14181F; --pick: #93A5FF; --pick-ink: #0F1217;
+    --ok: #4CC38A; --ng: #F07575;
+    --t0: #7E8794; --t1: #A58CFF; --t2: #3CC7B8; --t3: #E8B13A; --t4: #FF7F55; --t5: #FF6FAE;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1217; --surface: #181C23; --fg: #ECEEF1; --muted: #9AA3AF; --line: #2B313B;
+  --accent: #FFD21F; --accent-ink: #14181F; --pick: #93A5FF; --pick-ink: #0F1217;
+  --ok: #4CC38A; --ng: #F07575;
+  --t0: #7E8794; --t1: #A58CFF; --t2: #3CC7B8; --t3: #E8B13A; --t4: #FF7F55; --t5: #FF6FAE;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.75 var(--f-b);
+  padding-block: 20px calc(72px + var(--dockh, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust: 100%;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.scr { display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3, p { margin: 0; }
+h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
+.kick { font: 500 12px/1 var(--f-m); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lead { color: var(--muted); font-size: 15px; }
+.small { color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+/* title */
+.mast { display: flex; flex-direction: column; gap: 12px; padding-block: 28px 8px; }
+.mast h1 { font: 400 clamp(30px, 10.4vw, 60px)/1.15 var(--f-d); letter-spacing: -.01em; }
+.mast .sub { font: 400 20px/1.2 var(--f-d); background: var(--accent); color: var(--accent-ink); align-self: flex-start; padding: 6px 12px 7px; }
+.disc { width: 88px; height: 88px; border-radius: 50%; align-self: flex-end;
+  background: radial-gradient(circle, var(--bg) 0 7%, var(--accent) 7.5% 24%, transparent 24.5%),
+              repeating-radial-gradient(circle, var(--fg) 0 1.5px, transparent 1.5px 5px);
+  opacity: .9; margin-top: 4px; }
+
+/* buttons */
+.btn { appearance: none; border: 2px solid var(--fg); background: transparent; color: var(--fg); font: 700 16px/1.4 var(--f-b);
+  padding: 14px 18px; text-align: left; cursor: pointer; width: 100%; border-radius: 0; }
+.btn:hover { background: var(--surface); }
+.btn:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-ink); text-align: center; font-size: 17px; }
+.btn.primary:hover { filter: brightness(.96); }
+.btn .d { display: block; font-weight: 400; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.btn.line { border-color: var(--line); font-weight: 500; text-align: center; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row .btn { flex: 1 1 140px; text-align: center; }
+.back { align-self: flex-start; appearance: none; background: none; border: 0; color: var(--muted); font: 500 15px/1 var(--f-b); padding: 0 14px 0 0; min-height: 44px; cursor: pointer; }
+.back:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
+
+/* candidates */
+.cand { background: var(--surface); border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.cand .nm { font: 400 22px/1.3 var(--f-d); overflow-wrap: anywhere; }
+.erow { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 } .chip { padding: 6px 12px; border: 1px solid var(--line, #444); border-radius: 999px; background: transparent; color: inherit; font: inherit; font-size: 13px } .chip.on { background: var(--accent, #f5c518); color: #111; border-color: transparent }
+.cbox { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px }
+.namebox { border: 1px solid var(--line, #444); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px }
+.nrow { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 } .nin { display: block; width: 100%; box-sizing: border-box; min-height: 48px; padding: 10px 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 500 16px/1.4 var(--f-b) } .nin::placeholder { color: var(--muted) } .nrow .btn { width: 100%; min-height: 44px; padding: 8px 12px }
+.cand .pun { font-size: 12px; color: var(--muted); margin-top: -6px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font: 500 12px/1 var(--f-m); padding: 6px 8px; border: 1px solid var(--line); color: var(--fg); }
+.tag.p { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+/* hud */
+.hud { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 2px solid var(--fg);
+  padding-block: 8px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 11rem); gap: 4px 12px; align-items: center; }
+.hud .st { grid-column: 1 / -1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .heat { grid-column: 1 / -1; }
+.hud .nmrow { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.memb { flex: none; appearance: none; background: none; border: 1px solid var(--line); color: var(--muted); font: 700 12px/1 var(--f-b); min-height: 32px; padding: 0 10px; cursor: pointer; }
+.memb:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
+.hud .nm { flex: 1 1 auto; font: 400 16px/1.3 var(--f-d); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .st { font: 500 12px/1.4 var(--f-m); color: var(--muted); min-width: 0; }
+.hud .st b { color: var(--fg); font-weight: 500; }
+.heat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: center; }
+.heat .hl { font: 700 12px/1.3 var(--f-b); }
+.heat .bar { height: 6px; background: var(--line); position: relative; }
+.heat .bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); transition: width .6s ease; }
+@media (prefers-reduced-motion: reduce) { .heat .bar i { transition: none; } }
+.heat.up .hl { animation: pop .6s ease; }
+.heat .aw { grid-column: 1 / -1; font: 500 12px/1.3 var(--f-m); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heat .aw b { color: var(--fg); font-weight: 700; }
+@keyframes pop { 40% { transform: scale(1.12); } }
+.badge { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font: 700 12px/1 var(--f-b); background: var(--accent); color: var(--accent-ink); padding: 6px 9px; }
+.card.big { border-color: var(--tc); box-shadow: 0 0 0 2px var(--tc) inset; }
+.card.big .jk { box-shadow: 0 0 0 3px var(--tc); }
+.skip { position: fixed; z-index: 6; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); appearance: none; background: var(--fg); color: var(--bg); border: 0; font: 700 14px/1 var(--f-b); min-height: 44px; min-width: 96px; padding: 0 16px; cursor: pointer; box-shadow: 0 2px 10px rgb(0 0 0 / .25); }
+.skip:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
+
+/* feed */
+.feed > *, .dec, .end, .stats, .crown { scroll-margin-top: calc(var(--hudh) + env(safe-area-inset-top, 0px) + 8px); scroll-margin-bottom: calc(72px + var(--dockh, 0px)); }
+.feed { display: flex; flex-direction: column; gap: 14px; }
+.in { animation: up .35s ease both; }
+@keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .in { animation: none; } }
+.card { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lab { font: 500 11px/1 var(--f-m); letter-spacing: .12em; color: var(--muted); }
+.intro { border-left: 4px solid var(--accent); }
+.rel .top { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.jk { width: 56px; height: 56px; border-radius: 50%;
+  background: radial-gradient(circle, var(--surface) 0 7%, transparent 8%),
+              conic-gradient(from var(--a), hsl(var(--h1) 58% 46%), hsl(var(--h2) 62% 62%), hsl(var(--h1) 58% 46%)); }
+.rel .ti { font: 700 17px/1.4 var(--f-b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rel .meta { font: 500 12px/1.4 var(--f-m); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rel .top:has(.rk.t) > div:nth-child(2) { grid-column: 2 / -1; }
+.rk { text-align: right; min-width: 64px; }
+.rk .n { font: 400 26px/1 var(--f-d); color: var(--tc); }
+.rk .n.out { font-size: 17px; }
+.drama { border: 1px solid var(--line); background: var(--surface); padding: 12px 14px; display: grid; gap: 8px; margin: 10px 0; }
+.drama .cl { font: 600 11px/1 var(--f-m); letter-spacing: .08em; color: var(--muted); }
+.drama .dr0 { display: flex; align-items: baseline; gap: 10px; } .drama .dr0 b { font: 400 34px/1 var(--f-d); } .drama .dr0 span { font-weight: 700; }
+.fin { position: fixed; inset: 0; z-index: 60; display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; background: #000; color: #fff; animation: finIn .9s both; cursor: pointer; overflow: hidden; }
+.fin .f1 { font: 400 112px/1 var(--f-d); color: #FFD21F; letter-spacing: .08em; animation: stamp .9s .5s both cubic-bezier(.2, 1.7, .4, 1); }
+.fin .f2 { font: 400 22px/1.4 var(--f-d); padding-inline: 24px; animation: finUp .7s 1.1s both; }
+.fin .f3 { font: 500 14px/1.4 var(--f-m); color: #aab3c0; animation: finUp .7s 1.4s both; }
+.fin .f4 { font: 500 12px/1.4 var(--f-m); color: #7b8594; margin-top: 18px; animation: finUp .7s 2.2s both; }
+.fin i { position: absolute; width: 4px; height: 4px; background: #FFD21F; opacity: 0; animation: twk 1.6s infinite; }
+.fin.out { animation: finOut .7s forwards; pointer-events: none; }
+@keyframes finIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes finOut { to { opacity: 0; } }
+@keyframes stamp { from { opacity: 0; transform: scale(2.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes finUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes twk { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1.6); } }
+@media (prefers-reduced-motion: reduce) { .fin, .fin * { animation-duration: .01s !important; animation-delay: 0s !important; } }
+.drama .dcm { margin: 0; font-weight: 700; line-height: 1.6; }
+.drama .radar { width: 100%; max-width: 360px; margin: 0 auto; display: block; }
+.drama .dw { display: flex; flex-wrap: wrap; gap: 6px; } .drama .dw span { font-size: 12px; border: 1px solid var(--line); padding: 2px 8px; }
+.rk.t { grid-column: 2 / -1; text-align: left; max-width: none; flex: none; }
+.rk.t .n { font: 400 14px/1.3 var(--f-d); white-space: nowrap; }
+.card.rel.mini .rk.t .n { font-size: 12px; }
+.rk .w { font: 500 11px/1.3 var(--f-m); color: var(--tc); margin-top: 4px; }
+.chip { display: inline-block; font: 700 12px/1 var(--f-b); padding: 5px 8px; border: 1.5px solid var(--tc); color: var(--tc); }
+.k { font: 700 12px/1.6 var(--f-b); color: var(--muted); display: block; }
+.lyricbtn_ { }
+.lyric { border-left: 3px solid var(--tc); padding: 2px 0 2px 14px; display: flex; flex-direction: column; gap: 2px; font-family: var(--f-l); }
+.lyric .ln { font-size: 15px; line-height: 1.9; color: var(--fg); }
+.lyric .hk { font-size: 18px; font-weight: 700; line-height: 1.7; color: var(--tc); margin-top: 4px; }
+.lyric .hk small { font: 500 11px/1 var(--f-m); letter-spacing: .12em; color: var(--muted); margin-right: 8px; vertical-align: middle; }
+.rel p { font-size: 15px; }
+.rel .acts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lbtn { appearance: none; background: transparent; color: var(--fg); border: 2px solid var(--fg); font: 700 14px/1 var(--f-b); min-height: 44px; padding: 0 14px; cursor: pointer; }
+.lbtn:hover { background: var(--bg); }
+.lbtn:focus-visible, .x:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
+.det { display: flex; flex-direction: column; gap: 10px; }
+.card.mini { cursor: pointer; padding-block: 10px; gap: 6px; }
+.card.mini .det { display: none; }
+.card.mini .rel-mini-hint { display: block; }
+.card.rel.mini .top { grid-template-columns: 40px minmax(0, 1fr) auto; }
+.card.rel.mini .jk { width: 40px; height: 40px; }
+.card.rel.mini .ti { font-size: 15px; }
+.card.rel.mini .rk .n { font-size: 20px; }
+.card.rel.mini .rk .w { display: none; }
+.card.ev.mini p, .card.res.mini p { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; }
+.tapnote { font: 500 11px/1 var(--f-m); color: var(--muted); }
+.sheet { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
+.sh-bg { position: absolute; inset: 0; background: rgb(0 0 0 / .55); }
+.sh-box { position: relative; width: 100%; max-width: 560px; max-height: 88dvh; display: flex; flex-direction: column; background: var(--bg); border-top: 3px solid var(--tc, var(--accent)); animation: sheet .28s ease both; }
+@keyframes sheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sh-box { animation: none; } }
+.sh-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 16px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); }
+.sh-head h3 { font: 400 20px/1.4 var(--f-d); overflow-wrap: anywhere; }
+.x { appearance: none; background: none; border: 2px solid var(--fg); color: var(--fg); width: 44px; height: 44px; font: 400 22px/1 var(--f-b); cursor: pointer; flex: none; }
+.sh-body { overflow-y: auto; padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 18px; font-family: var(--f-l); overscroll-behavior: contain; }
+.sh-sec .sl { font: 500 11px/1 var(--f-m); letter-spacing: .12em; color: var(--muted); margin-bottom: 4px; }
+.sh-sec .sx { font-size: 16px; line-height: 2; }
+.sh-sec.hit .sx { color: var(--tc, var(--fg)); font-weight: 700; }
+.sh-sec.hit { border-left: 3px solid var(--tc, var(--accent)); padding-left: 12px; }
+.sh-acts { display: flex; flex-direction: column; gap: 8px; font-family: var(--f-b); border-top: 2px solid var(--fg); padding-top: 14px; }
+.sh-acts .lab { font: 700 13px/1.5 var(--f-b); color: var(--fg); letter-spacing: 0; }
+.sh-acts .btn { text-align: center; font-size: 14px; min-height: 44px; padding: 10px 12px; }
+.sh-acts textarea { width: 100%; min-height: 8rem; font: 400 13px/1.6 var(--f-b); color: var(--fg); background: var(--surface); border: 1px solid var(--line); padding: 8px; }
+.sh-note { font: 400 12px/1.7 var(--f-b); color: var(--muted); }
+.rel .hit { background: color-mix(in srgb, var(--tc) 14%, var(--surface)); padding: 8px 10px; }
+.ev { border-left: 4px solid var(--t1); }
+.res { border-left: 4px solid var(--pick); }
+.res .ok { color: var(--ok); } .res .ng { color: var(--ng); }
+.res .pk { font-weight: 700; }
+.dec { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--pick); box-shadow: 0 4px 16px rgb(0 0 0 / .12); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.dec .lab { color: var(--pick); }
+.dec .q { font-weight: 700; font-size: 16px; line-height: 1.6; }
+.opt { appearance: none; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; text-align: left;
+  border: 2px solid var(--pick); background: var(--surface); color: var(--fg); font: 700 15px/1.5 var(--f-b); padding: 10px 12px; min-height: 48px; cursor: pointer; width: 100%; }
+.opt .l { font: 500 14px/1.5 var(--f-m); background: var(--pick); color: var(--pick-ink); text-align: center; padding: 1px 0; }
+.opt:hover { background: var(--bg); }
+.opt:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.opt[disabled] { cursor: default; opacity: .55; }
+.opt.chosen { opacity: 1; background: var(--pick); color: var(--pick-ink); }
+.opt.chosen .l { background: var(--pick-ink); color: var(--pick); }
+
+/* ending */
+.end { background: var(--fg); color: var(--bg); padding: 22px 18px; display: flex; flex-direction: column; gap: 12px; }
+.end .lab { color: var(--accent); }
+.end .tx { font: 400 24px/1.5 var(--f-d); text-wrap: balance; }
+.crown { display: flex; flex-direction: column; gap: 4px; padding: 18px 16px; border: 2px solid var(--fg); background: var(--surface); }
+.crown .cl { font: 500 11px/1 var(--f-m); letter-spacing: .12em; color: var(--muted); }
+.crown .cn { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
+.crown .cs { font-size: 14px; color: var(--muted); }
+.traj { display: flex; align-items: flex-end; gap: 4px; height: 72px; border-bottom: 2px solid var(--fg); padding-bottom: 0; }
+.traj i { flex: 1 1 0; min-width: 4px; max-width: 28px; background: var(--tc); }
+.iff { display: flex; flex-direction: column; gap: 8px; }
+.iff .it { border-left: 4px solid var(--line); padding: 4px 0 4px 12px; font-size: 14px; }
+.iff .it b { display: block; font-size: 14px; }
+.iff .it span { color: var(--muted); font-size: 13px; }
+.tl { width: 100%; height: auto; display: block; overflow: visible; }
+.tl text { font-family: var(--f-b); fill: var(--fg); }
+.tl .m { font-family: var(--f-m); fill: var(--muted); }
+.tl .ln { fill: none; stroke: var(--fg); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.tl .ln.draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: dr 1.4s ease forwards; }
+@keyframes dr { to { stroke-dashoffset: 0; } }
+.tl .dt { fill: var(--tc); stroke: var(--bg); stroke-width: 3; }
+.tl .ev { fill: var(--bg); stroke: var(--t1); stroke-width: 2.5; }
+.tl .dc { fill: var(--bg); stroke: var(--pick); stroke-width: 2.5; }
+.tl .gh { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.tl .gl { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; fill: none; }
+.tl .gt { fill: var(--muted); }
+.tl .pop { opacity: 0; animation: pp .4s ease forwards; }
+@keyframes pp { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tl .ln.draw { animation: none; stroke-dashoffset: 0; } .tl .pop { animation: none; opacity: 1; } }
+.tlwrap { border: 1px solid var(--line); background: var(--surface); padding: 12px 8px 8px; }
+.gcols { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; }
+.gcols.done { grid-template-columns: minmax(0, 1fr); }
+.gcols.done .rail { display: none; }
+.gcols.done .feed, .gcols.done .scene { display: none; }
+.scene { border: 2px solid #e8e8f4; border-radius: 8px; background: linear-gradient(#2a44b0, #0e1660); display: flex; flex-direction: column; min-width: 0; overflow: hidden; box-shadow: 0 0 0 2px #0a0e3a; }
+.scene { -webkit-tap-highlight-color: transparent; }
+.bio { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 8px 12px; font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+.bio b { color: var(--muted); font: 700 12px/1.9 var(--f-b); }
+.bio span { min-width: 0; overflow-wrap: anywhere; }
+.card .bl { font: 500 13px/1.6 var(--f-b); color: var(--muted); }
+.scene canvas { width: 100%; height: auto; max-height: 168px; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; display: block; background: #1b1f3a; }
+@media (max-height: 760px) { .gcols.deciding .scene canvas { display: none; } }
+.scap { color: #fff; text-shadow: 1px 1px 0 #000; font-family: 'DotGothic16', var(--f-b); letter-spacing: .02em; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; padding: 6px 12px; font: 700 13px/1.4 var(--f-b); min-width: 0; }
+.scap .hint { font: 400 11px/1.4 'DotGothic16', var(--f-m); color: #c8d4ff; flex: none; }
+.gmain { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.rail { position: sticky; top: calc(var(--hudh) + env(safe-area-inset-top, 0px) + 10px); height: calc(100dvh - var(--hudh) - env(safe-area-inset-top, 0px) - 96px); min-height: 160px; }
+.rail svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.rail .rl { fill: none; stroke: var(--fg); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.rail .rb { fill: none; stroke: var(--line); stroke-width: 2.5; stroke-linecap: round; }
+.rail .rd { fill: var(--tc); stroke: var(--bg); stroke-width: 2; cursor: pointer; }
+.rail .re { fill: var(--bg); stroke: var(--t1); stroke-width: 2; cursor: pointer; }
+.rail .rx { fill: var(--bg); stroke: var(--pick); stroke-width: 2; cursor: pointer; }
+.rail .rn { animation: rp 1.2s ease 2; transform-box: fill-box; transform-origin: center; }
+@keyframes rp { 50% { transform: scale(1.35); } }
+@media (prefers-reduced-motion: reduce) { .rail .rn { animation: none; } }
+.mbadge { display: inline-flex; align-self: flex-start; font: 700 12px/1 var(--f-b); padding: 6px 9px; border: 1.5px solid var(--t1); color: var(--t1); }
+.mbadge.in { border-color: var(--ok); color: var(--ok); }
+.mem { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-family: var(--f-b); }
+.mem.hic { grid-template-columns: auto auto minmax(0, 1fr) } .mem .icw { grid-row: span 2; align-self: center; background: var(--surface); border: 1px solid var(--line); padding: 4px 2px 0 } .mic { display: block; width: 90px; height: 81px; image-rendering: pixelated } .mic.gone { filter: grayscale(1); opacity: .5 }
+.mem .rl2 { grid-row: span 2; align-self: center; font: 500 12px/1 var(--f-m); background: var(--fg); color: var(--bg); padding: 7px 8px; min-width: 52px; text-align: center; }
+.mem .mn { font-weight: 700; font-size: 15px; }
+.mem .mt { font-size: 13px; color: var(--muted); }
+.mem.gone .mn { text-decoration: line-through; color: var(--muted); }
+.trk { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--line); font-family: var(--f-b); }
+.trk .tn { font: 500 12px/1.5 var(--f-m); color: var(--muted); }
+.trk .tt { font-size: 15px; overflow-wrap: anywhere; }
+.trk .tt.main { font-weight: 700; }
+.trk .td { font: 500 12px/1.5 var(--f-m); color: var(--muted); }
+.trk .tg { font: 700 11px/1 var(--f-b); color: var(--t3); border: 1px solid var(--t3); padding: 2px 5px; margin-left: 4px; white-space: nowrap; vertical-align: 2px; }
+.dsc { display: flex; flex-direction: column; border-top: 2px solid var(--fg); }
+.dsi { padding-block: 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.dsi .dh { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.dsi .dh .jk { width: 44px; height: 44px; }
+.dsi .dt { font-weight: 700; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+.dsi .ds { font: 500 11px/1.5 var(--f-m); color: var(--muted); }
+.dsi .dr { font: 400 18px/1 var(--f-d); color: var(--tc); text-align: right; }
+.dsi .trk { padding-block: 4px; border-bottom: 0; }
+.dsi .trk .tt { font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { border: 1px solid var(--line); background: var(--surface); padding: 10px; }
+.stat .v { font: 400 24px/1.2 var(--f-d); }
+.stat .l { font: 500 11px/1.4 var(--f-m); color: var(--muted); }
+.works { display: flex; flex-direction: column; border-top: 2px solid var(--fg); }
+.wk { border-bottom: 1px solid var(--line); padding-block: 12px; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.wk .jk { width: 44px; height: 44px; }
+.wk .t { font-weight: 700; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.wk .s { font: 500 11px/1.5 var(--f-m); color: var(--muted); }
+.wk .pr { grid-column: 2 / -1; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.wk .r { font: 400 18px/1 var(--f-d); color: var(--tc); text-align: right; }
+.wk .r.out { font-size: 13px; }
+</style>
+
+<div class="wrap" id="app">
+
+  <section class="scr" id="s-title">
+    <div class="mast">
+      <span class="kick">プロトタイプ</span>
+      <h1>ぼくらの<br>サウザンド<br>メロディズ</h1>
+      <span class="sub">たくさんの人生を追体験</span>
+      <div class="disc" aria-hidden="true"></div>
+    </div>
+    <p class="lead">バンド、シンガー、ラッパー、DJ。いろいろなミュージシャンの人生を、分かれ道ごとの選択で追体験します。売れるか売れないかは、性格と時代と運しだいです。</p>
+    <button class="btn primary" id="b-start" type="button">はじめる</button>
+    <button class="btn line" id="b-debug" type="button">デバッグ: 大成功ルートを見る</button>
+    <button class="btn line" id="b-dbg2" type="button">デバッグ: 原始の人生を見る</button>
+    <button class="btn line" id="b-dbg6" type="button">デバッグ: 3000年の人生を見る</button>
+    <button class="btn line" id="b-dbg3" type="button">デバッグ: 江戸の人生を見る</button>
+    <div id="dbg-real" style="display:flex;flex-direction:column;gap:8px"></div>
+    <p class="small">時代ごとのBGMが流れます。右上の♪で切り替えられます。</p>
+  </section>
+
+  <section class="scr" id="s-top" hidden>
+    <span class="kick">最初の選択</span>
+    <h2>グループで? ひとりで?</h2>
+    <button class="btn" type="button" data-top="グループ">グループ<span class="d">バンド・轟音インスト・2人組ユニット</span></button>
+    <button class="btn" type="button" data-top="ソロ">ソロ<span class="d">シンガーソングライター・ラッパー・トラックメイカー・DJ・AI</span></button>
+  </section>
+
+  <section class="scr" id="s-style" hidden>
+    <button class="back" type="button" data-go="s-top">← もどる</button>
+    <span class="kick" id="k-style"></span>
+    <h2>どんな形で?</h2>
+    <div class="scr" id="style-list"></div>
+  </section>
+
+  <section class="scr" id="s-mode" hidden>
+    <button class="back" type="button" data-go="s-style">← もどる</button>
+    <span class="kick" id="k-mode"></span>
+    <h2>どうやって始める?</h2>
+    <button class="btn primary" id="b-fixed" type="button">決まった3人から選ぶ<span class="d">用意された人生が3つ並ぶ。その中から1つ選ぶ</span></button>
+    <button class="btn" id="b-custom" type="button">カスタムで作る<span class="d">名前・人数・年代を自分で決める。あとは運しだい</span></button>
+  </section>
+
+  <section class="scr" id="s-custom" hidden>
+    <button class="back" type="button" data-go="s-mode">← もどる</button>
+    <span class="kick" id="k-custom"></span>
+    <h2>カスタムで作る</h2>
+    <div class="cbox"><span class="lab">① 名前</span>
+      <input id="nm-in" class="nin" type="text" maxlength="20" placeholder="自由に入力(空欄ならおまかせ)">
+      <span class="small">または、例から選ぶ(タップで入力されます)</span>
+      <div class="erow" id="nm-ex"></div>
+      <button class="btn line" id="nm-more" type="button">別の例を出す</button></div>
+    <div class="cbox" id="c-size"><span class="lab">② 人数</span><div class="erow" id="size-row"></div></div>
+    <div class="cbox"><span class="lab">③ 活躍する年代</span><div class="erow" id="era-row"></div><span class="small">「おまかせ」だけ、原始・江戸・宇宙など特別な時代に出会えることがあります。</span></div>
+    <button class="btn primary" id="b-cgo" type="button">この設定で始める</button>
+    <span class="small" id="c-note">それ以外の中身は、ランダムで決まります。</span>
+  </section>
+
+  <section class="scr" id="s-cand" hidden>
+    <button class="back" type="button" data-go="s-style">← もどる</button>
+    <span class="kick" id="k-cand"></span>
+    <h2>この3人から選ぶ</h2>
+    <div class="scr" id="cand-list"></div>
+    <button class="btn line" id="b-reroll" type="button">引き直す</button>
+  </section>
+
+  <section class="scr" id="s-game" hidden>
+    <div class="hud" id="hud">
+      <div class="nmrow"><div class="nm" id="h-nm"></div><button class="memb" id="b-bgm" type="button" aria-label="BGMのオンオフ">♪</button><button class="memb" id="b-mem" type="button">プロフィール</button></div>
+      <div class="st"><span id="h-y"></span> · 作品 <b id="h-w">0</b> · 最高 <b id="h-b">圏外</b></div>
+      <div class="heat" id="heat"><span class="hl" id="h-l">無名</span><span class="bar" role="img" aria-label="知名度"><i id="h-f"></i></span><span class="aw" id="h-aw"></span></div>
+    </div>
+    <button class="skip" id="b-skip" type="button" hidden>早送り ▶▶</button>
+    <div class="gcols" id="gcols"><div class="rail" id="rail" aria-label="人生の年表(ミニ)"></div><div class="gmain"><div class="scene" id="scene"><canvas id="scn" width="256" height="112" role="img" aria-label="いまの様子のドット絵"></canvas><div class="scap"><span id="scap"></span><span class="hint" id="hint" hidden>タップ ▼</span></div></div><div id="tail"></div><div class="feed" id="feed" aria-live="polite"></div></div></div>
+  </section>
+
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sh-t">
+  <div class="sh-bg" id="sh-bg"></div>
+  <div class="sh-box">
+    <div class="sh-head">
+      <div style="min-width:0"><div class="kick" id="sh-a"></div><h3 id="sh-t"></h3></div>
+      <button class="x" id="sh-x" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div class="sh-body" id="sh-b"></div>
+  </div>
+</div>
+
+<script>
+const DATA = __DATA__;
+const BANK = __BANK__;
+
+const $ = (s) => document.querySelector(s);
+const TIER_D = ['不発', '通好みの評価', '小ヒット', 'ヒット', '大ヒット', '社会現象'];
+let TIER = TIER_D;
+function fmtY(y) { return y < 0 ? '紀元前' + (-y) + '年' : y + '年'; }
+const STYLE_LABEL = { band: 'バンド', inst: '轟音インストバンド', duo: '2人組ユニット', solo: 'シンガーソングライター', rap: 'ラッパー',
+  beat: 'トラックメイカー', dj: 'DJ・ダンスミュージック', ai_pure: 'AIミュージシャン(完全生成)', ai_collab: '人間+AIの共作' };
+const STYLE_DESC = { band: 'ライブハウスから始まる王道', inst: '歌のない、音の大きなバンド', duo: 'ふたりで作る、ふたりの音',
+  solo: '弾き語りから始まる', rap: '言葉で勝負する', beat: '一人で曲を作り込む', dj: 'フロアを動かす',
+  ai_pure: '生成AIが作り、運営が育てる', ai_collab: '人間が歌い、AIが補う' };
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function hash(s) { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rankOf(tier, title) {
+  const rkm = S.entry && S.entry.m.rk; if (rkm) return { n: [999, 998, 20, 8, 2, 1][tier], txt: rkm[tier], sub: '' };
+  const h = hash(title);
+  if (tier <= 1) return { n: 999, txt: '圏外', sub: '' };
+  if (tier === 2) { const n = 20 + h % 21; return { n, txt: n + '位', sub: '' }; }
+  if (tier === 3) { const n = 5 + h % 11; return { n, txt: n + '位', sub: '' }; }
+  if (tier === 4) { const n = 2 + h % 2; return { n, txt: n + '位', sub: '' }; }
+  return { n: 1, txt: '1位', sub: (3 + h % 9) + '週連続' };
+}
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function jacket(title) {
+  const h = hash(title); const j = el('span', 'jk'); j.setAttribute('aria-hidden', 'true');
+  j.style.setProperty('--h1', h % 360); j.style.setProperty('--h2', (h >> 8) % 360); j.style.setProperty('--a', ((h >> 4) % 360) + 'deg');
+  return j;
+}
+function tc(tier) { return 'var(--t' + tier + ')'; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+const screens = ['s-title', 's-top', 's-style', 's-mode', 's-custom', 's-cand', 's-game'];
+// ---- 時代ごとのBGM(WebAudioで合成。外部ファイルなし) ----
+const BGM = (() => {
+  let ctx = null, master = null, echo = null, timer = null, step = 0, nextT = 0, cfg = null, phrase = [], on = true, nz = null, era0 = null;
+  try { on = localStorage.getItem('bgm') !== '0'; } catch (_) {}
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const MAJ = [0, 2, 4, 5, 7, 9, 11], PEN = [0, 2, 4, 7, 9], MPN = [0, 3, 5, 7, 10];
+  const C = {
+    '-2': { bpm: 96, scale: MPN, root: 55, lead: 'flute', lv: .12, len: 2, dens: .45, bass: 'voice', drums: 'tribal', d0: true, pad: false, prog: [0, 0, 0, 0] },
+    '-3': { bpm: 92, scale: [0, 1, 5, 7, 8], root: 62, lead: 'pluck', lv: .14, len: 1, dens: .6, bass: 'pluck', drums: 'taiko', d0: true, pad: false, prog: [0, 0, 0, 0] },
+    '-1': { bpm: 96, scale: PEN, root: 60, lead: 'pluck', lv: .12, len: 1, dens: .7, bass: 'triangle', drums: 'soft', pad: false, prog: [0, 5, 7, 5] },
+    '0': { bpm: 122, scale: MAJ, root: 62, lead: 'saw', lv: .08, len: 1, dens: .75, bass: 'saw', drums: 'four', pad: 'saw', prog: [0, 9, 5, 7] },
+    '1': { bpm: 108, scale: PEN, root: 60, lead: 'square', lv: .07, len: 1, dens: .7, bass: 'triangle', drums: 'rock', pad: 'tri', prog: [0, 7, 9, 5] },
+    '2': { bpm: 132, scale: MPN, root: 57, lead: 'saw', lv: .07, len: 1, dens: .8, bass: 'saw', drums: 'rock', pad: 'tri', prog: [0, 8, 3, 10] },
+    '3': { bpm: 142, scale: MAJ, root: 64, lead: 'square', lv: .06, len: 1, dens: .85, bass: 'square', drums: 'four', pad: 'saw', prog: [0, 7, 9, 5] },
+    '4': { bpm: 98, scale: MPN, root: 60, lead: 'bell', lv: .11, len: 1, dens: .5, bass: '808', drums: 'trap', pad: 'tri', prog: [0, 0, 8, 7], echo: .3 },
+    '5': { bpm: 92, scale: [0, 2, 3, 5, 7, 9, 10], root: 58, lead: 'bell', lv: .1, len: 1, dens: .6, bass: 'saw', drums: 'glitch', pad: 'saw', prog: [0, 3, 5, 7], echo: .35 },
+    '6': { bpm: 74, scale: [0, 2, 4, 6, 7, 9, 11], root: 62, lead: 'bell', lv: .1, len: 2, dens: .4, bass: 'sine', drums: 'soft', pad: 'sine', prog: [0, 4, 7, 2], echo: .45 }
+  };
+  function init() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return true; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    echo = ctx.createDelay(1); echo.delayTime.value = .32; const fb = ctx.createGain(); fb.gain.value = .35; echo.connect(fb); fb.connect(echo); const ew = ctx.createGain(); ew.gain.value = .5; echo.connect(ew); ew.connect(master);
+    const n = ctx.sampleRate; nz = ctx.createBuffer(1, n, n); const d = nz.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return true;
+  }
+  function out(g, wet) { g.connect(master); if (wet && cfg && cfg.echo) { const w = ctx.createGain(); w.gain.value = cfg.echo; g.connect(w); w.connect(echo); } }
+  function tone(t, m, dur, type, vol, wet, a) {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(mtof(m), t); a = a || .01;
+    g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(vol, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + dur); o.connect(g); out(g, wet); o.start(t); o.stop(t + a + dur + .05);
+  }
+  function pluck(t, m, dur, vol) { const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(mtof(m), t); f.type = 'lowpass'; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(500, t + dur); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(f); f.connect(g); out(g, true); o.start(t); o.stop(t + dur + .05); }
+  function noise(t, dur, vol, hp, type) { const s = ctx.createBufferSource(); s.buffer = nz; const f = ctx.createBiquadFilter(); f.type = type || 'highpass'; f.frequency.value = hp; const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur); s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + dur + .02); }
+  function kick(t, vol, lo) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(lo ? 90 : 140, t); o.frequency.exponentialRampToValueAtTime(lo ? 38 : 45, t + .16); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + .24); o.connect(g); g.connect(master); o.start(t); o.stop(t + .3); }
+  function flute(t, m, dur, vol) { const o = ctx.createOscillator(), g = ctx.createGain(), lf = ctx.createOscillator(), lg = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(mtof(m), t); lf.frequency.value = 5.2; lg.gain.value = mtof(m) * .012; lf.connect(lg); lg.connect(o.frequency); g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(vol, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(g); g.connect(master); o.start(t); lf.start(t); o.stop(t + dur + .05); lf.stop(t + dur + .05); noise(t, dur * .7, vol * .5, 2400, 'bandpass'); }
+  function voice(t, m, dur, vol) { const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(mtof(m), t); o.frequency.linearRampToValueAtTime(mtof(m) * .96, t + dur); f.type = 'bandpass'; f.frequency.value = 650; f.Q.value = 3; g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(vol, t + .04); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .05); }
+  function tom(t, f0, vol, dec) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * .6, t + dec); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dec); o.connect(g); g.connect(master); o.start(t); o.stop(t + dec + .05); }
+  function layer() { try { return Math.min(3, stageOf(S.heat).i); } catch (_) { return 0; } }
+  function build(seed) {
+    let r = (seed * 2654435761) >>> 0; const rnd = () => { r ^= r << 13; r >>>= 0; r ^= r >> 17; r ^= r << 5; r >>>= 0; return r / 4294967296; };
+    phrase = []; let deg = 2; const sc = cfg.scale;
+    for (let i = 0; i < 64; i++) { const beat = i % (cfg.len > 1 ? 8 : 2) === 0; if (rnd() < cfg.dens * (beat ? 1.2 : .6) && (cfg.len === 1 || i % cfg.len === 0 || beat)) { deg = Math.max(0, Math.min(sc.length * 2 - 1, deg + [-2, -1, -1, 0, 1, 1, 2][Math.floor(rnd() * 7)])); phrase.push(deg); } else phrase.push(null); }
+    for (let i = 48; i < 64; i++) phrase[i] = phrase[i - 48];
+  }
+  function degM(d) { const n = cfg.scale.length; return cfg.root + 12 * Math.floor(d / n) + cfg.scale[((d % n) + n) % n]; }
+  function tick() {
+    if (!ctx || !cfg) return; const sd = 60 / cfg.bpm / 4; const L = layer();
+    while (nextT < ctx.currentTime + .25) {
+      const t = nextT, i = step % 64, bar = Math.floor(i / 16) % 4, s16 = i % 16, sh = cfg.prog[bar];
+      const ph = phrase[i];
+      if (ph != null) { const m = degM(ph) + sh; const ld = cfg.lead;
+        if (ld === 'pluck') pluck(t, m, .45, cfg.lv); else if (ld === 'flute') flute(t, m, sd * 5, cfg.lv); else if (ld === 'bell') { tone(t, m + 12, .9, 'sine', cfg.lv, true, .005); tone(t, m + 19, .4, 'sine', cfg.lv * .3, true, .005); } else if (ld === 'sine') tone(t, m, sd * 4 * cfg.len, 'sine', cfg.lv, true, .12); else tone(t, m, sd * 1.8, ld === 'saw' ? 'sawtooth' : ld, cfg.lv, false); }
+      if (L >= 1 || cfg.d0) { const b = cfg.bass, rt = cfg.root - 24 + sh;
+        if (b === 'voice') { if (s16 === 0 || (s16 === 8 && bar % 2)) voice(t, rt + 12, sd * 6, .07); } else if (b === 'pluck') { if (s16 === 0 || s16 === 8) pluck(t, rt + 12, .5, .1); } else if (b === 'drone') { if (s16 === 0) tone(t, rt + 12, sd * 15, 'sine', .09, false, .3); } else if (b === '808') { if (s16 === 0 || s16 === 10) tone(t, rt, sd * 5, 'sine', .22, false, .005); } else if (b === 'sine') { if (s16 % 8 === 0) tone(t, rt + 12, sd * 8, 'sine', .12, false, .1); } else if (s16 % 4 === 0 || s16 === 14) tone(t, rt + (s16 === 14 ? 7 : 0), sd * 3, b === 'saw' ? 'sawtooth' : b, b === 'saw' ? .06 : .13, false); }
+      if (L >= 2 || cfg.d0) { const d = cfg.drums;
+        if (d === 'tribal') { if ([0, 3, 6, 8, 11, 14].includes(s16)) kick(t, .42, true); if ([2, 5, 10, 13].includes(s16)) tom(t, 190, .22, .14); if (s16 === 4 || s16 === 12) noise(t, .07, .16, 2600, 'bandpass'); if (s16 % 2 === 1) noise(t, .03, .04, 7000); }
+        else
+        if (d === 'taiko') { if ([0, 6, 8, 12].includes(s16)) kick(t, .5, true); if ([4, 10, 14].includes(s16)) noise(t, .06, .12, 1800); }
+        else if (d === 'soft') { if (s16 === 0 || s16 === 8) kick(t, .22); if (s16 % 4 === 2) noise(t, .04, .05, 7000); }
+        else if (d === 'four') { if (s16 % 4 === 0) kick(t, .4); if (s16 % 8 === 4) noise(t, .12, .18, 1500); if (s16 % 2 === 0) noise(t, .03, .06, 8000); }
+        else if (d === 'rock') { if (s16 === 0 || s16 === 10 || s16 === 8) kick(t, .4); if (s16 % 8 === 4) noise(t, .14, .22, 1200); if (s16 % 2 === 0) noise(t, .04, .07, 7500); }
+        else if (d === 'trap') { if (s16 === 0 || s16 === 7 || s16 === 10) kick(t, .45, true); if (s16 === 8) noise(t, .16, .2, 1400); noise(t, .02, .05 + (s16 % 4 === 0 ? .03 : 0), 9000); if (bar === 3 && s16 > 12) noise(t, .02, .06, 9000); }
+        else if (d === 'glitch') { if (s16 % 4 === 0) kick(t, .3); if (s16 % 8 === 6 || s16 === 11) noise(t, .03, .1, 4000); if (s16 === 13) noise(t, .1, .12, 800, 'bandpass'); } }
+      if (L >= 3 && s16 === 0 && cfg.pad) { const pd = cfg.pad; [0, 2, 4].forEach((k, j) => { const m = cfg.root - 12 + sh + (cfg.scale[(k) % cfg.scale.length] || 0) + (k >= cfg.scale.length ? 12 : 0); tone(t, m + 12 * (j > 1 ? 1 : 0), sd * 15, pd === 'saw' ? 'sawtooth' : pd === 'flute' ? 'sine' : pd, pd === 'saw' ? .02 : .05, true, .6); }); }
+      nextT += sd; step++;
+    }
+  }
+  return {
+    get on() { return on; },
+    start(era, seed) { era0 = era; cfg = C[String(era)] || C['3']; if (!on) return; if (!init()) return; build(seed || 1); step = 0; nextT = ctx.currentTime + .1; clearInterval(timer); timer = setInterval(tick, 80); master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setTargetAtTime(.5, ctx.currentTime, .4); },
+    stop(fade) { if (!ctx) return; master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setTargetAtTime(0, ctx.currentTime, fade ? .8 : .15); const t0 = timer; setTimeout(() => { if (timer === t0) { clearInterval(timer); timer = null; } }, fade ? 3200 : 700); },
+    end() { if (!ctx || !on || !cfg) return; const t = ctx.currentTime + .05; clearInterval(timer); timer = null; master.gain.cancelScheduledValues(t); master.gain.setTargetAtTime(.55, t, .05); const sc = cfg.scale; [0, 2, 4, 7, 9].forEach((d, k) => { const m = cfg.root + 12 + 12 * Math.floor(d / sc.length) + sc[d % sc.length]; tone(t + k * .16, m, 1.6, cfg.lead === 'pluck' ? 'triangle' : 'sine', .12, true, .01); }); [0, 2, 4].forEach((d) => tone(t + .8, cfg.root - 12 + sc[d % sc.length], 3.2, 'sine', .08, true, .05)); master.gain.setTargetAtTime(0, t + 3.6, .8); },
+    toggle() { on = !on; try { localStorage.setItem('bgm', on ? '1' : '0'); } catch (_) {} if (!on) this.stop(); else if (era0 != null && $('#s-game') && !$('#s-game').hidden && !document.querySelector('.gcols.done')) this.start(era0, (S.entry && S.entry.m.id) || 1); return on; }
+  };
+})();
+document.addEventListener('visibilitychange', () => { try { if (document.hidden) BGM.stop(); else if (BGM.on && S.entry && !document.querySelector('.gcols.done') && !$('#s-game').hidden) BGM.start(S.entry.m.era, S.entry.m.id); } catch (_) {} });
+
+function show(id) { screens.forEach((s) => { $('#' + s).hidden = s !== id; }); window.scrollTo(0, 0); if (id !== 's-game') { try { BGM.stop(); } catch (_) {} } }
+
+const AWC = {
+  p: [['自分の集落', 100], ['谷の集落', 2000], ['山向こうの部族', 12000], ['海の向こうの民', 30000]],
+  e: [['村', 800], ['宿場と街道', 200000], ['他の藩', 10000000], ['全国', 30000000]],
+  f: [['居住区', 30000], ['星系', 2000000000], ['隣の星系', 40000000000], ['銀河', 100000000000]],
+};
+function awTab(m) {
+  if (m.era === -2) return AWC.p; if (m.era === -3) return AWC.e; if (m.era === 6) return AWC.f;
+  const k = String(m.era);
+  const jp = { '-1': 1.0e8, '0': 1.17e8, '1': 1.24e8, '2': 1.27e8, '3': 1.27e8, '4': 1.24e8, '5': 1.15e8 }[k] || 1.2e8;
+  const asia = { '-1': 2.0e9, '0': 2.5e9, '1': 3.3e9, '2': 3.8e9, '3': 4.5e9, '4': 4.7e9 }[k] || 4.7e9;
+  const wld = { '-1': 3.7e9, '0': 4.4e9, '1': 6.0e9, '2': 6.8e9, '3': 7.4e9, '4': 8.2e9, '5': 8.5e9 }[k] || 8.2e9;
+  if (m.era === 5) return [['地元', 3e5], ['国内', jp], ['世界', wld], ['月と火星', 8.6e9]];
+  return [['地元', 3e5], ['国内', jp], ['アジア', asia], ['世界', wld]];
+}
+function fmtN(n) {
+  if (n < 1) return '0人'; if (n < 10000) return Math.round(n).toLocaleString('ja-JP') + '人';
+  const t = (v) => (v >= 100 ? String(Math.round(v)) : v >= 10 ? v.toFixed(0) : v.toFixed(1)).replace(/\.0$/, '');
+  if (n < 1e8) return t(n / 1e4) + '万人'; return t(n / 1e8) + '億人';
+}
+function fmtPct(p) { return (p >= 10 ? p.toFixed(0) : p >= 1 ? p.toFixed(1) : p >= 0.01 ? p.toFixed(2) : '0.01未満'); }
+function awShow() {
+  const e = $('#h-aw'); if (!e || !S.entry) return; const T = awTab(S.entry.m), P = T[S.stg][1], pct = S.awP / P * 100;
+  e.textContent = ''; e.append('認知度 '); e.append(el('b', null, fmtPct(pct) + '%')); e.append(' · ' + T[S.stg][0] + 'で約' + fmtN(S.awP));
+}
+function awAdd(tr) {
+  const T = awTab(S.entry.m), P = T[S.stg][1]; const G = [0.0003, 0.003, 0.015, 0.05, 0.12, 0.28][tr];
+  S.awP = Math.min(P, S.awP + (P - S.awP) * G); awShow();
+}
+function awScore() { const T = awTab(S.entry.m); const mx = T[T.length - 1][1]; return Math.max(0, Math.min(100, Math.round(100 * Math.log10(1 + S.awP) / Math.log10(mx * 0.4)))); }
+const SGRP = { band: 'g', inst: 'g', duo: 'g', solo: 's', rap: 'r', beat: 'd', dj: 'd', ai_pure: 'a', ai_collab: 'a' };
+const FES_NM = {
+  p: ['谷の火祭り', '月夜の踊り', '雨乞いの宴', '獲物の祝い', '星送りの夜'],
+  e: ['隣町の祭り', 'お伊勢参りの宿場の宴', '在の盆踊り大会', '川開きの夕べ', '村の秋祭り', '芝居小屋の祝い'],
+  f: ['アルファ・ケンタウリ星間祭', 'リング・コロニーの祝祭', '無重力大音楽祭', '太陽風フェス', '星屑の夜会'],
+  g: ['SUMMER SPARK FES', '青空ロックフェスティバル', '港町ミュージックフェス', '夜明けのフェス', 'SKY LINE FESTIVAL', '国際ロックフェス'],
+  s: ['秋の音楽祭', '弾き語りの夜フェス', '小さな町の音楽祭', '川辺のアコースティック祭'],
+  r: ['全国サイファー大会', 'FREESTYLE BATTLE', '路地裏MCバトル', 'ラップ・オールスターズ'],
+  d: ['オールナイトの夜会', 'BASS ISLAND', '朝まで踊れるクラブフェス', '倉庫レイヴ'],
+  a: ['AI音楽の祭典', '合成音声フェス', '仮想会場の大型フェス', '人間とAIの共演祭'],
+};
+const FES_O = {
+  p: [['仲間を連れて輪に加わる', .85, .03, '焚き火の輪に混ざって唸ると、隣の部族の子どもが帰り道でまねをした。', '言葉の違う部族のなかで、声が火の音にかき消された。'],
+      ['いちばん前で一人で唸る', .45, .12, '静まり返った輪の中心で、長が頷いた。この声は谷を越えていく。', '調子外れと笑われ、焚き火の端へ追いやられた。'],
+      ['断って、自分の集落で踊る', .7, .06, '集落の夜がいつもより長く続き、皆が声を重ねた。', '誰も踊りに来ず、火だけが夜通し燃えていた。']],
+  e: [['一座の端で囃子を打つ', .85, .03, '囃子のなかに声が混ざり、町の衆が足を止めた。', '祭りの太鼓にかき消され、誰も気づかなかった。'],
+      ['舞台に立って唄う', .45, .12, '提灯の下で唄うと、見物の輪が三重になった。', '唄の途中で調子を外し、野次が飛んだ。'],
+      ['村の祭りで唄い継ぐ', .7, .06, '村の祭りの唄として、年寄りが覚えてくれた。', '雨で祭りが流れてしまった。']],
+  f: [['小さな会場で演奏する', .85, .03, '無重力の客席で、音が遅れて届くのが面白がられた。', '通信が途切れ、半分も届かなかった。'],
+      ['大会場のメインに出る', .45, .12, '星間中継に乗って、遠い居住区まで届いた。', '光の遅れで、反応が返ってきたのは数年後だった。'],
+      ['自分の祭りを開く', .65, .06, 'コロニーの住人が集まり、小さな星祭りになった。', '気象制御が狂って、会場が止まってしまった。']],
+  g: [['小さなステージで出る', .85, .03, '小さなステージなのに、客が足を止めた。', 'ほとんど客のいない時間帯で、手応えのないまま終わった。'],
+      ['大きなステージに賭ける', .45, .12, '大きなステージで鳴らした音が、フェス全体の話題になった。', '大きな舞台に呑まれ、客席の反応は静かだった。'],
+      ['自分たちのイベントを開く', .65, .06, '満員とはいかなくても、集まった人たちの熱は本物だった。', '段取りが追いつかず、準備だけで疲れ切ってしまった。']],
+  s: [['弾き語りで小さく出る', .85, .03, '小さな舞台で歌うと、最後は静かに聴き入られていた。', '隣のステージの音に負けて、声が届かなかった。'],
+      ['大きなステージに賭ける', .45, .12, '大きな舞台でも、声ひとつで空気を変えた。', 'マイクの不調で、一曲目が台無しになった。'],
+      ['自分の音楽祭を開く', .65, .06, '小さな町に、毎年続く音楽祭が生まれた。', '客が集まらず、友人だけの会になった。']],
+  r: [['サイファーに飛び入りする', .85, .03, '即興のひと節が輪を沸かせた。', '韻が詰まり、輪が静まり返った。'],
+      ['バトルの本戦に出る', .45, .12, '決勝まで進み、名前が客席に残った。', '一回戦で相手に押し切られた。'],
+      ['自分でバトルを主催する', .65, .06, '路地裏に人が溢れ、毎月の恒例になった。', '機材の不備で、開始が大幅に遅れた。']],
+  d: [['深夜帯でプレイする', .85, .03, '朝方のフロアが、いちばん熱かった。', 'フロアが空いた時間で、反応が薄かった。'],
+      ['メインフロアのトリに挑む', .45, .12, '音を切り替えた瞬間、フロア全体が跳ねた。', 'つなぎに失敗し、フロアの熱が冷めてしまった。'],
+      ['自主パーティーを開く', .65, .06, '常連が増え、毎回満員の夜になった。', '会場代が回収できず、赤字になった。']],
+  a: [['配信ステージで流す', .85, .03, '配信の同時視聴者が、静かに増えていった。', '回線の混雑で、音が途切れ途切れになった。'],
+      ['本会場の大画面に出す', .45, .12, '大画面に映された曲が、会場の話題になった。', '人間のステージの合間で、誰も画面を見なかった。'],
+      ['自分の会場を用意する', .65, .06, '仮想会場に、世界中から人が集まった。', 'サーバーが落ちて、開演できなかった。']],
+};
+const EXP_ACT = { '国内': '全国ツアーに出る', 'アジア': 'アジアツアーに出る', '世界': '海外のフェスに挑む', '月と火星': '月面ライブに挑む', '谷の集落': '谷じゅうを回る', '山向こうの部族': '山を越えて旅に出る', '海の向こうの民': '舟で海を渡る', '宿場と街道': '街道を旅して回る', '他の藩': '他の藩へ旅に出る', '全国': '全国を行脚する', '星系': '星系じゅうに曲を送る', '隣の星系': '長距離通信で曲を送る', '銀河': '銀河中継に乗せる' };
+function fesMake() {
+  const m = S.entry.m; if (S.rtN >= 3 || S.works - S.rtW < 2 || S.works < 2) return null;
+  const T = awTab(m), P = T[S.stg][1], pct = S.awP / P * 100, lt = S.tiers[S.tiers.length - 1], last = S.stg >= T.length - 1;
+  const ek = m.era === -2 ? 'p' : m.era === -3 ? 'e' : m.era === 6 ? 'f' : (SGRP[m.st] || 'g');
+  let kind = null; if (!last && pct >= 9 && lt >= 2) kind = 'exp'; else if (pct >= 3 && lt >= 2 && S.fesN < 2) kind = 'fes';
+  if (!kind || (kind === 'fes' && Math.random() > 0.85)) return null;
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  if (kind === 'fes') {
+    const nm = pick(FES_NM[ek]); const pr = ek === 'p' ? '他の部族の「' + nm + '」に呼ばれた。いくつもの集落が焚き火を囲む夜だ。' : ek === 'e' ? '「' + nm + '」に呼ばれた。' : ek === 'f' ? '他の星の「' + nm + '」から招待が届いた。' : ek === 'r' ? '「' + nm + '」に呼ばれた。' : '「' + nm + '」から出演のオファーが届いた。';
+    return { kind, lab: ek === 'p' || ek === 'e' || ek === 'f' ? '祭りのお誘い' : (ek === 'r' ? '大会のお誘い' : 'お誘い'), prompt: pr, opts: FES_O[ek].map((o) => ({ l: o[0], p: o[1], g: o[2], ok: o[3], ng: o[4], up: false })) };
+  }
+  const cur = T[S.stg][0], nxt = T[S.stg + 1][0], act = EXP_ACT[nxt] || '遠征する';
+  const pr = ek === 'p' ? '山向こうの部族が、唸り声を聞きに来た。「' + nxt + '」へ声を届けるか。' : ek === 'e' ? '旅の者が噂を持ち帰った。「' + nxt + '」まで唄を広げられるか。' : ek === 'f' ? '星間通信の枠が空いた。「' + nxt + '」へ曲を送れる。' : '「' + cur + '」では名が知られてきた。次は「' + nxt + '」へ広げられそうだ。';
+  return { kind, lab: '広がるチャンス', prompt: pr, opts: [
+    { l: act, p: .7, g: .01, ok: '「' + nxt + '」まで声が届いた。', ng: '準備が足りず、ほとんど届かないまま終わった。', up: true },
+    { l: 'まず小さく試す', p: .85, g: .003, ok: '小さな試みが、静かに「' + nxt + '」へ届いた。', ng: 'ほとんど反応がなかった。', up: true },
+    { l: '今の場所を固める', p: 1, g: .08, ok: '「' + cur + '」での足場が、しっかりした。', ng: '', up: false, fix: true }] };
+}
+function showFes(d, done) {
+  const tail = $('#tail'); tail.textContent = '';
+  const box = el('div', 'dec in'); box.append(el('span', 'lab', d.lab)); box.append(el('p', 'q', d.prompt));
+  const btns = []; let bi = 0; d.opts.forEach((o, i) => { if (o.p > d.opts[bi].p) bi = i; });
+  d.opts.forEach((o, i) => {
+    const b = el('button', 'opt'); b.type = 'button'; b.append(el('span', 'l', 'ABCD'[i]), el('span', null, o.l));
+    b.onclick = () => {
+      btns.forEach((x) => { x.disabled = true; }); b.classList.add('chosen');
+      const ok = Math.random() < o.p; S.rtN += 1; S.rtW = S.works; if (d.kind === 'fes') S.fesN += 1; if (ok) S.fesOk += 1;
+      const T = awTab(S.entry.m);
+      if (ok) {
+        if (o.up && S.stg < T.length - 1) { S.stg += 1; const P2 = T[S.stg][1]; S.awP = Math.min(P2, S.awP + P2 * o.g); }
+        else { const P = T[S.stg][1]; S.awP = Math.min(P, S.awP + (P - S.awP) * o.g * (o.fix ? 1 : 4)); }
+      } else if (o.up) { S.awP = S.awP * 0.98; }
+      const before = stageOf(S.heat).i; S.heat = Math.max(0, S.heat + (ok ? 0.4 + (o.up ? 1.0 : o.g * 8) : -0.2)); setHeat(stageOf(S.heat).i > before); awShow();
+      const f = $('#feed'); const q = el('div', 'card res in'); q.append(el('span', 'lab', d.lab)); q.append(el('p', null, d.prompt)); f.prepend(q); collapseOld(q);
+      tail.textContent = ''; $('#gcols').classList.remove('deciding'); document.documentElement.style.setProperty('--dockh', '0px');
+      renderItem({ t: 'x', c: o.l, ok, tx: ok ? o.ok : (o.ng || o.ok), rt: 1 });
+      done();
+    };
+    btns.push(b); box.append(b);
+  });
+  tail.append(box); $('#gcols').classList.add('deciding');
+  if (S.auto) S.timers.push(setTimeout(() => btns[bi].click(), 1800));
+  requestAnimationFrame(() => { measureHud(); c_scroll(); });
+}
+const HEAT_W = [-0.2, 0.3, 1, 2.2, 3.6, 6];
+const STAGES = [[0, '無名'], [1.5, '地元で噂'], [4, '全国区の入口'], [8, '時代の顔'], [13, '伝説']];
+function stageOf(h) { let i = 0; STAGES.forEach((x, k) => { if (h >= x[0]) i = k; }); const lo = STAGES[i][0], hi = i + 1 < STAGES.length ? STAGES[i + 1][0] : lo + 1; return { i, name: ((S.entry && S.entry.m.stg) || [])[i] || STAGES[i][1], pct: i + 1 >= STAGES.length ? 100 : Math.round(100 * (h - lo) / (hi - lo)) }; }
+function leafInfo(n) {
+  if (n.e) return { leaves: 1, max: n.e.w.reduce((m, w) => Math.max(m, w.tr), 0), ends: new Set([n.e.tx]) };
+  const r = { leaves: 0, max: 0, ends: new Set() };
+  n.n.forEach((k) => { const x = leafInfo(k); r.leaves += x.leaves; r.max = Math.max(r.max, x.max); x.ends.forEach((e) => r.ends.add(e)); });
+  return r;
+}
+function crownOf(w) {
+  const n = w.length, hits = w.filter((x) => x.tr >= 3).length, big = w.filter((x) => x.tr >= 4).length, cult = w.filter((x) => x.tr === 1).length;
+  const top = w.reduce((m, x) => Math.max(m, x.tr), 0), lastTwo = w.slice(-2).some((x) => x.tr >= 3), early = w.slice(0, Math.max(1, n - 2)).every((x) => x.tr <= 1);
+  if (top === 5) return ['時代を塗り替えた人', '社会現象になった曲を、あなたは持っている。'];
+  if (big >= 2) return ['ヒットメーカー', '大ヒットを何度も生んだ。'];
+  if (big === 1 && hits === 1 && n >= 4) return ['一曲で名を残した人', 'たくさん作って、残ったのは一曲。それで十分だった。'];
+  if (hits >= 1 && lastTwo && early && n >= 4) return ['大器晩成', '長い助走のあと、ようやく届いた。'];
+  if (hits === 0 && cult >= Math.ceil(n / 2)) return ['知る人ぞ知る職人', '数字にならなくても、聴いた人の中には残っている。'];
+  if (hits === 0) return ['作り続けた人', '売れなかった。それでも作品は全部、残っている。'];
+  return ['地道な実力派', '派手さはなくても、確かに届いた。'];
+}
+let S = { top: null, style: null, entry: null, node: null, works: 0, best: 999, skip: false, timers: [] };
+
+/* ---- 選択画面 ---- */
+$('#b-start').onclick = () => { S.auto = false; show('s-top'); };
+function bestSum(n) { if (n._b !== undefined) return n._b; n._b = n.e ? n.e.w.reduce((m, w) => m + w.tr * w.tr, 0) : Math.max(...n.n.map(bestSum)); return n._b; }
+const startRare = (era) => { const L = DATA.filter((d) => d.m.rare && d.m.era === era); const d = L[Math.floor(Math.random() * L.length)]; S.auto = false; S.top = d.m.top; S.style = d.m.st; startTree(d); };
+{ const box = $('#dbg-real'); const lab = el('span', 'lab', 'デバッグ: 着想型の人生(' + DATA.filter((x) => x.m.real).length + '組)を選んで遊ぶ'); box.append(lab); DATA.filter((x) => x.m.real).forEach((d) => { const b = el('button', 'btn line', d.m.a + '(' + d.m.sn.replace(/\(.*$/, '') + '・' + d.m.es + ')'); b.type = 'button'; b.onclick = () => { S.auto = false; S.top = d.m.top; S.style = d.m.st; startTree(d); }; box.append(b); }); }
+$('#b-dbg2').onclick = () => startRare(-2); $('#b-dbg6').onclick = () => startRare(6); $('#b-dbg3').onclick = () => startRare(-3);
+$('#b-bgm').onclick = () => { const o = BGM.toggle(); $('#b-bgm').textContent = o ? '♪' : '♪×'; };
+$('#b-bgm').textContent = BGM.on ? '♪' : '♪×';
+$('#b-debug').onclick = () => {
+  let best = null; DATA.forEach((d) => { if (!d.m.rare && !d.m.real && (!best || bestSum(d.t) > bestSum(best.t))) best = d; });
+  S.auto = true; S.top = best.m.top; S.style = best.m.st; startTree(best);
+};
+document.querySelectorAll('[data-top]').forEach((b) => { b.onclick = () => { S.top = b.dataset.top; renderStyles(); show('s-style'); }; });
+document.querySelectorAll('[data-go]').forEach((b) => { b.onclick = () => show(b.dataset.go); });
+
+function renderStyles() {
+  $('#k-style').textContent = S.top;
+  const box = $('#style-list'); box.textContent = '';
+  const keys = [...new Set(DATA.filter((d) => d.m.top === S.top).map((d) => d.m.st))];
+  keys.forEach((k) => {
+    const b = el('button', 'btn'); b.type = 'button'; b.append(STYLE_LABEL[k] || k);
+    const d = el('span', 'd', STYLE_DESC[k] || ''); b.append(d);
+    b.onclick = () => { S.style = k; S.eraF = null; S.sz = null; $('#nm-in').value = ''; $('#k-mode').textContent = S.top + ' / ' + (STYLE_LABEL[k] || k); show('s-mode'); };
+    box.append(b);
+  });
+}
+function eraBucket(e) { return e <= 0 ? 'old' : e <= 2 ? 'mid' : 'new'; }
+function reskin(d) {
+  if (d._rs || d.m.rare || d.m.real) return d;
+  try {
+    const m = d.m, eb = eraBucket(m.era), used = new Set();
+    const pk = (arr) => { if (!arr || !arr.length) return null; for (let i = 0; i < 40; i++) { const x = arr[Math.floor(Math.random() * arr.length)]; if (!used.has(x)) { used.add(x); return x; } } return null; };
+    const olds = new Set(); const base = (t) => t.replace(/\s*[\(（].*$/, '');
+    (function walk(n) { n.s.forEach((it) => { if (it.t === 'r') { olds.add(it.ti); (it.tk || []).forEach((k) => olds.add(base(k.t))); } }); if (n.e) n.e.w.forEach((w) => olds.add(w.ti)); (n.n || []).forEach(walk); })(d.t);
+    let str = JSON.stringify(d); const pairs = [];
+    const add = (old, nw) => { if (!old || !nw || old.length < 2) return; pairs.push([old, nw]); };
+    const SX = /(の手前|のままで|で会おう|を失くした.{1,4}|について|の夜|の約束|ごっこ|ブルース)$/; const sfxUsed = new Set();
+    const pkT = () => { for (let i = 0; i < 40; i++) { const x = (BANK.pt && Math.random() < 0.3) ? BANK.pt[Math.floor(Math.random() * BANK.pt.length)] : BANK.t[eb][Math.floor(Math.random() * BANK.t[eb].length)]; const mt = x.match(SX); const key = mt ? mt[1].slice(0, 3) : null; if (used.has(x) || (key && sfxUsed.has(key))) continue; used.add(x); if (key) sfxUsed.add(key); return x; } return pk(BANK.t[eb]); };
+    [...olds].filter((x) => x && x.length >= 2).sort((a, b) => b.length - a.length).forEach((o) => add(o, pkT()));
+    if (!m.pun) add(m.a, pk((BANK.a[m.st] || {})[eb]));
+    pairs.forEach(([o, nw], i) => {
+      const tk = '\u0001' + i + '\u0002';
+      if (o.length >= 4) str = str.split(o).join(tk); else { str = str.split('"' + o + '"').join('"' + tk + '"').split('"' + o + ' (').join('"' + tk + ' (').split('「' + o + '」').join('「' + tk + '」'); }
+    });
+    pairs.forEach(([o, nw], i) => { str = str.split('\u0001' + i + '\u0002').join(nw); });
+    const out = JSON.parse(str); out._rs = true; return out;
+  } catch (_) { return d; }
+}
+function renameTo(d, nm) {
+  nm = (nm || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 20); const m = d.m;
+  if (!nm || nm === m.a || (m.a || '').length < 2) return d;
+  try {
+    let str = JSON.stringify(d); const o = m.a; const nw = JSON.stringify(nm).slice(1, -1);
+    if (o.length >= 4) str = str.split(o).join(nw); else str = str.split('"' + o + '"').join('"' + nw + '"').split('「' + o + '」').join('「' + nw + '」').split('"' + o + ' (').join('"' + nw + ' (');
+    if (m.pun) { const pn = JSON.stringify(m.pun).slice(1, -1); str = str.split('「' + pn + '」').join('ある有名アーティスト').split(pn).join('ある有名アーティスト'); }
+    const out = JSON.parse(str); out._rs = d._rs; out.m.pun = null; out.m.a = nm; return out;
+  } catch (_) { return d; }
+}
+const ERA_OPT = [[null, 'おまかせ'], [-1, '70年代'], [0, '80年代'], [1, '90年代'], [2, '00年代'], [3, '10年代'], [4, '20年代'], [5, '近未来']];
+const szOf = (d) => (d.m.np || (d.m.mm || []).length || 0);
+const cPool = () => DATA.filter((d) => d.m.st === S.style && !d.m.rare);
+function nameExamples() { const ex = $('#nm-ex'); ex.textContent = ''; const eb = (e) => eraBucket(e); const all = []; const bk = BANK.a[S.style] || {}; Object.keys(bk).forEach((k) => (bk[k] || []).forEach((n) => all.push(n))); shuffle(all.slice()).slice(0, 6).forEach((n) => { const c = el('button', 'chip', n); c.type = 'button'; c.onclick = () => { $('#nm-in').value = n; }; ex.append(c); }); }
+function renderCustom() {
+  $('#k-custom').textContent = S.top + ' / ' + STYLE_LABEL[S.style];
+  const pl = cPool(); const isBand = S.style === 'band';
+  $('#c-size').hidden = !isBand;
+  if (!isBand) S.sz = null;
+  const szs = [...new Set(pl.map(szOf))].filter((n) => n >= 3).sort((a, b) => a - b);
+  const okE = (e) => pl.some((d) => (S.sz == null || szOf(d) === S.sz) && (e === null || d.m.era === e));
+  const okS = (n) => pl.some((d) => szOf(d) === n && (S.eraF == null || d.m.era === S.eraF));
+  const sr = $('#size-row'); sr.textContent = '';
+  if (isBand) [null, ...szs].forEach((n) => { if (n !== null && !okS(n)) return; const c = el('button', 'chip' + (S.sz === n ? ' on' : ''), n === null ? 'おまかせ' : n + '人'); c.type = 'button'; c.onclick = () => { S.sz = n; renderCustom(); }; sr.append(c); });
+  const er = $('#era-row'); er.textContent = '';
+  ERA_OPT.forEach(([v, l]) => { if (v !== null && !okE(v)) return; const c = el('button', 'chip' + (S.eraF === v ? ' on' : ''), l); c.type = 'button'; c.onclick = () => { S.eraF = v; renderCustom(); }; er.append(c); });
+}
+$('#b-fixed').onclick = () => { renderCands(); show('s-cand'); };
+$('#b-custom').onclick = () => { S.eraF = null; S.sz = null; $('#nm-in').value = ''; nameExamples(); renderCustom(); show('s-custom'); };
+$('#nm-more').onclick = nameExamples;
+$('#b-cgo').onclick = () => {
+  let pl = cPool().filter((d) => (S.sz == null || szOf(d) === S.sz) && (S.eraF == null || d.m.era === S.eraF));
+  const rares = S.eraF == null && S.sz == null ? DATA.filter((d) => d.m.st === S.style && d.m.rare) : [];
+  if (!pl.length) pl = cPool();
+  let d = pl[Math.floor(Math.random() * pl.length)];
+  if (rares.length && Math.random() < 0.08) d = rares[Math.floor(Math.random() * rares.length)];
+  startTree(renameTo(reskin(d), $('#nm-in').value));
+};
+function renderCands() {
+  $('#k-cand').textContent = S.top + ' / ' + STYLE_LABEL[S.style];
+  const box = $('#cand-list'); box.textContent = '';
+  const ef = () => true; let base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real && ef(d)); if (!base.length) { S.eraF = null; base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real); } const pick = shuffle(base).slice(0, 3).map(reskin);
+  { const reals = DATA.filter((d) => d.m.st === S.style && d.m.real && d.m.era !== undefined && ef(d)); if (reals.length && Math.random() < 0.45) pick[Math.floor(Math.random() * pick.length)] = reals[Math.floor(Math.random() * reals.length)]; }
+  { const rares = DATA.filter((d) => d.m.st === S.style && d.m.rare); if (rares.length && Math.random() < 0.08) pick[Math.floor(Math.random() * pick.length)] = rares[Math.floor(Math.random() * rares.length)]; }
+  pick.forEach((d) => {
+    const m = d.m; const c = el('div', 'cand');
+    c.append(el('div', 'nm', m.a));
+    const tg = el('div', 'tags');
+    tg.append(el('span', 'tag p', m.pe));
+    tg.append(el('span', 'tag', m.es));
+    tg.append(el('span', 'tag', m.ge));
+    tg.append(el('span', 'tag', m.sa));
+    if (m.real) tg.append(el('span', 'tag p', '着想型'));
+    if (m.ai) tg.append(el('span', 'tag', 'AI: ' + m.ai));
+    c.append(tg);
+    c.append(el('p', 'small', m.tx + '。'));
+    const b = el('button', 'btn primary', 'この人で始める'); b.type = 'button'; b.onclick = () => startTree(d);
+    c.append(b); box.append(c);
+  });
+}
+$('#b-reroll').onclick = renderCands;
+
+/* ---- 人生を進める ---- */
+function clearTimers() { S.timers.forEach(clearTimeout); S.timers = []; }
+function startTree(entry) {
+  clearTimers(); try { BGM.start(entry.m.era, entry.m.id); } catch (_) {}
+  S.entry = entry; S.awP = 0; S.stg = 0; S.rtN = 0; S.rtW = -1; S.fesN = 0; S.fesOk = 0; S.evN = 0; S.evUsed = new Set(); S.evFam = new Set(); TIER = entry.m.tn || TIER_D; S.works = 0; S.best = 999; S.skip = false; S.heat = 0; S.tiers = []; S.ms = {}; S.dn = 0; S.path = []; S.log = []; S.lastY = null; S.mem = JSON.parse(JSON.stringify(entry.m.mm || [])); S.exMem = []; S.inMem = []; S.curEl = null; $('#gcols').classList.remove('done'); $('#gcols').classList.remove('deciding');
+  $('#feed').textContent = ''; $('#tail').textContent = '';
+  const m = entry.m;
+  $('#h-nm').textContent = m.a; $('#h-y').textContent = '—'; $('#h-w').textContent = '0'; $('#h-b').textContent = m.rare ? '—' : '圏外'; setHeat(false);
+  const intro = el('div', 'card intro in');
+  intro.append(el('span', 'lab', '出発点'));
+  intro.append(el('p', null, m.pe + 'な' + m.sn + '。' + m.en + '、' + m.tx + '。'));
+  { const rows = bioRows(); if (rows.length) { const o = rows[0]; intro.append(el('p', 'bl', o[0] + ': ' + o[1])); if (rows[2] && !m.bio.ai) intro.append(el('p', 'bl', 'きっかけ: ' + m.bio.st)); } }
+  if (m.mm && m.mm.length) { const ml = el('p', 'small', (S.top === 'グループ' ? 'メンバー: ' : '支える人: ') + m.mm.map((x) => x.n + '(' + x.r + ')').join('、')); intro.append(ml); }
+  $('#feed').prepend(intro);
+  show('s-game'); startScene();
+  playNode(entry.t);
+}
+
+/* ---- ドット絵シーン ---- */
+const SKY = ['#1b1f3a', '#2a2350', '#3a1f5c', '#4a2670', '#11112b'];
+const GRD = ['#2c2c3a', '#3b2f2f', '#2a2a44', '#33284a', '#1c1c34'];
+const CAPS = {
+  0: ['路上で売れ残りのCDを数えている', 'ライブハウスの片付けをひとりでしている', '楽屋でうつむいている', '会議室で数字を見つめている', '静まり返った会場で空を見ている'],
+  1: ['駅前で足を止めてもらえるまで歌っている', '小さなライブハウスで演奏している', 'ホールのステージで演奏している', 'テレビ局のスタジオで演奏している', 'アリーナで歓声を浴びている'],
+  2: ['路上に立ち止まる人が増えてきた', 'ライブハウスが満員になった', 'ツアーが各地で完売している', 'ドームのステージに立っている', '花火の下で伝説のステージに立っている']
+};
+const SK_COL = ['#e8c39e', '#f4c9a0', '#d9a77c'];
+const CL_COL = ['#d2455a', '#3fa7d6', '#e8b33a', '#6cc070'];
+function sceneState() {
+  const st = stageOf(S.heat).i; const last = S.tiers.length ? S.tiers[S.tiers.length - 1] : 1;
+  const mood = last <= 0 ? 0 : (last >= 3 ? 2 : 1); return { st, mood };
+}
+/* ---- ドット絵シーン(16ビット風・256x112) ---- */
+const OL = '#171021';
+const SKINS = [['#fbd9b0', '#e2a574', '#b97b55'], ['#f6cfa0', '#dc9a68', '#ae7050'], ['#e8b88c', '#c88a5e', '#9a6446'], ['#d6a074', '#b07a52', '#855a40']];
+const HAIRS = [['#2a2438', '#5a5070', '#16121e'], ['#7a4422', '#b0703a', '#4a2812'], ['#e0b84a', '#f8e08a', '#a8802a'], ['#a8324e', '#e0607a', '#6e1c34'], ['#3a6ea8', '#6aa0d8', '#223e68'], ['#d8d8e0', '#ffffff', '#9898a8']];
+const CLOTHS = [['#d2455a', '#f27a8a', '#8e2a3c'], ['#3f8ed6', '#78bef2', '#265a96'], ['#e8b33a', '#f8da7a', '#a87c1e'], ['#58b868', '#8ee09a', '#347a42'], ['#8a5ad0', '#b894f0', '#583496'], ['#e8e8f0', '#ffffff', '#a0a0b8']];
+const PANTS = ['#2c3050', '#3a2e24', '#40404c'];
+function bayer(x, y) { return [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]][y & 3][x & 3] / 16; }
+function hexRGB(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+function mixc(a, b, t) { const A = hexRGB(a), B = hexRGB(b); return 'rgb(' + Math.round(A[0] + (B[0] - A[0]) * t) + ',' + Math.round(A[1] + (B[1] - A[1]) * t) + ',' + Math.round(A[2] + (B[2] - A[2]) * t) + ')'; }
+function vgrad(g, x, y, w, h, c1, c2, steps) { steps = steps || 6; for (let j = 0; j < h; j++) { const t = j / Math.max(1, h - 1) * (steps - 1); const lo = Math.floor(t), fr = t - lo; for (let i = 0; i < w; i++) { const tt = (fr > bayer(x + i, y + j) ? lo + 1 : lo) / (steps - 1); g.fillStyle = mixc(c1, c2, tt); g.fillRect(x + i, y + j, 1, 1); } } }
+function glow(g, cx, cy, r, col, a) { for (let k = r; k > 0; k -= 3) { g.fillStyle = col.replace('A', (a * (1 - k / r)).toFixed(3)); g.beginPath(); g.arc(cx, cy, k, 0, 7); g.fill(); } }
+function P_(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
+function PO(g, x, y, w, h, c) { P_(g, x - 1, y - 1, w + 2, h + 2, OL); P_(g, x, y, w, h, c); }
+function drawChar(g, x, y, o) {
+  const sk = o.skin, hr = o.hair, cl = o.cloth, fr = o.fr | 0, pose = o.pose || 'idle'; const bob = (pose === 'cheer' && fr % 2) ? -1 : 0; y += bob;
+  P_(g, x + 1, y + 23, 14, 2, 'rgba(0,0,0,.38)');
+  // 髪(後ろ)
+  if (o.style === 'long') { PO(g, x + 2, y + 5, 12, 11, hr[2]); }
+  if (o.style === 'pony') { PO(g, x + 12, y + 5, 3, 8, hr[0]); P_(g, x + 12, y + 5, 1, 7, hr[1]); P_(g, x + 12, y + 7, 3, 1, o.tie || '#e8e8f0'); }
+  // 脚 / スカート
+  if (pose === 'slump') { PO(g, x + 3, y + 17, 5, 4, o.pants); PO(g, x + 8, y + 17, 5, 4, o.pants); PO(g, x + 2, y + 21, 5, 2, '#8a8ab0'); PO(g, x + 9, y + 21, 5, 2, '#8a8ab0'); }
+  else if (o.fem) { PO(g, x + 4, y + 20, 3, 3, sk[0]); PO(g, x + 9, y + 20, 3, 3, sk[0]); P_(g, x + 4, y + 22, 3, 1, '#c84a5a'); P_(g, x + 9, y + 22, 3, 1, '#c84a5a'); }
+  else { PO(g, x + 4, y + 17, 3, 5, o.pants); PO(g, x + 9, y + 17, 3, 5, o.pants); P_(g, x + 6, y + 17, 1, 5, 'rgba(0,0,0,.25)'); PO(g, x + 3, y + 21, 5, 2, o.fur ? sk[1] : '#d8d8e4'); PO(g, x + 8, y + 21, 5, 2, o.fur ? sk[1] : '#d8d8e4'); P_(g, x + 3, y + 22, 5, 1, 'rgba(0,0,0,.25)'); P_(g, x + 8, y + 22, 5, 1, 'rgba(0,0,0,.25)'); }
+  // 胴
+  const ty = pose === 'slump' ? 11 : 10;
+  PO(g, x + 4, y + ty, 8, 8, cl[0]); P_(g, x + 4, y + ty, 2, 8, cl[1]); P_(g, x + 10, y + ty, 2, 8, cl[2]); P_(g, x + 4, y + ty + 6, 8, 2, 'rgba(0,0,0,.18)');
+  if (o.fem) { PO(g, x + 3, y + 17, 10, 4, cl[0]); P_(g, x + 3, y + 17, 10, 1, cl[1]); P_(g, x + 11, y + 18, 2, 3, cl[2]); for (let k = 4; k < 13; k += 3) P_(g, x + k, y + 19, 1, 2, cl[2]); }
+  else { P_(g, x + 4, y + ty + 6, 8, 1, '#3a2a20'); P_(g, x + 7, y + ty + 6, 2, 1, '#e8c860'); }
+  if (o.fur) { for (let k = 4; k < 12; k += 2) { P_(g, x + k, y + ty + 8, 1, 2, cl[0]); } P_(g, x + 5, y + ty, 6, 1, '#e8e0cc'); P_(g, x + 6, y + ty + 1, 1, 1, '#e8e0cc'); P_(g, x + 9, y + ty + 1, 1, 1, '#e8e0cc'); }
+  else if (o.suit) { P_(g, x + 7, y + ty + 1, 2, 6, '#7ae8ff'); P_(g, x + 5, y + ty + 1, 1, 6, 'rgba(122,232,255,.7)'); P_(g, x + 4, y + ty, 8, 1, '#7ae8ff'); }
+  else P_(g, x + 7, y + ty, 2, 2, sk[0]);
+  // 腕
+  if (pose === 'cheer') { PO(g, x + 1, y + 3 - (fr % 2) * 2, 3, 8, cl[0]); PO(g, x + 1, y + 1 - (fr % 2) * 2, 3, 3, sk[0]); PO(g, x + 12, y + 3 - ((fr + 1) % 2) * 2, 3, 8, cl[0]); PO(g, x + 12, y + 1 - ((fr + 1) % 2) * 2, 3, 3, sk[0]); }
+  else { PO(g, x + 1, y + ty + 1, 3, 7, cl[0]); P_(g, x + 1, y + ty + 1, 1, 7, cl[1]); PO(g, x + 1, y + ty + 7, 3, 3, sk[0]); PO(g, x + 12, y + ty + 1, 3, 7, cl[0]); P_(g, x + 14, y + ty + 1, 1, 7, cl[2]); PO(g, x + 12, y + ty + 7, 3, 3, sk[0]); }
+  // 頭
+  const hy = pose === 'slump' ? 2 : 0;
+  PO(g, x + 3, y + hy + 2, 10, 8, sk[0]); P_(g, x + 4, y + hy + 1, 8, 1, OL); P_(g, x + 4, y + hy + 10, 8, 1, OL); P_(g, x + 11, y + hy + 3, 2, 7, sk[1]); P_(g, x + 3, y + hy + 8, 1, 2, sk[1]);
+  if (o.robot) { P_(g, x + 4, y + hy + 4, 8, 3, '#0b2a40'); P_(g, x + 5, y + hy + 5, 2, 1, fr % 2 ? '#7ae8ff' : '#b8f4ff'); P_(g, x + 9, y + hy + 5, 2, 1, fr % 2 ? '#7ae8ff' : '#b8f4ff'); PO(g, x + 7, y + hy - 2, 2, 3, '#9aa8b8'); P_(g, x + 7, y + hy - 3, 2, 1, fr % 2 ? '#ff7ab0' : '#ffd94a'); }
+  else {
+    // 目
+    const bl = fr % 9 === 4 && pose !== 'slump';
+    P_(g, x + 5, y + hy + 5, 2, bl ? 1 : 3, '#fff'); P_(g, x + 9, y + hy + 5, 2, bl ? 1 : 3, '#fff');
+    if (!bl) { P_(g, x + 6, y + hy + 5, 1, 3, OL); P_(g, x + 10, y + hy + 5, 1, 3, OL); P_(g, x + 5, y + hy + 5, 1, 1, '#6a8ad8'); P_(g, x + 9, y + hy + 5, 1, 1, '#6a8ad8'); } else { P_(g, x + 5, y + hy + 5, 2, 1, OL); P_(g, x + 9, y + hy + 5, 2, 1, OL); }
+    if (o.fem) { P_(g, x + 5, y + hy + 4, 2, 1, OL); P_(g, x + 9, y + hy + 4, 2, 1, OL); }
+    P_(g, x + 4, y + hy + 7, 2, 1, 'rgba(240,110,110,.55)'); P_(g, x + 10, y + hy + 7, 2, 1, 'rgba(240,110,110,.55)');
+    if (pose === 'cheer') { P_(g, x + 7, y + hy + 8, 3, 2, '#7a1a2a'); P_(g, x + 8, y + hy + 9, 1, 1, '#ff8a9a'); }
+    else if (pose === 'slump') { P_(g, x + 7, y + hy + 9, 3, 1, '#7a4a4a'); P_(g, x + 7, y + hy + 8, 1, 1, '#7a4a4a'); P_(g, x + 10, y + hy + 8, 1, 1, '#7a4a4a'); P_(g, x + 13, y + hy + 6, 1, 3, '#7ac0ff'); P_(g, x + 13, y + hy + 9, 1, 1, '#c8e8ff'); }
+    else { P_(g, x + 7, y + hy + 8, 2, 1, '#8a3a3a'); }
+    // 髪(前)
+    PO(g, x + 3, y + hy + 0, 10, 4, hr[0]); P_(g, x + 4, y + hy + 0, 5, 1, hr[1]); P_(g, x + 5, y + hy + 1, 2, 1, hr[1]); P_(g, x + 3, y + hy + 3, 2, 5, hr[0]); P_(g, x + 11, y + hy + 3, 2, 4, hr[2]);
+    if (o.style === 'spiky') { PO(g, x + 4, y + hy - 3, 2, 3, hr[0]); PO(g, x + 7, y + hy - 4, 2, 4, hr[0]); PO(g, x + 10, y + hy - 3, 2, 3, hr[0]); P_(g, x + 7, y + hy - 4, 1, 3, hr[1]); }
+    if (o.style === 'long') { P_(g, x + 3, y + hy + 3, 3, 6, hr[0]); P_(g, x + 10, y + hy + 3, 3, 8, hr[2]); P_(g, x + 3, y + hy + 7, 1, 6, hr[2]); }
+    if (o.fem && o.style === 'short') { P_(g, x + 3, y + hy + 3, 2, 8, hr[0]); P_(g, x + 11, y + hy + 3, 2, 8, hr[2]); PO(g, x + 10, y + hy, 3, 2, '#ff7ab0'); }
+    if (o.fur) { PO(g, x + 3, y + hy + 1, 10, 1, '#c8a878'); P_(g, x + 5, y + hy + 1, 1, 1, '#e8e0cc'); P_(g, x + 10, y + hy + 1, 1, 1, '#e8e0cc'); }
+  }
+  // 小道具
+  const pk = o.prop;
+  if (pk === 'gtr') { PO(g, x + 2, y + 14, 9, 7, '#c0702a'); P_(g, x + 2, y + 14, 9, 1, '#f0a050'); P_(g, x + 8, y + 15, 3, 6, '#8a4a18'); P_(g, x + 5, y + 16, 3, 3, '#2a1408'); P_(g, x + 4, y + 20, 5, 1, '#8a4a18'); for (let q = 0; q < 12; q++) P_(g, x + 11 + q, y + 13 - (q >> 2), 1, 1, q % 3 ? '#e8cc90' : '#b89860'); PO(g, x + 22, y + 8, 4, 3, '#6a3a14'); P_(g, x + 23, y + 8, 1, 1, '#ffd86a'); P_(g, x + 25, y + 10, 1, 1, '#ffd86a'); P_(g, x + 3, y + 12, 2, 7, '#3a2a20'); }
+  if (pk === 'mic') { P_(g, x + 17, y + 5, 1, 19, '#9a9aa6'); P_(g, x + 15, y + 23, 5, 1, '#555'); PO(g, x + 15, y + 2, 5, 4, '#e0e0ea'); P_(g, x + 16, y + 3, 3, 1, '#fff'); P_(g, x + 16, y + 5, 3, 1, '#8a8a98'); }
+  if (pk === 'dj') { PO(g, x - 8, y + 17, 30, 8, '#3a3a4a'); P_(g, x - 8, y + 17, 30, 1, '#7a7a8e'); PO(g, x - 5, y + 18, 10, 6, '#0e0e16'); PO(g, x + 9, y + 18, 10, 6, '#0e0e16'); const a = (fr % 4) * 1.57; P_(g, x - 1 + Math.round(Math.cos(a) * 2), y + 21 + Math.round(Math.sin(a) * 2), 1, 1, '#ff7ab0'); P_(g, x + 13 + Math.round(Math.cos(a + 1) * 2), y + 21 + Math.round(Math.sin(a + 1) * 2), 1, 1, '#7ae0ff'); P_(g, x + 6, y + 19, 2, 4, '#9a9aae'); }
+  if (pk === 'pc') { PO(g, x + 12, y + 14, 14, 9, '#d0d8e4'); P_(g, x + 13, y + 15, 12, 6, fr % 2 ? '#7ae0ff' : '#3fa7d6'); P_(g, x + 13, y + 15, 12, 1, '#c8f4ff'); for (let q = 0; q < 5; q++) P_(g, x + 14 + q * 2, y + 17 + ((q + fr) % 3), 1, 2, '#ffffff'); PO(g, x + 10, y + 23, 18, 2, '#98a2b2'); }
+  if (pk === 'drum') { PO(g, x + 1, y + 16, 14, 8, '#a86a30'); P_(g, x + 1, y + 16, 14, 2, '#d8a060'); for (let q = 2; q < 14; q += 3) P_(g, x + q, y + 19, 1, 4, '#6a3c18'); P_(g, x + 2, y + 17, 12, 1, '#e8d0a0'); }
+  if (pk === 'bone') { PO(g, x + 12, y + 13, 9, 2, '#efe6d0'); P_(g, x + 12, y + 13, 9, 1, '#fffaf0'); P_(g, x + 11, y + 12, 2, 4, '#efe6d0'); P_(g, x + 20, y + 12, 2, 4, '#efe6d0'); }
+}
+const hsh = (t) => { let h = 2166136261; const x = String(t); for (let i = 0; i < x.length; i++) { h ^= x.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+function mkLook(mb, m, key, k, pose, fr) {
+  const grp = !!mb; const fem = mb ? mb.g === 'f' : ((m.vg || '')[(m.vg || '').length - 1] === 'f');
+  const idn = mb ? hsh(mb.n) : (m.id | 0) + k * 7; const ai = key === 'ai_pure' || key === 'ai_collab';
+  const rl = mb ? mb.r : ''; const byRole = /^Vo/.test(rl) ? 'mic' : /Dr/.test(rl) ? 'drum' : /Key|Cho/.test(rl) ? 'pc' : /Gt|Ba/.test(rl) ? 'gtr' : null;
+  const prop = m.era === -3 ? (k % 2 ? 'drum' : 'gtr') : m.era === -2 ? (k % 2 ? 'bone' : 'drum') : key === 'rap' ? 'mic' : key === 'dj' ? 'dj' : key === 'beat' ? 'pc' : ai ? 'mic' : (byRole || (grp ? ['mic', 'gtr', 'gtr', 'drum'][k % 4] : 'gtr'));
+  return { skin: SKINS[idn % 4], hair: HAIRS[(idn >>> 1) % 6], cloth: CLOTHS[(idn + 3) % 6], pants: PANTS[idn % 3], fem, style: fem ? ['long', 'pony', 'short'][idn % 3] : ['short', 'spiky', 'short'][idn % 3], pose: pose || 'idle', fr: (fr | 0) + k, prop, robot: ai && m.era !== 6 ? true : false, fur: m.era === -2, suit: m.era === 6 && !ai, tie: '#ff7ab0' };
+}
+function mkPerformer(S_, k, grp, st, mood, fr, key) {
+  const m = S_.entry.m, mem = S_.mem || []; const mb = grp ? mem[k] : null;
+  return mkLook(mb, m, key, k, mood === 0 ? 'slump' : mood === 2 ? 'cheer' : 'idle', fr);
+}
+function iconOf(mb, gone) {
+  const cv = document.createElement('canvas'); cv.width = 30; cv.height = 27; cv.className = 'mic' + (gone ? ' gone' : '');
+  const g = cv.getContext('2d'); g.imageSmoothingEnabled = false; const look = mkLook(mb, S.entry.m, S.entry.m.st, 0, 'idle', 0);
+  try { drawChar(g, 7, 0, look); } catch (_) {}
+  return cv;
+}
+function crowdHead(g, x, y, i, up, fr, st, cs) {
+  const sh = CLOTHS[i % 6], hr = HAIRS[(i * 3 + 1) % 6], sk = SKINS[i % 4];
+  if (up) { PO(g, x - 2, y - 5 - (fr % 2), 3, 7, sk[0]); PO(g, x + 9, y - 5 - ((fr + 1) % 2), 3, 7, sk[0]); }
+  PO(g, x, y + 3, 10, 6, sh[0]); P_(g, x, y + 3, 10, 1, sh[1]); P_(g, x + 7, y + 4, 3, 5, sh[2]);
+  PO(g, x + 1, y - 4, 8, 8, hr[0]); P_(g, x + 2, y - 4, 4, 1, hr[1]); P_(g, x + 7, y - 2, 2, 5, hr[2]); P_(g, x + 3, y - 2, 1, 1, hr[1]);
+  if (up && cs && i % 3 === 0) { P_(g, x + 10, y - 12, 1, 6, ['#ff7ab0', '#7ae0ff', '#ffd94a'][i % 3]); P_(g, x + 9, y - 13, 3, 2, '#fff'); }
+}
+function drawScene(fr) {
+  const cv = $('#scn'); if (!cv || !S.entry) return; const g = cv.getContext('2d'); const { st, mood } = sceneState(); g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false;
+  const m = S.entry.m, key = m.st, grp = m.top === 'グループ', era = m.era; const W = 256, Hh = 112; const floorY = 78;
+  if (era === -3) sceneEdo(g, st, mood, fr); else if (era === -2) sceneCave(g, st, mood, fr); else if (era === 6) sceneSpace(g, st, mood, fr); else sceneStage(g, st, mood, fr);
+  // 演者(2倍の大きさで描く)
+  const n = key === 'duo' ? 2 : (grp ? Math.min(7, Math.max(1, (S.mem || []).length || 3)) : 1);
+  const feet = era === -2 ? 94 : (st >= 1 ? 76 : 82); const topY = feet - 48;
+  let xs = [];
+  if (era === -2) { const L = [60, 20, 196, 232]; xs = n === 1 ? [70] : Array.from({ length: n }, (_, k) => [64, 196, 30, 230, 100, 160, 130][k]); }
+  else { const gap = Math.min(n > 1 ? 190 / (n - 1) : 54, st >= 3 ? 56 : 48); const tot = (n - 1) * gap; xs = Array.from({ length: n }, (_, k) => Math.round(128 - 16 - tot / 2 + k * gap)); }
+  xs.forEach((x, k) => { g.save(); g.translate(x, topY); g.scale(2, 2); drawChar(g, 0, 0, mkPerformer(S, k, grp, st, mood, fr, key)); g.restore(); });
+  // 手前の観客
+  const crowdN = [0, 5, 11, 20, 32][st] + (mood === 2 ? 4 : 0) - (mood === 0 ? 2 : 0);
+  if (era !== -2) for (let i = 0; i < Math.max(0, crowdN); i++) { const row = Math.floor(i / 12), col = i % 12; const x = 6 + col * 21 + (row % 2) * 10, y = 100 - row * 5; crowdHead(g, x, y, i * 5 + 1, st >= 2 && mood >= 1 && (fr + i) % 2, fr, st, st >= 3); }
+  if (era === -2) for (let i = 0; i < Math.max(0, crowdN); i++) { const a = Math.PI * (0.1 + 0.8 * (i + 0.5) / Math.max(1, crowdN)); const x = Math.round(128 + Math.cos(a) * 100 - 5), y = Math.round(92 + Math.sin(a) * 14); crowdHead(g, x, y - 4, i * 3, mood >= 1 && (fr + i) % 2, fr, 0, false); }
+  // 天候・演出
+  if (mood === 0 && st === 0 && era !== 6 && era !== -2) for (let i = 0; i < 40; i++) { const x = (i * 29 + fr * 6) % 256, y = (i * 17 + fr * 11) % 100; P_(g, x, y, 1, 3, '#8aa0c8'); P_(g, x + 1, y + 1, 1, 2, 'rgba(138,160,200,.5)'); }
+  if (mood === 2) { for (let i = 0; i < 18; i++) { const x = (i * 37 + fr * 3) % 256, y = (i * 23 + fr * 7) % 100; P_(g, x, y, 2, 2, ['#ff7ab0', '#ffd94a', '#7ae0ff', '#8ee09a'][i % 4]); } }
+  // 四隅を少し暗く(SFC風のビネット)
+  g.fillStyle = 'rgba(8,6,20,.22)'; g.fillRect(0, 0, 3, Hh); g.fillRect(W - 3, 0, 3, Hh); g.fillRect(0, 0, W, 2); g.fillRect(0, Hh - 2, W, 2);
+  const cp = capText(st, mood, era); if ($('#scap').textContent !== cp) $('#scap').textContent = cp;
+}
+const CAPS_R = {
+  '-3': { 0: ['軒先で、ひとり唄っている', '村の祭りの櫓の下で唄っている', '宿場の人だかりができている', '街道じゅうに唄が響いている', '花火の下で、国じゅうが唄っている'], 1: ['軒先で、ひとり唄っている', '村の祭りの櫓の下で唄っている', '宿場の人だかりができている', '街道じゅうに唄が響いている', '花火の下で、国じゅうが唄っている'], 2: ['提灯の下で、手拍子が始まった', '櫓のまわりで踊りの輪ができた', '合いの手が宿場じゅうに響いている', '町じゅうが囃子で揺れている', '百年先まで唄い継がれる夜になった'] },
+  '-2': { 0: ['焚き火のそばで、ひとり唸っている', '集落の若者が耳をかたむけている', '谷じゅうから人が集まってきた', '部族みんなが声をそろえている', '洞窟の壁に歌が描かれている'], 1: ['焚き火のそばで、ひとり唸っている', '集落の若者が耳をかたむけている', '谷じゅうから人が集まってきた', '部族みんなが声をそろえている', '洞窟の壁に歌が描かれている'], 2: ['声が火の粉と一緒に夜空へ昇っていく', '集落じゅうが手拍子を打っている', '足踏みで地面が揺れている', '谷の向こうからも歌声が返ってくる', '千年先まで残る夜になった'] },
+  '6': { 0: ['居住区の隅で、ひとり弾いている', '小さなラウンジで演奏している', '星間放送のスタジオで歌っている', '星系じゅうに放送されている', '宇宙の記憶に刻まれるステージ'], 1: ['居住区の隅で、ひとり弾いている', '小さなラウンジで演奏している', '星間放送のスタジオで歌っている', '星系じゅうに放送されている', '宇宙の記憶に刻まれるステージ'], 2: ['無重力に歌声が浮かんでいる', 'ラウンジが歓声で満たされた', '星々の間に歌が響いている', '観客のドローンが一斉に光った', '宇宙の記憶に刻まれるステージ'] }
+};
+function capText(st, mood, era) { if (CAPS_R[era]) return CAPS_R[era][mood][st]; return CAPS[mood][st]; }
+function sceneStage(g, st, mood, fr) {
+  const dim = mood === 0 ? 0.55 : 1;
+  if (st === 0) {
+    // 夜の路上: レンガ壁・街灯・自販機
+    vgrad(g, 0, 0, 256, 56, '#0e1230', '#2a2c5a', 7);
+    for (let x = 0; x < 256; x += 17) for (let y = 12; y < 56; y += 9) { P_(g, x + ((y / 9) % 2 ? 8 : 0), y, 16, 8, ((x + y) % 3 ? '#4a2a30' : '#5a343a')); P_(g, x + ((y / 9) % 2 ? 8 : 0), y + 7, 16, 1, '#2a1418'); }
+    P_(g, 0, 0, 256, 12, '#1a1630'); for (let x = 6; x < 256; x += 28) { if (((x / 28) | 0) % 2) { P_(g, x, 3, 6, 5, (fr + x) % 5 ? '#f8d878' : '#c8a850'); } }
+    P_(g, 22, 22, 22, 28, '#efe6c8'); P_(g, 24, 24, 18, 24, '#d8c8a0'); P_(g, 26, 27, 14, 3, '#a8323e'); P_(g, 26, 33, 14, 1, '#6a5a40'); P_(g, 26, 36, 10, 1, '#6a5a40'); P_(g, 26, 39, 12, 1, '#6a5a40');
+    P_(g, 192, 14, 4, 54, '#4a4a5c'); P_(g, 184, 10, 20, 5, '#4a4a5c'); P_(g, 186, 15, 16, 3, (fr % 3) ? '#fff2b0' : '#ffe27a'); glow(g, 194, 28, 38, 'rgba(255,226,120,A)', 0.35);
+    P_(g, 230, 34, 20, 34, '#2a5ac0'); P_(g, 232, 36, 16, 14, '#8ad8ff'); P_(g, 232, 52, 16, 3, '#1a3a80'); for (let q = 0; q < 3; q++) P_(g, 233 + q * 5, 57, 3, 3, ['#ff5a5a', '#ffd94a', '#5aff7a'][q]);
+    P_(g, 0, 68, 256, 44, '#3a3a4e'); for (let x = 0; x < 256; x += 32) { P_(g, x, 68, 1, 44, '#2a2a3c'); } for (let y = 76; y < 112; y += 14) P_(g, 0, y, 256, 1, '#2c2c40'); P_(g, 0, 68, 256, 2, '#6a6a80');
+    P_(g, 88, 88, 18, 10, '#b88a50'); P_(g, 88, 88, 18, 2, '#d8aa70'); P_(g, 92, 84, 10, 4, '#d8e8f8'); P_(g, 95, 85, 3, 3, '#7a7a98');
+  } else if (st === 1) {
+    // ライブハウス: 黒壁・ステッカー・ネオン・小ステージ
+    vgrad(g, 0, 0, 256, 72, '#150f20', '#2c1c34', 6);
+    for (let i = 0; i < 14; i++) { const x = (i * 41 + 9) % 232, y = 10 + (i * 19) % 36; P_(g, x, y, 14, 10, ['#d2455a', '#e8b33a', '#3f8ed6', '#58b868'][i % 4]); P_(g, x + 2, y + 2, 10, 2, 'rgba(255,255,255,.4)'); P_(g, x + 1, y + 6, 12, 1, 'rgba(0,0,0,.3)'); }
+    P_(g, 84, 6, 88, 11, '#401018'); P_(g, 86, 8, 84, 7, (fr % 6) ? '#ff4a5a' : '#c83040'); for (let q = 0; q < 8; q++) P_(g, 90 + q * 10, 10, 6, 3, '#fff0f0'); glow(g, 128, 12, 60, 'rgba(255,60,80,A)', 0.25);
+    PO(g, 8, 36, 26, 36, '#1c1c24'); for (let q = 0; q < 4; q++) { P_(g, 12, 40 + q * 8, 18, 6, '#2a2a36'); P_(g, 18, 41 + q * 8, 6, 4, '#4a4a58'); } PO(g, 222, 36, 26, 36, '#1c1c24'); for (let q = 0; q < 4; q++) { P_(g, 226, 40 + q * 8, 18, 6, '#2a2a36'); P_(g, 232, 41 + q * 8, 6, 4, '#4a4a58'); }
+    P_(g, 0, 72, 256, 40, '#2a1c1c'); for (let x = 0; x < 256; x += 24) P_(g, x, 72, 1, 40, '#1a1010');
+    PO(g, 38, 68, 180, 10, '#7a5238'); P_(g, 38, 68, 180, 2, '#b88a62'); for (let x = 38; x < 218; x += 14) P_(g, x, 70, 1, 8, 'rgba(0,0,0,.3)'); P_(g, 38, 77, 180, 1, '#3a2418');
+  } else if (st === 2) {
+    // ホール: 赤い緞帳・金の房・シャンデリア
+    vgrad(g, 0, 0, 256, 72, '#241848', '#3c2a70', 6);
+    for (let x = 0; x < 256; x += 8) { P_(g, x, 0, 4, 50, (x / 8) % 2 ? '#8a1c2c' : '#a8283c'); }
+    P_(g, 0, 0, 256, 6, '#e8c050'); P_(g, 0, 6, 256, 2, '#8a6a20'); for (let x = 3; x < 256; x += 12) { P_(g, x, 8, 3, 6, '#e8c050'); P_(g, x + 1, 14, 1, 3, '#e8c050'); }
+    P_(g, 56, 14, 144, 58, '#1c1840'); P_(g, 60, 18, 136, 50, '#2a2468'); for (let q = 0; q < 5; q++) P_(g, 70 + q * 28, 24 + (q % 2) * 4, 12, 3, (q + fr) % 2 ? '#ffe9a0' : '#ffb0d0');
+    PO(g, 0, 8, 22, 64, '#7a1626'); P_(g, 4, 8, 3, 64, '#a8283c'); P_(g, 12, 8, 3, 64, '#5a0e1a'); PO(g, 234, 8, 22, 64, '#7a1626'); P_(g, 240, 8, 3, 64, '#a8283c'); P_(g, 248, 8, 3, 64, '#5a0e1a');
+    P_(g, 0, 72, 256, 40, '#3a2a2a'); for (let x = 0; x < 256; x += 16) P_(g, x, 72, 1, 40, '#241818');
+    PO(g, 30, 66, 196, 12, '#6a4a34'); P_(g, 30, 66, 196, 3, '#b08a60'); for (let x = 30; x < 226; x += 14) P_(g, x, 69, 1, 9, 'rgba(0,0,0,.28)');
+    for (let i = 0; i < 4; i++) { const lx = 56 + i * 48 + ((fr + i) % 2) * 3; g.fillStyle = 'rgba(255,240,170,.20)'; g.beginPath(); g.moveTo(lx, 10); g.lineTo(lx + 3, 10); g.lineTo(lx + 22, 70); g.lineTo(lx - 18, 70); g.closePath(); g.fill(); PO(g, lx - 2, 6, 7, 5, '#cfd2d8'); }
+  } else if (st === 3) {
+    // ドーム: 巨大スクリーン・トラス・ライト
+    vgrad(g, 0, 0, 256, 72, '#0b0b1c', '#1a1a3c', 6);
+    const sc = ['#6a2ab0', '#2a78b8', '#b02a6a'][fr % 3]; PO(g, 40, 16, 176, 48, '#0d0d1e'); P_(g, 44, 20, 168, 40, sc); P_(g, 44, 20, 168, 3, 'rgba(255,255,255,.3)'); for (let i = 0; i < 16; i++) P_(g, 50 + i * 10, 28 + ((i * 7 + fr * 4) % 26), 6, 5, 'rgba(255,255,255,.35)');
+    PO(g, 8, 4, 240, 6, '#3a3a4e'); for (let x = 12; x < 244; x += 12) { P_(g, x, 4, 1, 6, '#6a6a80'); PO(g, x + 3, 10, 6, 5, (x + fr * 6) % 3 ? '#fff0b0' : '#ff90d0'); }
+    PO(g, 4, 20, 22, 54, '#1c1c2e'); PO(g, 230, 20, 22, 54, '#1c1c2e'); for (let q = 0; q < 5; q++) { P_(g, 8, 24 + q * 10, 14, 6, '#2a2a40'); P_(g, 234, 24 + q * 10, 14, 6, '#2a2a40'); }
+    P_(g, 0, 74, 256, 38, '#241e34'); for (let x = 0; x < 256; x += 16) P_(g, x, 74, 1, 38, '#17122a');
+    PO(g, 20, 66, 216, 12, '#5a3e30'); P_(g, 20, 66, 216, 3, '#a88060'); for (let x = 20; x < 236; x += 12) P_(g, x, 69, 1, 9, 'rgba(0,0,0,.28)');
+    for (let i = 0; i < 6; i++) { const lx = 30 + i * 38 + ((fr + i) % 2) * 4; g.fillStyle = 'rgba(255,240,170,.17)'; g.beginPath(); g.moveTo(lx, 14); g.lineTo(lx + 3, 14); g.lineTo(lx + 24, 72); g.lineTo(lx - 20, 72); g.closePath(); g.fill(); }
+  } else {
+    // 伝説: 金の幕が開き、巨大な窓の向こうで花火
+    vgrad(g, 0, 0, 256, 72, '#05060f', '#141a48', 7);
+    for (let i = 0; i < 40; i++) { const x = (i * 53 + 7) % 254, y = (i * 29 + 3) % 46; if ((i + fr) % 4) P_(g, x, y, 1, 1, i % 5 ? '#fff6c8' : '#9fd8ff'); }
+    [[60, 24, '#ff7ab0'], [196, 20, '#ffd94a'], [128, 12, '#7ae0ff']].forEach((p, i) => { const r = 3 + ((fr + i * 2) % 6) * 2; for (let k = 0; k < 14; k++) { const an = k * Math.PI / 7; P_(g, Math.round(p[0] + Math.cos(an) * r), Math.round(p[1] + Math.sin(an) * r), 2, 2, p[2]); } glow(g, p[0], p[1], 14, 'rgba(255,255,255,A)', 0.2); });
+    PO(g, 28, 10, 200, 62, '#0a0a1a'); P_(g, 32, 14, 192, 54, 'rgba(10,12,40,.0)');
+    for (let x = 0; x < 256; x += 8) { if (x < 36 || x > 218) P_(g, x, 0, 4, 72, (x / 8) % 2 ? '#c89a2a' : '#e8c050'); }
+    P_(g, 0, 0, 256, 6, '#e8c050'); P_(g, 0, 6, 256, 2, '#8a6a20'); for (let x = 3; x < 256; x += 10) { P_(g, x, 8, 3, 7, '#f8dc78'); P_(g, x + 1, 15, 1, 4, '#e8c050'); }
+    PO(g, 2, 28, 26, 20, '#2a1c3a'); PO(g, 228, 28, 26, 20, '#2a1c3a'); for (let q = 0; q < 6; q++) { P_(g, 5 + q * 4, 32 + (q % 2), 3, 4, CLOTHS[q][0]); P_(g, 231 + q * 4, 32 + (q % 2), 3, 4, CLOTHS[(q + 2) % 6][0]); }
+    P_(g, 0, 72, 256, 40, '#2c2038'); for (let x = 0; x < 256; x += 16) P_(g, x, 72, 1, 40, '#1a1226');
+    PO(g, 14, 66, 228, 12, '#7a5a3a'); P_(g, 14, 66, 228, 3, '#d8aa6a'); for (let x = 14; x < 242; x += 12) P_(g, x, 69, 1, 9, 'rgba(0,0,0,.25)');
+    for (let i = 0; i < 7; i++) { const lx = 24 + i * 34 + ((fr + i) % 2) * 4; g.fillStyle = 'rgba(255,240,170,.16)'; g.beginPath(); g.moveTo(lx, 8); g.lineTo(lx + 3, 8); g.lineTo(lx + 26, 72); g.lineTo(lx - 22, 72); g.closePath(); g.fill(); }
+  }
+  if (mood === 0) { g.fillStyle = 'rgba(10,8,30,.38)'; g.fillRect(0, 0, 256, 112); }
+}
+function sceneEdo(g, st, mood, fr) {
+  vgrad(g, 0, 0, 256, 60, '#2a2060', '#e8805a', 7);
+  P_(g, 0, 0, 256, 4, '#14103a');
+  g.fillStyle = '#4a3a6a'; g.beginPath(); g.moveTo(120, 60); g.lineTo(176, 22); g.lineTo(232, 60); g.closePath(); g.fill(); P_(g, 168, 26, 16, 5, '#f4efe8'); P_(g, 164, 31, 24, 3, '#f4efe8');
+  g.fillStyle = '#3a2a48'; g.beginPath(); g.moveTo(0, 60); g.lineTo(40, 40); g.lineTo(90, 60); g.closePath(); g.fill();
+  [[20, 44], [76, 48], [214, 46]].forEach(([x, y], i) => { PO(g, x, y + 8, 30, 16, '#6a4a30'); P_(g, x - 3, y, 36, 10, '#c8a860'); P_(g, x - 1, y + 3, 32, 2, '#a88840'); P_(g, x + 6, y + 14, 8, 10, '#e8d8a0'); P_(g, x + 18, y + 12, 8, 8, (fr + i) % 4 ? '#ffe9a0' : '#f0c870'); });
+  P_(g, 0, 70, 256, 42, '#6a5a3a'); for (let i = 0; i < 90; i++) { const x = (i * 31 + 7) % 256, y = 72 + (i * 13) % 38; P_(g, x, y, 3, 1, i % 2 ? '#7a6a48' : '#54462c'); } P_(g, 0, 70, 256, 2, '#8a7a58');
+  if (st >= 1) for (let x = 6; x < 256; x += 26) { const y = 14 + Math.round(Math.sin(x / 26 * Math.PI) * 4); PO(g, x, y, 8, 11, ((x / 26) | 0) % 2 ? '#d83a2a' : '#f0a030'); P_(g, x + 2, y + 4, 4, 3, (fr + x) % 3 ? '#ffe9a0' : '#ffd070'); }
+  if (st >= 1) { P_(g, 0, 12, 256, 1, '#3a2a20'); }
+  PO(g, 40, 66, 176, 14, '#8a5a38'); P_(g, 40, 66, 176, 3, '#c89060'); for (let x = 40; x < 216; x += 14) P_(g, x, 69, 1, 11, 'rgba(0,0,0,.3)');
+  if (st >= 2) { P_(g, 40, 42, 4, 26, '#6a4228'); P_(g, 212, 42, 4, 26, '#6a4228'); for (let x = 44; x < 212; x += 8) P_(g, x, 40, 4, 12, (x / 8) % 2 ? '#f4efe8' : '#d83a2a'); P_(g, 40, 38, 176, 3, '#8a5a38'); }
+  if (st >= 3) for (let i = 0; i < 8; i++) { const x = 12 + i * 30, h2 = (i + fr) % 3; P_(g, x, 52 - h2, 6, 6, '#ffe9a0'); }
+  if (st >= 4) { [[60, 20, '#ff7ab0'], [200, 16, '#ffd94a'], [128, 8, '#7ae0ff']].forEach((p, i) => { const r = 3 + ((fr + i * 2) % 6) * 2; for (let k = 0; k < 14; k++) { const an = k * Math.PI / 7; P_(g, Math.round(p[0] + Math.cos(an) * r), Math.round(p[1] + Math.sin(an) * r), 2, 2, p[2]); } }); }
+  if (mood === 0) { g.fillStyle = 'rgba(10,8,30,.38)'; g.fillRect(0, 0, 256, 112); }
+}
+function sceneCave(g, st, mood, fr) {
+  vgrad(g, 0, 0, 256, 112, '#1a1010', '#3a2418', 7);
+  for (let i = 0; i < 220; i++) { const x = (i * 47 + 13) % 256, y = (i * 29 + 5) % 80; P_(g, x, y, 2 + (i % 3), 1 + (i % 2), i % 3 ? '#2a1a12' : '#4a3020'); }
+  PO(g, 8, 6, 40, 34, '#0a1030'); for (let i = 0; i < 9; i++) { if ((i + fr) % 3) P_(g, 12 + (i * 11) % 32, 10 + (i * 7) % 26, 1, 1, '#fff6c8'); } P_(g, 36, 12, 6, 6, '#f6efc2'); P_(g, 38, 12, 4, 6, '#fff8d8');
+  if (st >= 1) { const ink = '#d8602a'; [[110, 24], [150, 18]].forEach(([x, y], i) => { P_(g, x, y + 4, 14, 6, ink); P_(g, x + 12, y + 1, 4, 4, ink); P_(g, x, y + 10, 2, 5, ink); P_(g, x + 11, y + 10, 2, 5, ink); P_(g, x + 14, y, 1, 3, ink); }); P_(g, 190, 20, 3, 10, '#e8d8b8'); P_(g, 186, 24, 11, 2, '#e8d8b8'); P_(g, 190, 16, 3, 3, '#e8d8b8'); }
+  if (st >= 2) { for (let q = 0; q < 7; q++) { P_(g, 70 + q * 4, 40 + (q % 2) * 3, 3, 3, '#e8d8b8'); } P_(g, 210, 30, 20, 3, '#d8602a'); P_(g, 214, 26, 3, 12, '#d8602a'); P_(g, 223, 26, 3, 12, '#d8602a'); }
+  if (st >= 3) { for (let q = 0; q < 12; q++) P_(g, 20 + q * 18, 46 + ((q * 5) % 7), 8, 2, '#c8a050'); }
+  P_(g, 0, 78, 256, 34, '#4a3626'); for (let i = 0; i < 80; i++) { const x = (i * 31 + 7) % 256, y = 80 + (i * 13) % 30; P_(g, x, y, 3, 1, i % 2 ? '#5a4432' : '#382a1c'); }
+  P_(g, 0, 78, 256, 1, '#6a5238');
+  const cx = 128, cy = 78; glow(g, cx, cy - 6, 70 + st * 8, 'rgba(255,150,50,A)', 0.4);
+  for (let q = 0; q < 6; q++) P_(g, cx - 14 + q * 5, cy + 2 + (q % 2), 4, 3, '#5a3a22');
+  const fl = [[0, 0, 6, 10, '#d84a1a'], [1, 2, 4, 14, '#f07a2a'], [2, 5, 2, 12, '#ffd04a']];
+  fl.forEach(([dx, dy, w, h, c]) => { const sway = ((fr + dx) % 3) - 1; P_(g, cx - w / 2 + sway, cy - h - dy + 2, w, h, c); P_(g, cx - w / 2 + sway + 1, cy - h - dy, Math.max(1, w - 2), 2, c); });
+  for (let i = 0; i < 6; i++) { const t = (fr * 2 + i * 5) % 28; P_(g, cx - 4 + ((i * 3) % 9), cy - 14 - t, 1, 1, '#ffc060'); }
+  if (mood === 0) { g.fillStyle = 'rgba(8,6,20,.35)'; g.fillRect(0, 0, 256, 112); }
+}
+function sceneSpace(g, st, mood, fr) {
+  vgrad(g, 0, 0, 256, 112, '#04061a', '#0e1a48', 7);
+  for (let i = 0; i < 70; i++) { const x = (i * 59 + 3) % 256, y = (i * 31 + 5) % 62; if ((i + fr) % 5) P_(g, x, y, 1, 1, i % 4 ? '#fff6c8' : '#9fd8ff'); if (i % 13 === 0) { P_(g, x - 1, y, 3, 1, 'rgba(255,255,255,.5)'); P_(g, x, y - 1, 1, 3, 'rgba(255,255,255,.5)'); } }
+  g.fillStyle = '#3a6ac8'; g.beginPath(); g.arc(186, 78, 54, Math.PI, 2 * Math.PI); g.fill(); for (let y = 24; y < 78; y += 2) for (let x = 130; x < 244; x++) { const dx = x - 186, dy = y - 78; if (dx * dx + dy * dy < 54 * 54 && dx * dx + dy * dy > 49 * 49 && ((x + y) & 1)) P_(g, x, y, 1, 1, '#8ab8ff'); }
+  g.fillStyle = '#5a8ae0'; g.beginPath(); g.arc(186, 78, 46, Math.PI, 2 * Math.PI); g.fill(); g.fillStyle = '#7ab070'; g.beginPath(); g.arc(176, 70, 14, Math.PI, 2 * Math.PI); g.fill(); P_(g, 196, 60, 18, 3, '#d8f0ff'); P_(g, 160, 52, 14, 2, '#d8f0ff');
+  PO(g, 6, 8, 244, 4, '#4a5a78'); PO(g, 6, 66, 244, 4, '#4a5a78'); PO(g, 4, 8, 4, 62, '#4a5a78'); PO(g, 248, 8, 4, 62, '#4a5a78'); for (let x = 20; x < 240; x += 30) PO(g, x, 8, 3, 62, '#3a4a68');
+  P_(g, 0, 72, 256, 40, '#2a3250'); for (let x = 0; x < 256; x += 16) { P_(g, x, 72, 1, 40, '#7ae8ff'); } for (let y = 82; y < 112; y += 10) P_(g, 0, y, 256, 1, 'rgba(122,232,255,.5)'); vgrad(g, 0, 72, 256, 8, '#4a5a80', '#2a3250', 3);
+  PO(g, 16, 66, 224, 10, '#3a4668'); P_(g, 16, 66, 224, 2, '#7a8ab0'); for (let x = 20; x < 236; x += 10) P_(g, x, 71, 5, 2, (x + fr * 3) % 4 ? '#7ae8ff' : '#2a6a88');
+  if (st >= 2) for (let q = 0; q < 6; q++) { const x = 30 + q * 36, y = 40 + ((fr + q * 2) % 4) * 2; PO(g, x, y, 8, 6, '#9aa8c0'); P_(g, x + 2, y + 2, 4, 2, (fr + q) % 2 ? '#ff7ab0' : '#7ae8ff'); P_(g, x + 3, y - 3, 2, 3, '#9aa8c0'); }
+  if (st >= 3) glow(g, 128, 60, 90, 'rgba(122,232,255,A)', 0.18);
+  if (mood === 0) { g.fillStyle = 'rgba(4,6,20,.4)'; g.fillRect(0, 0, 256, 112); }
+}
+let sceneFr = 0, sceneTimer = null;
+function startScene() {
+  if (sceneTimer) clearInterval(sceneTimer); sceneFr = 0; drawScene(0);
+  if (!reduce) sceneTimer = setInterval(() => { if ($('#s-game').hidden) return; sceneFr += 1; drawScene(sceneFr); }, 450);
+}
+function setHeat(up) {
+  const g = stageOf(S.heat); $('#h-l').textContent = g.name; $('#h-f').style.width = g.pct + '%';
+  const h = $('#heat'); h.classList.remove('up'); if (up) { void h.offsetWidth; h.classList.add('up'); }
+}
+function bestTxt(n) { const rkm = S.entry && S.entry.m.rk; if (rkm) { const t = { 999: 0, 998: 1, 20: 2, 8: 3, 2: 4, 1: 5 }[n]; return t == null ? '—' : rkm[t]; } return n === 999 ? '圏外' : n + '位'; }
+function milestone(it, r) {
+  const t = S.tiers, m = S.ms; let out = null;
+  if (S.entry.m.rare && S.entry.m.era <= -2) { const ed = S.entry.m.era === -3; if (it.tr >= 2 && !m.chart) { m.chart = 1; out = ed ? '初めて宿場の外へ' : '初めて集落の外へ'; } if (it.tr >= 4 && !m.no1) { m.no1 = 1; out = ed ? '盆踊りの定番に' : '語り継がれる歌に'; } if (!out && it.tr >= 3 && t.length >= 2 && t.slice(-2).every((x) => x <= 1)) out = '長い不遇からの復活'; return out; }
+  if (it.tr >= 2 && !m.chart) { m.chart = 1; out = '初のチャートイン'; }
+  if (r.n <= 10 && !m.top10) { m.top10 = 1; out = '初のトップ10入り'; }
+  if (r.n === 1 && !m.no1) { m.no1 = 1; out = '初の1位'; }
+  if (!out && it.tr >= 3 && t.length >= 2 && t.slice(-2).every((x) => x <= 1)) out = '長い不遇からの復活';
+  if (!out && it.tr >= 2 && t.length >= 2 && t.slice(-2).every((x) => x >= 2)) out = '3作連続のヒット';
+  return out;
+}
+function applyMb(mb) {
+  if (mb.out) { S.mem = S.mem.filter((x) => x.n !== mb.out.n); S.exMem.push(Object.assign({ y: S.lastY }, mb.out)); }
+  if (mb.in) { S.mem.push(mb.in); S.inMem.push(Object.assign({ y: S.lastY }, mb.in)); }
+}
+function mbBadge(mb) {
+  if (!mb) return null; const t = mb.out ? '脱退: ' + mb.out.n + '(' + mb.out.r + ')' : mb.in ? '加入: ' + mb.in.n + '(' + mb.in.r + ')' : mb.note;
+  return t ? el('span', 'mbadge' + (mb.in ? ' in' : ''), t) : null;
+}
+function drawRail() {
+  const NS = 'http://www.w3.org/2000/svg', rail = $('#rail'); if (!rail || !S.log) return; rail.textContent = '';
+  const H = Math.max(160, rail.clientHeight || 300), W = 30, n = S.log.length; if (!n) return;
+  const mk = (tag, at) => { const e = document.createElementNS(NS, tag); Object.entries(at).forEach(([k, v]) => e.setAttribute(k, v)); return e; };
+  const svg = mk('svg', { viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMax meet' });
+  const step = Math.min(30, (H - 24) / Math.max(1, n)); let heat = 0; const pts = [];
+  S.log.forEach((x, i) => { if (x.t === 'r') heat += HEAT_W[x.tr]; pts.push([6 + Math.min(1, Math.max(0, heat) / 14) * (W - 12), H - 12 - i * step]); });
+  svg.append(mk('path', { d: 'M' + pts[0][0] + ' ' + H + ' L' + pts[0][0] + ' ' + pts[0][1], class: 'rb' }));
+  svg.append(mk('path', { d: pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' '), class: 'rl' }));
+  S.log.forEach((x, i) => {
+    const [cx, cy] = pts[i]; let c;
+    if (x.t === 'r') { c = mk('circle', { cx, cy, r: 4 + x.tr * 0.9, class: 'rd', style: '--tc:' + tc(x.tr) }); }
+    else if (x.t === 'e') c = mk('circle', { cx, cy, r: 3, class: 're' });
+    else c = mk('circle', { cx, cy, r: 3.5, class: 'rx' });
+    if (i === n - 1) c.classList.add('rn');
+    c.setAttribute('role', 'button'); c.setAttribute('aria-label', x.t === 'r' ? '「' + x.ti + '」へ' : x.t === 'e' ? '出来事へ' : '分かれ道へ');
+    c.addEventListener('click', () => { if (x.el) { x.el.classList.remove('mini'); x.el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } });
+    svg.append(c);
+  });
+  rail.append(svg);
+}
+function logItem(it) {
+  if (!S.log) return;
+  if (it.t === 'r') { S.lastY = it.y; S.log.push({ t: 'r', y: it.y, ti: it.ti, tr: it.tr, rk: rankOf(it.tr, it.ti).txt, tk: it.tk, o: it.o, lb: it.lb, el: S.curEl, it: it }); }
+  else if (it.t === 'e') S.log.push({ t: 'e', y: S.lastY, tx: it.tx, mb: it.mb, el: S.curEl, life: it.life });
+  else S.log.push({ t: 'x', y: S.lastY, c: it.c, ok: it.ok, mb: it.mb, el: S.curEl, rt: it.rt });
+  if (it.mb) applyMb(it.mb);
+  drawRail();
+}
+function updateHud(it) {
+  logItem(it);
+  if (it.t !== 'r') return;
+  S.works += 1; const r = rankOf(it.tr, it.ti); if (r.n < S.best) S.best = r.n;
+  $('#h-y').textContent = fmtY(it.y); $('#h-w').textContent = S.works; $('#h-b').textContent = bestTxt(S.best);
+  const before = stageOf(S.heat).i; S.heat = Math.max(0, S.heat + HEAT_W[it.tr]); S.tiers.push(it.tr); awAdd(it.tr); setHeat(stageOf(S.heat).i > before); drawScene(sceneFr);
+}
+function renderItem(it) {
+  const f = $('#feed');
+  S.curEl = null;
+  if (it.t === 'r') {
+    const r = rankOf(it.tr, it.ti); const c = el('div', 'card rel in' + (it.tr >= 4 ? ' big' : '')); c.style.setProperty('--tc', tc(it.tr));
+    const ms = milestone(it, r); if (ms) c.append(el('span', 'badge', ms));
+    const top = el('div', 'top'); top.append(jacket(it.ti));
+    const mid = el('div'); mid.style.minWidth = '0'; mid.append(el('div', 'meta', fmtY(it.y) + ' · ' + it.o + ' · ' + it.lb)); mid.append(el('div', 'ti', '「' + it.ti + '」'));
+    top.append(mid);
+    const rk = el('div', 'rk' + (S.entry.m.rk ? ' t' : '')); rk.append(el('div', 'n' + (r.n === 999 ? ' out' : ''), r.txt)); if (r.sub) rk.append(el('div', 'w', r.sub)); top.append(rk);
+    c.append(top);
+    const acts = el('div', 'acts'); acts.append(el('span', 'chip', TIER[it.tr]));
+    if (it.ly && it.ly.k !== 'full') acts.append(el('span', 'chip', it.ly.st));
+    if (it.tk && it.tk.length > 1) { const tb = el('button', 'lbtn', '収録曲(全' + it.tk.length + '曲)'); tb.type = 'button'; tb.onclick = (e) => { e.stopPropagation(); openTracks(it); }; acts.append(tb); }
+    if (it.ly) { const lb = el('button', 'lbtn', it.ly.k === 'inst' ? '曲の展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = (e) => { e.stopPropagation(); openLyrics(it); }; acts.append(lb); }
+    c.append(acts);
+    const det = el('div', 'det');
+    const l = el('p'); l.append(el('span', 'k', (it.ly && it.ly.k === 'inst' ? '何を描いた曲か(' : '何を歌った曲か(') + it.th + ')')); l.append(it.pr); det.append(l);
+    const w = el('p'); w.append(el('span', 'k', it.tr >= 2 ? 'ヒットした理由' : (it.tr === 1 ? '広まり方' : '届かなかった理由'))); w.append(it.rs + '。'); det.append(w);
+    if (it.fm) { const h = el('p', it.tr >= 2 ? 'hit' : null); h.append(el('span', 'k', it.tr >= 2 ? 'ヒットの形' : (it.ly && it.ly.k === 'inst' ? '曲について' : '歌詞について'))); h.append(it.fm + '。'); det.append(h); }
+    c.append(det);
+    c.addEventListener('click', () => { if (c.classList.contains('mini')) c.classList.remove('mini'); });
+    f.prepend(c);
+    S.curEl = c; collapseOld(c);
+  } else if (it.t === 'e') {
+    const c = el('div', 'card ev in'); c.append(el('span', 'lab', '転機')); c.append(el('p', null, it.tx)); { const bb = mbBadge(it.mb); if (bb) c.append(bb); } c.addEventListener('click', () => c.classList.remove('mini')); f.prepend(c); S.curEl = c; collapseOld(c);
+  } else {
+    const c = el('div', 'card res in'); c.append(el('span', 'lab', '選んだ結果'));
+    const p = el('p'); const pk = el('span', 'pk', '「' + it.c + '」を選んだ。'); p.append(pk, ' ');
+    p.append(el('span', it.ok ? 'ok' : 'ng', it.ok ? '[うまくいった] ' : '[裏目に出た] ')); p.append(it.tx);
+    c.append(p); { const bb = mbBadge(it.mb); if (bb) c.append(bb); } c.addEventListener('click', () => c.classList.remove('mini')); f.prepend(c); S.curEl = c; collapseOld(c);
+  }
+  updateHud(it);
+  c_scroll();
+}
+function measureHud() { const h = $('#hud'); if (h && h.offsetHeight) document.documentElement.style.setProperty('--hudh', h.offsetHeight + 'px'); }
+window.addEventListener('resize', measureHud);
+function collapseOld(keep) {
+  document.querySelectorAll('#feed > .card').forEach((n) => { if (n !== keep && !n.classList.contains('intro')) n.classList.add('mini'); });
+}
+let lastFocus = null;
+function openLyrics(it) {
+  const sh = $('#sheet'); sh.style.setProperty('--tc', tc(it.tr)); lastFocus = document.activeElement;
+  const ly = it.ly; $('#sh-a').textContent = S.entry.m.a + ' · ' + fmtY(it.y) + ' · ' + it.o;
+  $('#sh-t').textContent = '「' + it.ti + '」';
+  const b = $('#sh-b'); b.textContent = '';
+  b.append(el('span', 'badge', '構成: ' + ly.st));
+  const addSecs = (rows, host) => rows.forEach(([k, lab, tag, hit]) => { const lines = ly.s[k]; if (!lines) return;
+    const sec = el('div', 'sh-sec' + (hit ? ' hit' : '')); sec.append(el('div', 'sl', lab));
+    const t = el('div', 'sx'); lines.forEach((x, i) => { if (i) t.append(document.createElement('br')); t.append(x); }); sec.append(t); host.append(sec); });
+  addSecs(ly.o.slice(0, ly.n1), b);
+  if (ly.o.length > ly.n1) {
+    const more = el('div'); more.style.cssText = 'display:flex;flex-direction:column;gap:18px'; more.hidden = true; addSecs(ly.o.slice(ly.n1), more); b.append(more);
+    const mb = el('button', 'btn line', '続きを見る'); mb.type = 'button'; mb.style.fontFamily = 'var(--f-b)'; mb.onclick = () => { more.hidden = false; mb.hidden = true; }; b.append(mb);
+  }
+  const ac = el('div', 'sh-acts'); ac.append(el('span', 'lab', 'Sunoなどに貼る(1コーラス)'));
+  const r1 = el('div', 'row'); r1.style.fontFamily = 'var(--f-b)';
+  const bs = el('button', 'btn primary', 'スタイルをコピー'); bs.type = 'button'; bs.onclick = () => copyText(buildPrompt(it, 'style'), bs);
+  const bl = el('button', 'btn primary', ly.k === 'inst' ? '構成をコピー' : '歌詞をコピー'); bl.type = 'button'; bl.onclick = () => copyText(buildPrompt(it, 'lyr'), bl);
+  r1.append(bs, bl); ac.append(r1); b.append(ac);
+  b.append(el('p', 'sh-note', ly.k === 'inst' ? 'インストなので歌詞はありません。展開の構成を、曲のテーマと時代に合わせて自動で組み立てたものです。' : '歌詞は、曲のテーマと時代・ジャンルに合わせて自動で組み立てたものです。'));
+  sh.hidden = false; document.body.style.overflow = 'hidden'; b.scrollTop = 0; $('#sh-x').focus();
+}
+const GEN = { '江戸の民謡': 'traditional Japanese min\'yo folk, shamisen, taiko', '原始の唱え歌': 'prehistoric tribal chant', '宇宙時代のポップス': 'sci-fi synth pop, ambient', 'ギターロック': 'guitar rock', 'ポップロック': 'pop rock', 'オルタナ': 'alternative rock', 'ポップス': 'j-pop', 'シティポップ': 'city pop, 80s japanese groove', 'フォーク弾き語り': 'acoustic folk, singer-songwriter', 'フォークポップ': 'folk pop', 'フォークロック': 'folk rock', 'フォークデュオ': 'folk duo, harmonies', 'ニューミュージック': 'new music, 70s japanese pop', 'パンクロック': 'punk rock', 'ハードコアパンク': 'hardcore punk', 'ハードコア': 'hardcore', 'ジャパメタ': 'japanese heavy metal', '歌謡ロック': 'kayokyoku rock', '歌謡曲風ポップ': 'kayokyoku pop', 'ニューウェーブ': 'new wave', 'アングラ前衛ロック': 'avant-garde underground rock', 'ブルースロック': 'blues rock', 'ロカビリー': 'rockabilly', 'ダンスロック': 'dance rock', '轟音ロック': 'loud wall-of-sound rock', '轟音シューゲイズ': 'shoegaze', 'ポストロック': 'post-rock', 'マスロック': 'math rock', 'スロウコア': 'slowcore', 'アンビエント': 'ambient', 'エレクトロポップ': 'electropop', 'テクノ': 'techno', 'ハウス': 'house', 'トランス': 'trance', 'ドラムンベース': 'drum and bass', 'チップチューン': 'chiptune', 'ハイパーポップ': 'hyperpop', 'R&B': 'r&b', 'ポップラップ': 'pop rap', 'ポエトリーラップ': 'poetry rap, spoken word', '地元系ヒップホップ': 'japanese hip hop, boom bap', 'トラップ': 'trap', 'AIポップス': 'synth pop', 'AIロック': 'rock', 'AIエレクトロ': 'electronic', 'AIジャズ風': 'jazz-inspired' };
+const MOOD = { '田植え唄': 'rhythmic, communal, work song', '盆踊りの唄': 'festive, bon odori, rhythmic', '旅立ちの唄': 'wistful, hopeful', '恋の小唄': 'tender, playful, kouta', 'お上への愚痴': 'wry, humorous, satirical', '祭りの囃子': 'lively, festival, hayashi', '川止めの唄': 'languid, rainy, inn atmosphere', '雨乞い': 'ritual, yearning', '獲物の祈り': 'tense, ritualistic', '死者を送る歌': 'solemn, mourning', '子守唄': 'gentle, lullaby', '火の周りの踊り': 'energetic, rhythmic, communal', '川向こうへの呼びかけ': 'echoing, longing', '星と月の歌': 'mystical, awe', '初めての恋の唸り': 'shy, tender', '星間の別れ': 'bittersweet, distant', 'コロニーの夜明け': 'hopeful, ambient', '記憶の保存': 'wistful, digital', '宇宙船の子守唄': 'soft, lullaby, space', '惑星の祭り': 'celebratory, awe', '人間でなくなる日': 'uncanny, reflective', '失恋': 'heartbroken, wistful', '応援歌': 'uplifting, anthemic', '上京と故郷': 'nostalgic, bittersweet', '家族への感謝': 'warm, heartfelt', '社会への怒り': 'angry, defiant', '日常のぼやき': 'laid-back, deadpan', '夏と青春': 'summery, nostalgic youth', '孤独と夜': 'lonely, nocturnal', '喪失と再生': 'grieving then hopeful', '自己否定と肯定': 'fragile, self-affirming', '地元愛': 'proud, communal', '恋のはじまり': 'giddy, fluttering', '時代風刺': 'sarcastic, satirical', 'ナンセンスと言葉遊び': 'absurd, playful', '人工物への違和感': 'uncanny, cold', '推しとファンへの手紙': 'grateful, devoted', 'お金と仕事': 'weary, wry', '旅立ちと別れの春': 'bittersweet, farewell' };
+const DECADE = { '-3': 'Edo period Japan', '-2': 'prehistoric', '6': 'year 3000, far-future space age', '-1': '1970s', '0': '1980s', '1': '1990s', '2': '2000s', '3': '2010s', '4': '2020s', '5': 'near-future 2030s' };
+function lyricsPlain(it, n) {
+  const ly = it.ly; if (ly.k === 'inst') return '[Instrumental]\n' + ly.o.map(([k, lab, tag]) => '[' + tag + ']').join('\n'); return ly.o.slice(0, n || ly.o.length).map(([k, lab, tag]) => '[' + tag + ']\n' + (ly.s[k] || []).join('\n')).join('\n\n');
+}
+const VG_TAG = { m: 'male vocals', f: 'female vocals', mf: 'male lead vocal with female backing vocals', fm: 'female lead vocal with male backing vocals', am: 'synthetic male-sounding AI voice', af: 'synthetic female-sounding AI voice', inst: 'instrumental, no vocals' };
+const VG_JA = { m: '男性ボーカル', f: '女性ボーカル', mf: '男性ボーカル(女性コーラス)', fm: '女性ボーカル(男性コーラス)', am: '男性的なAIの声', af: '女性的なAIの声', inst: 'ボーカルなし(インスト)' };
+function vgTag(m, vg) { if (!vg) return 'Japanese vocals'; if (m.era === -3) return (vg === 'f' ? 'female' : 'male') + " min'yo vocals with kobushi"; if (m.era === -2) return (vg === 'f' ? 'female' : 'male') + ' tribal chanting, wordless vowels'; if (vg === 'inst') return VG_TAG.inst; if (m.st === 'rap' && (vg === 'm' || vg === 'f')) return (vg === 'm' ? 'male' : 'female') + ' rapper, rap vocals in Japanese'; return VG_TAG[vg] + ', sung in Japanese'; }
+function buildPrompt(it, kind) {
+  const m = S.entry.m, ly = it.ly;
+  const tags = [GEN[m.ge] || m.ge, DECADE[m.era] + ' production', MOOD[it.th] || '', (/no lyrics|instrumental/.test(ly.tg || '') ? ((ly.vg === 'f' || ly.vg === 'fm') ? 'female voice only as wordless humming' : (ly.vg === 'm' || ly.vg === 'mf') ? 'male voice only as wordless humming' : '') : vgTag(m, ly.vg)), ly.tg || 'short, about 45 seconds', m.ai ? 'AI-generated feel' : ''].filter(Boolean).join(', ');
+  if (kind === 'style') return tags;
+  if (kind === 'lyr') return lyricsPlain(it, ly.n1);
+  return '【スタイル指定】\n' + tags + '\n\n【歌詞】\n' + lyricsPlain(it, ly.n1);
+}
+function copyText(text, btn) {
+  const old = btn.textContent; const done = () => { btn.textContent = 'コピーしました'; setTimeout(() => { btn.textContent = old; }, 1600); };
+  const fallback = () => { let ta = btn.parentNode.querySelector('textarea'); if (!ta) { ta = document.createElement('textarea'); ta.readOnly = true; btn.parentNode.append(ta); } ta.value = text; ta.focus(); ta.select(); btn.textContent = '下の文を選んでコピーしてください'; };
+  try { navigator.clipboard.writeText(text).then(done, fallback); } catch (_) { fallback(); }
+}
+function trkRow(t, mainTitle) {
+  const r = el('div', 'trk'); const tt = el('span', 'tt' + (t.t === mainTitle || t.g === '表題曲' ? ' main' : ''), t.t);
+  if (t.g) { const g = el('span', 'tg', t.g); tt.append(' ', g); }
+  r.append(el('span', 'tn', String(t.n).padStart(2, '0')), tt, el('span', 'td', t.d)); return r;
+}
+function memRow(m_, gone) {
+  const r = el('div', 'mem hic' + (gone ? ' gone' : '')); { const ic = el('div', 'icw'); ic.append(iconOf(m_.n ? m_ : null, gone)); r.append(ic); } r.append(el('span', 'rl2', m_.r));
+  r.append(el('span', 'mn', m_.n + (m_.k ? '(' + m_.k + ')' : '') + (gone ? '  脱退' + (m_.y ? ' ' + fmtY(m_.y) : '') : '')));
+  r.append(el('span', 'mt', (m_.g ? (m_.g === 'm' ? '男性' : '女性') + ' · ' : '') + (m_.h ? m_.h + '出身' + (m_.t ? ' · ' : '') : '') + (m_.t || (m_.h ? '' : ' ')))); return r;
+}
+function openSheetWith(kick, title, tcv, build) {
+  const sh = $('#sheet'); sh.style.setProperty('--tc', tcv || 'var(--accent)'); lastFocus = document.activeElement;
+  $('#sh-a').textContent = kick; $('#sh-t').textContent = title; const b = $('#sh-b'); b.textContent = ''; build(b);
+  sh.hidden = false; document.body.style.overflow = 'hidden'; b.scrollTop = 0; $('#sh-x').focus();
+}
+function openTracks(it) {
+  openSheetWith(S.entry.m.a + ' · ' + fmtY(it.y) + ' · ' + it.o, '「' + it.ti + '」 収録曲', tc(it.tr), (b) => {
+    const w = el('div'); w.style.fontFamily = 'var(--f-b)'; it.tk.forEach((t) => w.append(trkRow(t, it.ti))); b.append(w);
+  });
+}
+function firstYear() { let n = S.entry.t; for (const it of n.s) if (it.t === 'r') return it.y; return null; }
+function bioRows() {
+  const m = S.entry.m, b = m.bio; if (!b) return []; const fy = firstYear(); const grp = S.top === 'グループ';
+  if (b.ai) return [['声の性質', VG_JA[m.vg] || '—'], ['正体', b.dev], ['声', b.vo], ['学習', b.ln], ['拠点', b.hm], ['くせ', b.hb]];
+  let vgc = m.vg; for (let i = S.log.length - 1; i >= 0; i--) { const x = S.log[i]; if (x.t === 'r' && x.it && x.it.ly && x.it.ly.vg) { vgc = x.it.ly.vg; break; } }
+  const vrow = ['ボーカル', VG_JA[vgc] || '—'];
+  const born = fy ? fmtY(fy - b.ag) + '生まれ(デビュー時' + b.ag + '歳)' : '';
+  const rows = [[grp ? 'リーダーの出身' : '出身', b.hm + (born ? ' · ' + born : '')]];
+  if (grp && b.fd) rows.push(['結成の地', b.fd]);
+  rows.push(vrow);
+  rows.push(['家族', b.fm], ['きっかけ', b.st], ['最初の相棒', b.gr], ['下積み', b.jb], ['くせ', b.hb], ['好きなもの', b.fv + ' / ' + b.hy]);
+  return rows;
+}
+function openMembers() {
+  const grp = S.top === 'グループ';
+  openSheetWith(S.entry.m.a, 'プロフィール', null, (b) => {
+    const rows = bioRows(); if (rows.length) { const bg = el('div', 'bio'); rows.forEach(([k, v]) => { bg.append(el('b', null, k), el('span', null, v)); }); b.append(bg); }
+    if (!grp) { const self = el('div', 'mem hic'); const ic = el('div', 'icw'); const cv = document.createElement('canvas'); cv.width = 30; cv.height = 27; cv.className = 'mic'; const g2 = cv.getContext('2d'); g2.imageSmoothingEnabled = false; try { drawChar(g2, 7, 0, mkLook(null, S.entry.m, S.entry.m.st, 0, 'idle', 0)); } catch (_) {} ic.append(cv); self.append(ic, el('span', 'rl2', '本人'), el('span', 'mn', S.entry.m.a), el('span', 'mt', 'この人生の主人公')); b.append(self); }
+    b.append(el('span', 'lab', grp ? 'メンバー' : '支えてくれている人たち'));
+    const w = el('div'); (S.mem || []).forEach((m_) => w.append(memRow(m_))); (S.exMem || []).forEach((m_) => w.append(memRow(m_, true))); b.append(w);
+    if (!(S.mem || []).length) b.append(el('p', 'sh-note', 'まだ誰もいません。'));
+  });
+}
+$('#b-mem').onclick = openMembers;
+function closeLyrics() { $('#sheet').hidden = true; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+$('#sh-x').onclick = closeLyrics; $('#sh-bg').onclick = closeLyrics;
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#sheet').hidden) closeLyrics(); });
+function c_scroll() { measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); }
+
+function injectLife(list) {
+  const m = S.entry.m; const life = !(m.rare || !BANK.ev);
+  const eb = eraBucket(m.era), grp = ['グループ'].includes(m.top) || m.st === 'duo'; const out = [];
+  list.forEach((it) => {
+    out.push(it);
+    if (it.t !== 'r') return;
+    out.push({ t: 'rdq' });
+    if (!life || S.evN >= 5 || Math.random() > 0.55) return;
+    const up = it.tr >= 3, down = it.tr <= 1;
+    const c = BANK.ev.filter((x) => (x.e === 'all' || x.e === eb) && (x.k === 'a' || (x.k === 'g') === grp) && (x.m === 'any' || (x.m === 'up' && up) || (x.m === 'down' && down)) && !S.evUsed.has(x.t) && (x.f == null || !S.evFam.has(x.f)));
+    if (!c.length) return; const pk = c[Math.floor(Math.random() * c.length)]; S.evUsed.add(pk.t); if (pk.f != null) S.evFam.add(pk.f); S.evN += 1; out.push({ t: 'e', tx: pk.t, life: 1 });
+  });
+  return out;
+}
+function playNode(node) {
+  const items = injectLife(node.s); S.skip = reduce;
+  $('#b-skip').hidden = items.length < 2;
+  const step = () => {
+    if (!items.length) { $('#b-skip').hidden = true; finishNode(node); return; }
+    S.pending = false; $('#hint').hidden = true; const it = items.shift();
+    if (it.t === 'rdq') { if (!it.d) { step(); return; } S.skip = false; $('#b-skip').hidden = true; showFes(it.d, () => { if (!items.length) { S.timers.push(setTimeout(step, 900)); return; } S.pending = true; S.cur = step; if (S.auto) S.timers.push(setTimeout(step, 2600)); }); return; }
+    renderItem(it);
+    if (items.length && items[0].t === 'rdq') { const d0 = fesMake(); if (d0) items[0].d = d0; else items.shift(); }
+    if (S.skip) { step(); return; }
+    S.pending = true; if (!items.length) { S.pending = false; S.timers.push(setTimeout(step, 500)); } else if (S.auto) { const wait = it.t === 'r' ? 3600 : Math.min(7000, 2200 + String(it.tx || '').length * 80); S.timers.push(setTimeout(step, wait)); } else { $('#hint').hidden = false; }
+  };
+  S.cur = step; step();
+}
+const tapNext = (e) => { if (S.pending && S.cur && !e.target.closest('button')) { const c = e.target.closest('.card'); if (e.currentTarget.id === 'feed' && !(c && c === $('#feed').firstElementChild)) return; clearTimers(); S.cur(); } };
+$('#feed').addEventListener('click', tapNext); $('#scene').addEventListener('click', tapNext); $('#scene').style.cursor = 'pointer';
+$('#b-skip').onclick = () => { S.skip = true; clearTimers(); if (S.cur) S.cur(); };
+
+function finishNode(node) {
+  const tail = $('#tail'); tail.textContent = '';
+  if (node.q) { showDecision(node); } else { showEnding(node.e); }
+}
+function showDecision(node) {
+  const tail = $('#tail');
+  const d = el('div', 'dec in'); d.append(el('span', 'lab', '分かれ道 ' + (S.dn + 1))); d.append(el('p', 'q', node.q.prompt));
+  const btns = [];
+  node.q.labels.forEach((lab, i) => {
+    const b = el('button', 'opt'); b.type = 'button'; b.append(el('span', 'l', 'ABCD'[i]), el('span', null, lab));
+    b.onclick = () => { btns.forEach((x) => { x.disabled = true; }); b.classList.add('chosen'); S.path.push({ node, i }); S.dn += 1;
+      const f = $('#feed'); const q = el('div', 'card res in'); q.append(el('span', 'lab', '分かれ道')); q.append(el('p', null, node.q.prompt)); f.prepend(q); collapseOld(q);
+      tail.textContent = ''; $('#gcols').classList.remove('deciding'); document.documentElement.style.setProperty('--dockh', '0px'); playNode(node.n[i]); };
+    btns.push(b); d.append(b);
+  });
+  tail.append(d); $('#gcols').classList.add('deciding');
+  if (S.auto) { let bi = 0; node.n.forEach((k, i) => { if (bestSum(k) > bestSum(node.n[bi])) bi = i; }); S.timers.push(setTimeout(() => btns[bi].click(), 1800)); }
+  requestAnimationFrame(() => { measureHud(); c_scroll(); });
+}
+function cut(t, n) { t = String(t); return t.length > n ? t.slice(0, n - 1) + '…' : t; }
+function renderTimeline() {
+  const NS = 'http://www.w3.org/2000/svg'; const mk = (tag, at) => { const n = document.createElementNS(NS, tag); Object.entries(at || {}).forEach(([k, v]) => n.setAttribute(k, v)); return n; };
+  const log = S.log.slice(); const fy = (log.find((x) => x.t === 'r') || {}).y;
+  log.forEach((x) => { if (x.y == null) x.y = fy; });
+  let di = 0; const rows = []; let heat = 0;
+  log.forEach((x) => {
+    if (x.t === 'r') heat += HEAT_W[x.tr];
+    const row = { x, heat: Math.max(0, heat), ghosts: [] };
+    if (x.t === 'x') { const st = x.rt ? null : S.path[di++]; if (st) st.node.q.labels.forEach((lab, k) => { if (k === st.i) return; const info = leafInfo(st.node.n[k]); row.ghosts.push({ lab, max: info.max, n: info.ends.size }); }); }
+    rows.push(row);
+  });
+  const W = 360, RX0 = 22, RX1 = 112, LX = 134, GAP = 54, PAD = 26;
+  let h = PAD; rows.forEach((r) => { r.h = GAP + r.ghosts.length * 17; h += r.h; }); h += PAD;
+  const svg = mk('svg', { viewBox: '0 0 ' + W + ' ' + h, class: 'tl', role: 'img', 'aria-label': '人生の年表。下から上へ時間が進み、丸が作品と出来事を表します。' });
+  let y = h - PAD; const pts = [];
+  rows.forEach((r) => { r.y = y; r.px = RX0 + Math.min(1, r.heat / 14) * (RX1 - RX0); pts.push([r.px, y]); y -= r.h; });
+  const d = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  const base = mk('path', { d: 'M' + RX0 + ' ' + (h - PAD + 14) + ' L' + pts[0][0] + ' ' + pts[0][1], class: 'ln', style: 'stroke:var(--line)' }); svg.append(base);
+  const line = mk('path', { d, class: 'ln draw' }); svg.append(line);
+  rows.forEach((r, i) => {
+    const g = mk('g', { class: 'pop', style: 'animation-delay:' + (0.2 + i * 0.09) + 's' }); const x = r.x;
+    if (x.t === 'r') {
+      const rad = 7 + x.tr * 2.4; g.append(mk('circle', { cx: r.px, cy: r.y, r: rad, class: 'dt', style: '--tc:' + tc(x.tr) }));
+      const t1 = mk('text', { x: LX, y: r.y - 3, 'font-size': 13, 'font-weight': 700 }); t1.textContent = cut('「' + x.ti + '」', 15); g.append(t1);
+      const t2 = mk('text', { x: LX, y: r.y + 13, 'font-size': 11, class: 'm' }); t2.textContent = fmtY(x.y) + ' · ' + TIER[x.tr] + ' · ' + x.rk; g.append(t2);
+    } else if (x.t === 'e') {
+      g.append(mk('circle', { cx: r.px, cy: r.y, r: 5, class: 'ev' }));
+      const t1 = mk('text', { x: LX, y: r.y + 4, 'font-size': 12 }); t1.textContent = cut(x.tx, 17); g.append(t1);
+    } else {
+      g.append(mk('circle', { cx: r.px, cy: r.y, r: 6, class: 'dc' }));
+      const t1 = mk('text', { x: LX, y: r.y + 4, 'font-size': 12, 'font-weight': 700 }); t1.textContent = '分かれ道 ▸ ' + cut(x.c, 12); g.append(t1);
+      r.ghosts.forEach((gh, k) => {
+        const gy = r.y - 20 - k * 17;
+        g.append(mk('path', { d: 'M' + r.px + ' ' + r.y + ' Q ' + (r.px + 14) + ' ' + (r.y - 10) + ' ' + (r.px + 22) + ' ' + gy, class: 'gl' }));
+        g.append(mk('circle', { cx: r.px + 22, cy: gy, r: 4, class: 'gh' }));
+        const gt = mk('text', { x: LX, y: gy + 4, 'font-size': 11, class: 'gt' }); gt.textContent = 'もし「' + cut(gh.lab, 7) + '」→' + TIER[gh.max]; g.append(gt);
+      });
+    }
+    svg.append(g);
+  });
+  const wrap = el('div', 'tlwrap'); wrap.append(svg);
+  const len = line.getTotalLength ? line.getTotalLength() : 1000; line.style.setProperty('--len', Math.ceil(len) + 'px');
+  return wrap;
+}
+const SHARE_URL = 'https://claude.ai/artifact/H9fGP3vezodUVxAWR5Deqd';
+function makeCard(dr, m, topTitle) {
+  const W = 720, H = 900, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+  const F = (w, px) => w + ' ' + px + 'px "Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif';
+  g.fillStyle = '#14181F'; g.fillRect(0, 0, W, H); g.fillStyle = '#FFD21F'; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
+  g.fillStyle = '#9aa4b2'; g.font = F(700, 26); g.textBaseline = 'alphabetic'; g.fillText('ぼくらのサウザンドメロディズ', 48, 74);
+  g.fillStyle = '#fff'; g.font = F(900, 54); let nm = m.a; while (g.measureText(nm).width > W - 96 && nm.length > 3) nm = nm.slice(0, -1); g.fillText(nm + (nm !== m.a ? '…' : ''), 48, 150);
+  g.fillStyle = '#c8cfda'; g.font = F(500, 28); g.fillText(m.es + ' ・ ' + m.sn + ' ・ レア ' + dr.rl, 48, 196);
+  const cx = W / 2, cy = 385, R = 118; const ax = [['レア', dr.rare, dr.rl], ['ドラマチック', dr.sc], ['愛され', dr.love], ['売れ度', dr.ure]];
+  const pt = (k, v) => { const an = -Math.PI / 2 + k * Math.PI / 2; return [cx + Math.cos(an) * R * v / 100, cy + Math.sin(an) * R * v / 100]; };
+  g.strokeStyle = '#3a4352'; g.lineWidth = 2; [25, 50, 75, 100].forEach((lv) => { g.beginPath(); [0, 1, 2, 3].forEach((k, i) => { const q = pt(k, lv); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.closePath(); g.stroke(); });
+  [0, 1, 2, 3].forEach((k) => { const q = pt(k, 100); g.beginPath(); g.moveTo(cx, cy); g.lineTo(q[0], q[1]); g.stroke(); });
+  g.beginPath(); ax.forEach((x, k) => { const q = pt(k, Math.max(4, x[1])); k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.closePath(); g.fillStyle = 'rgba(255,210,31,.55)'; g.fill(); g.strokeStyle = '#FFD21F'; g.lineWidth = 4; g.stroke();
+  g.font = F(700, 26); g.fillStyle = '#fff';
+  g.textAlign = 'center'; g.fillText('レア ' + dr.rl, cx, cy - R - 20); g.fillText('愛され ' + dr.love, cx, cy + R + 44);
+  g.textAlign = 'left'; g.fillText('ドラマチック ' + dr.sc, cx + R + 14, cy + 10); g.textAlign = 'right'; g.fillText('売れ度 ' + dr.ure, cx - R - 14, cy + 10); g.textAlign = 'left';
+  g.fillStyle = '#FFD21F'; g.font = F(900, 96); g.fillText(String(dr.total), 48, 655); const tw = g.measureText(String(dr.total)).width;
+  g.fillStyle = '#c8cfda'; g.font = F(700, 30); g.fillText('/ 400 「' + dr.tl + '」', 48 + tw + 16, 655);
+  g.fillStyle = '#fff'; g.font = F(700, 32); const words = dr.cm.split(''); let line = '', y = 715; words.forEach((ch) => { if (g.measureText(line + ch).width > W - 96) { g.fillText(line, 48, y); y += 46; line = ''; } line += ch; }); g.fillText(line, 48, y);
+  g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText('代表曲「' + (topTitle || '').slice(0, 20) + '」', 48, H - 84); g.fillText('#ぼくらのサウザンドメロディズ', 48, H - 42);
+  return cv;
+}
+function dramaOf(e) {
+  const T = e.w.map((w) => w.tr); let sc = 0; const why = [];
+  let sw = 0; for (let i = 1; i < T.length; i++) sw += Math.abs(T[i] - T[i - 1]); sc += Math.min(32, sw * 4);
+  let cb = false, fl = false; for (let i = 1; i < T.length; i++) { if (T[i] >= 3 && T.slice(0, i).some((x) => x <= 1)) cb = true; if (T[i] <= 1 && T.slice(0, i).some((x) => x >= 4)) fl = true; }
+  if (cb) { sc += 12; why.push('大逆転'); } if (fl) { sc += 10; why.push('栄枯盛衰'); }
+  if (T.some((x) => x === 5)) { sc += 10; why.push('頂点に立った'); }
+  const xs = (S.log || []).filter((x) => x.t === 'x'); const ev = (S.log || []).filter((x) => x.t === 'e' && !x.life).length;
+  const bad = xs.filter((x) => !x.ok).length, good = xs.length - bad; sc += Math.min(18, bad * 5 + good * 2); if (bad >= 2) why.push('賭けに何度も敗れた'); else if (good >= 2 && bad === 0) why.push('選択がことごとく当たった');
+  sc += Math.min(10, ev * 2); if (ev >= 4) why.push('出来事の多い人生');
+  if (S.entry.m.rare) { sc += 10; why.push(S.entry.m.es + 'の人生'); }
+  if (/店長|スタジオ|音楽教室|裏方|議員|イラスト|俳優|ラジオ|海外|再評価|神話|千年|百年|隠し通|社会現象/.test(e.tx)) { sc += 8; why.push('意外な結末'); }
+  sc = Math.min(100, sc);
+  const lab = sc >= 85 ? '伝説級のドラマ' : sc >= 65 ? '劇的' : sc >= 45 ? '波乱万丈' : sc >= 25 ? '山あり谷あり' : 'ささやかな日々';
+  const n = T.length || 1, mx = Math.max(0, ...T);
+  const ure0 = [8, 22, 42, 66, 86, 100][mx]; const ure = Math.round(ure0 * 0.7 + awScore() * 0.3);
+  const love = Math.max(0, Math.min(100, 15 + Math.min(30, n * 4) + Math.round(20 * T.filter((x) => x >= 1).length / n) + (/愛され|名物|カルト|常連|再評価|語り継|唄い継|待っている|歌い継|口ずさ|満員|支え/.test(e.tx) ? 25 : 0) - (/誰にも知られ|消え|途切れ|届かない/.test(e.tx) ? 15 : 0)));
+  const twist = /店長|スタジオ|音楽教室|裏方|議員|イラスト|俳優|ラジオ|再評価|隠し通|神話|千年|百年|社会現象|悪名|逆輸入/.test(e.tx);
+  const rare = Math.min(100, (S.entry.m.rare ? 60 : S.entry.m.real ? 30 : 10) + (T.some((x) => x === 5) ? 15 : 0) + (twist ? 20 : 0) + (S.entry.m.pun ? 0 : 0));
+  const rl = rare >= 75 ? 'UR' : rare >= 50 ? 'SR' : rare >= 25 ? 'R' : 'N';
+  const total = rare + sc + love + ure;
+  const A = [['レア', rare], ['ドラマチック', sc], ['愛され', love], ['売れ度', ure]]; const hi = A.slice().sort((x, y) => y[1] - x[1])[0][0];
+  const hh = ((e.tx.length * 7 + S.entry.m.a.length * 13) % 2);
+  let cm;
+  if (total >= 330) cm = ['めったに出会えない、語り草になる人生。', '歌が時代を動かした。文句なしの一生。'][hh];
+  else if (love >= 60 && ure < 45) cm = ['売れはしなかったが、確かに愛された。', 'ヒットはなくても、聴く人の心に居場所があった。'][hh];
+  else if (ure >= 66 && love < 45) cm = ['名は売れたが、心の距離は遠いままだった。', '栄光の影に、静かな孤独が残った。'][hh];
+  else if (sc >= 60 && ure < 50) cm = ['数字は地味でも、物語は一級品だった。', '売れなくても、話のおもしろさでは負けない。'][hh];
+  else if (hi === 'レア') cm = ['なかなか引けない、珍しい人生だった。', 'この時代、この道を歩いた人はほとんどいない。'][hh];
+  else if (hi === 'ドラマチック') cm = ['山も谷もある、波乱の人生だった。', '一寸先は闇、それでも歌い続けた。'][hh];
+  else if (hi === '愛され') cm = ['長く、静かに、愛された人生だった。', 'まわりに支えられ、歌が続いていった。'][hh];
+  else cm = ['時代に名を刻んだ人生だった。', '曲が先に歩き出し、名前があとを追った。'][hh];
+  if (total < 150) cm = ['ひっそりと、でも確かに歌っていた。', '誰にも気づかれなくても、歌は歌だった。'][hh];
+  const tl = total >= 330 ? '伝説' : total >= 260 ? '名人生' : total >= 190 ? '味わい深い' : total >= 120 ? 'ふつう' : 'ひっそり';
+  return { sc, lab, why: why.slice(0, 4), ure, love, rare, rl, total, cm, tl };
+}
+function finale() {
+  const ov = el('div', 'fin'); const ys = (S.log || []).filter((x) => x.t === 'r').map((x) => x.y);
+  for (let i = 0; i < 14; i++) { const sp = el('i'); sp.style.cssText = 'left:' + ((i * 37 + 11) % 96) + '%;top:' + ((i * 53 + 7) % 90) + '%;animation-delay:' + ((i % 7) * 0.18).toFixed(2) + 's'; ov.append(sp); }
+  ov.append(el('div', 'f1', '完'), el('div', 'f2', S.entry.m.a), el('div', 'f3', ys.length ? fmtY(ys[0]) + ' — ' + fmtY(ys[ys.length - 1]) : ''), el('div', 'f4', 'タップで結果へ'));
+  document.body.append(ov); const kids = [...$('#tail').children]; kids.forEach((k) => { k.style.opacity = '0'; });
+  let closed = false; const close = () => { if (closed) return; closed = true; ov.classList.add('out'); setTimeout(() => ov.remove(), 700); kids.forEach((k, i) => { k.style.animation = 'finUp .55s ' + (0.15 + Math.min(i, 10) * 0.07) + 's both'; k.style.opacity = ''; }); };
+  ov.onclick = close; setTimeout(close, 3400); try { BGM.end(); } catch (_) {}
+}
+function showEnding(e) {
+  document.documentElement.style.setProperty('--dockh', '0px');
+  const tail = $('#tail'); $('#gcols').classList.add('done');
+  const end = el('div', 'end in'); end.append(el('span', 'lab', '結末')); end.append(el('p', 'tx', e.tx + '。'));
+  tail.append(end);
+  const cr = crownOf(e.w); const crown = el('div', 'crown'); crown.append(el('span', 'cl', '称号'), el('div', 'cn', cr[0]), el('div', 'cs', cr[1])); tail.append(crown);
+  const dr = dramaOf(e); { const d = el('div', 'drama'); d.append(el('span', 'cl', 'この人生の評価')); const NS = 'http://www.w3.org/2000/svg'; const mk2 = (t, at) => { const n = document.createElementNS(NS, t); Object.entries(at || {}).forEach(([k, v]) => n.setAttribute(k, v)); return n; };
+    const ax = [['レア', dr.rare], ['ドラマチック', dr.sc], ['愛され', dr.love], ['売れ度', dr.ure]]; const sv = mk2('svg', { viewBox: '0 0 340 210', class: 'radar', role: 'img', 'aria-label': ax.map((x) => x[0] + x[1]).join(' ') }); const cx = 170, cy = 106, R = 62; const pt = (k, v) => { const an = -Math.PI / 2 + k * Math.PI / 2; return [cx + Math.cos(an) * R * v / 100, cy + Math.sin(an) * R * v / 100]; };
+    [25, 50, 75, 100].forEach((lv) => { sv.append(mk2('polygon', { points: [0, 1, 2, 3].map((k) => pt(k, lv).join(',')).join(' '), fill: 'none', stroke: 'var(--line)', 'stroke-width': 1 })); });
+    [0, 1, 2, 3].forEach((k) => { const q = pt(k, 100); sv.append(mk2('line', { x1: cx, y1: cy, x2: q[0], y2: q[1], stroke: 'var(--line)', 'stroke-width': 1 })); });
+    sv.append(mk2('polygon', { points: ax.map((x, k) => pt(k, Math.max(4, x[1])).join(',')).join(' '), fill: 'var(--accent)', 'fill-opacity': .55, stroke: 'var(--fg)', 'stroke-width': 2 }));
+    ax.forEach((x, k) => { const q = pt(k, 100); const lx = k === 1 ? q[0] + 10 : k === 3 ? q[0] - 10 : q[0]; const ly = k === 0 ? q[1] - 8 : k === 2 ? q[1] + 16 : q[1] + 4; const t = mk2('text', { x: lx, y: ly, 'text-anchor': k === 1 ? 'start' : k === 3 ? 'end' : 'middle', 'font-size': 12, fill: 'var(--fg)', 'font-weight': 700 }); t.textContent = x[0] + ' ' + (k === 0 ? dr.rl : x[1]); sv.append(t); });
+    d.append(sv); const dl = el('div', 'dr0'); dl.append(el('b', null, String(dr.total)), el('span', null, '/ 400 「' + dr.tl + '」')); d.append(dl); d.append(el('p', 'dcm', dr.cm)); if (dr.why.length) { const w = el('div', 'dw'); dr.why.forEach((x) => w.append(el('span', null, x))); d.append(w); } tail.append(d); }
+  const tj = el('div', 'traj'); tj.setAttribute('role', 'img'); tj.setAttribute('aria-label', '作品ごとの結果の推移');
+  e.w.forEach((w) => { const b = el('i'); b.style.height = (14 + w.tr * 17) + '%'; b.style.setProperty('--tc', tc(w.tr)); tj.append(b); });
+  tail.append(el('span', 'lab', '作品ごとの結果'), tj);
+  if (S.log && S.log.length) { tail.append(el('span', 'lab', '人生の年表(下から上へ)')); try { tail.append(renderTimeline()); } catch (_) {} }
+  const hits = e.w.filter((w) => w.tr >= 2).length; const best = e.w.reduce((m, w) => Math.min(m, rankOf(w.tr, w.ti).n), 999);
+  const st = el('div', 'stats');
+  [[e.w.length, '作品数'], [hits, '小ヒット以上'], [bestTxt(best), S.entry.m.rare ? '最高評価' : '最高順位']].forEach(([v, l]) => { const s = el('div', 'stat'); s.append(el('div', 'v', String(v)), el('div', 'l', l)); st.append(s); });
+  tail.append(st);
+  { const T = awTab(S.entry.m), P = T[S.stg][1]; const aw = el('p', 'dcm'); aw.append('たどり着いた広がり:' + T[S.stg][0] + '(認知度 ' + fmtPct(S.awP / P * 100) + '%・約' + fmtN(S.awP) + ')' + (S.fesOk ? '。祭りや遠征での成功 ' + S.fesOk + '回' : '')); tail.append(aw); }
+  { const grp = S.top === 'グループ'; const cur = S.mem || [];
+    if (cur.length) { tail.append(el('span', 'lab', grp ? 'メンバー' : '支えてくれた人たち')); const mw = el('div'); cur.forEach((m_) => mw.append(memRow(m_))); (S.exMem || []).forEach((m_) => mw.append(memRow(m_, true))); tail.append(mw); } }
+  tail.append(el('span', 'lab', 'ディスコグラフィ'));
+  const ds = el('div', 'dsc');
+  S.log.filter((x) => x.t === 'r').forEach((w) => {
+    const item = el('div', 'dsi'); item.style.setProperty('--tc', tc(w.tr)); const dh = el('div', 'dh'); dh.append(jacket(w.ti));
+    const mid = el('div'); mid.style.minWidth = '0'; mid.append(el('div', 'dt', '「' + w.ti + '」'));
+    mid.append(el('div', 'ds', fmtY(w.y) + ' · ' + w.o + ' · ' + w.lb + ' · ' + TIER[w.tr] + (w.tk ? ' · 全' + w.tk.length + '曲' : ''))); dh.append(mid);
+    const r = rankOf(w.tr, w.ti); dh.append(el('div', 'dr' + (r.n === 999 ? ' out' : ''), r.txt)); item.append(dh);
+    if (w.it && w.it.ly) { const ac = el('div', 'acts'); const lb = el('button', 'lbtn', w.it.ly.k === 'inst' ? '曲の展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = () => openLyrics(w.it); ac.append(lb); item.append(ac); }
+    if (w.tk && w.tk.length > 1) w.tk.forEach((t) => item.append(trkRow(t, w.ti)));
+    ds.append(item);
+  });
+  tail.append(ds);
+  if (S.path.length) {
+    const iff = el('div', 'iff'); iff.append(el('span', 'lab', '選ばなかった道'));
+    S.path.forEach((st) => {
+      st.node.q.labels.forEach((lab, k) => {
+        if (k === st.i) return; const x = leafInfo(st.node.n[k]); const it = el('div', 'it');
+        it.append(el('b', null, '「' + lab + '」'));
+        it.append(el('span', null, x.ends.size + '通りの結末。最高で「' + TIER[x.max] + '」まで届く道だった。'));
+        iff.append(it);
+      });
+    });
+    tail.append(iff);
+  }
+  const a = el('div', 'row');
+  const b3 = el('button', 'btn line', 'この人生をコピー'); b3.type = 'button';
+  b3.onclick = () => { const tx = '『' + S.entry.m.a + '』 称号:' + cr[0] + ' / 作品' + e.w.length + ' / 最高' + bestTxt(best) + ' / 総合' + dr.total + '/400 ' + dr.cm + ' (レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure + ') #ぼくらのサウザンドメロディズ';
+    const done = () => { b3.textContent = 'コピーしました'; };
+    try { navigator.clipboard.writeText(tx).then(done, () => { b3.textContent = tx; }); } catch (_) { b3.textContent = tx; } };
+  const b1 = el('button', 'btn line', '同じ人生を別の選択で'); b1.type = 'button'; b1.onclick = () => { S.auto = false; startTree(S.entry); };
+  const b2 = el('button', 'btn line', '別の人生を始める'); b2.type = 'button'; b2.onclick = () => { clearTimers(); S.auto = false; show('s-top'); };
+  const topW = e.w.reduce((m_, w) => (w.tr > m_.tr ? w : m_), e.w[0] || { tr: 0, ti: '' });
+  const bars = (v) => '★'.repeat(Math.max(1, Math.round(v / 20))) + '☆'.repeat(5 - Math.max(1, Math.round(v / 20)));
+  const xt = ['『' + S.entry.m.a + '』(' + S.entry.m.es + '・' + S.entry.m.sn + ')', '総合' + dr.total + '/400「' + dr.tl + '」 ' + dr.cm, 'レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure, '代表曲「' + topW.ti + '」', '#ぼくらのサウザンドメロディズ'].join('\n');
+  const bx = el('a', 'btn primary', 'Xでポスト'); bx.target = '_blank'; bx.rel = 'noopener noreferrer'; bx.href = 'https://x.com/intent/post?text=' + encodeURIComponent(xt) + '&url=' + encodeURIComponent(SHARE_URL); bx.style.textAlign = 'center'; bx.style.textDecoration = 'none';
+  const note = el('p', 'xnote'); note.hidden = true; note.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)';
+  bx.addEventListener('click', () => { const full = xt + '\n' + SHARE_URL; try { navigator.clipboard.writeText(full).catch(() => {}); } catch (_) {} note.textContent = 'Xが開かないときは、文面をコピーしたので、Xの投稿画面に貼り付けてください。'; note.hidden = false; });
+  const bimg = el('button', 'btn line', '結果を画像にする'); bimg.type = 'button'; const imgBox = el('div'); imgBox.style.cssText = 'display:grid;gap:8px;margin-top:12px';
+  bimg.onclick = () => { imgBox.textContent = ''; const cv = makeCard(dr, S.entry.m, topW.ti); const im = new Image(); im.src = cv.toDataURL('image/png'); im.alt = '結果の画像'; im.style.cssText = 'width:100%;max-width:360px;border:1px solid var(--line)';
+    const nt = el('p'); nt.style.cssText = 'margin:0;font-size:12px;line-height:1.6;color:var(--muted)'; nt.textContent = '画像を長押しで保存、またはスクリーンショットで残して、Xの投稿に添付してください。';
+    imgBox.append(im, nt);
+    try { cv.toBlob((bl) => { try { navigator.clipboard.write([new ClipboardItem({ 'image/png': bl })]).then(() => { nt.textContent = '画像をコピーしました。Xの投稿画面で貼り付けてください(貼れないときは、長押しで保存かスクリーンショットで)。'; }, () => {}); } catch (_) {} }, 'image/png'); } catch (_) {} };
+  a.append(bx, bimg, b1, b2, b3, note); tail.append(a); tail.append(imgBox); finale();
+  measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+}
+</script>

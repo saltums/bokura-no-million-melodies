@@ -1,0 +1,179 @@
+<title>歌詞から鳴る試作</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
+<style>
+:root { --bg: #f3f1ea; --fg: #1d1b16; --muted: #6b665a; --card: #fffdf6; --line: #d9d4c4; --accent: #ffd21f; --ink: #1d1b16; --on: #e9482b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #14181f; --fg: #eef0f4; --muted: #9aa4b2; --card: #1b212b; --line: #333c4a; --accent: #ffd21f; --ink: #14181f; --on: #ff8a5c; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #14181f; --fg: #eef0f4; --muted: #9aa4b2; --card: #1b212b; --line: #333c4a; --accent: #ffd21f; --ink: #14181f; --on: #ff8a5c; color-scheme: dark }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 500 15px/1.7 "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif; padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+main { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px }
+h1 { font-size: 24px; line-height: 1.3; margin: 0; font-weight: 900; text-wrap: balance }
+.note { color: var(--muted); font-size: 13px; margin: 0 }
+.card { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--accent); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.era { font: 700 12px/1 "Zen Kaku Gothic New", sans-serif; letter-spacing: .08em; color: var(--muted) }
+.tt { font-size: 20px; font-weight: 900; margin: 0; line-height: 1.35 }
+.ar { color: var(--muted); font-size: 13px }
+.play { appearance: none; border: 2px solid var(--ink); background: var(--accent); color: var(--ink); font: 900 16px/1.4 "Zen Kaku Gothic New", sans-serif; min-height: 48px; padding: 8px 16px; cursor: pointer }
+.play[data-on="1"] { background: var(--fg); color: var(--bg) }
+.play:focus-visible { outline: 3px solid var(--on); outline-offset: 2px }
+.bar { height: 4px; background: var(--line); position: relative }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--on) }
+.ly { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; padding: 4px 0; scroll-behavior: smooth }
+.ly .sec { font-size: 11px; color: var(--muted); margin-top: 8px; letter-spacing: .06em }
+.ly .ln { padding: 2px 8px; border-left: 3px solid transparent; color: var(--muted); transition: color .15s }
+.ly .ln.cur { color: var(--fg); border-left-color: var(--on); font-weight: 700 }
+.grp { display: flex; flex-wrap: wrap; gap: 6px; align-items: center } .gl { font-size: 12px; color: var(--muted); width: 1.6em } .grp button { appearance: none; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; font: 700 13px/1 inherit; padding: 9px 12px; min-height: 40px; cursor: pointer } .grp button.on { background: var(--fg); color: var(--bg); border-color: var(--fg) }
+.ly .ln.ch { font-weight: 700 }
+</style>
+<main>
+  <h1>歌詞から鳴る試作</h1>
+  <p class="note">ゲームで生成された歌詞を、ブラウザの音だけで演奏して歌わせる実験です。3曲とも、メロディと伴奏はルールで自動生成しています。ボタンを押すと音が鳴ります(音量に注意)。</p>
+  <p class="note">声は簡易な合成です。ひらがな・カタカナは母音を拾って歌い、漢字などは仮の母音を当てているため、歌詞どおりには聞こえません。歌詞は画面で追ってください。</p>
+  <div class="card" id="opts"><span class="era">聴きかた(鳴らす前に選ぶ)</span>
+    <div class="grp" data-k="voice"><span class="gl">声</span><button type="button" data-v="sing" class="on">歌声(母音)</button><button type="button" data-v="hum">ハミング</button><button type="button" data-v="inst">楽器でメロディ</button></div>
+    <div class="grp" data-k="len"><span class="gl">長さ</span><button type="button" data-v="30" class="on">30秒(サビ)</button><button type="button" data-v="full">フル</button></div>
+    <div class="grp" data-k="mix"><span class="gl">音</span><button type="button" data-v="all" class="on">声+伴奏</button><button type="button" data-v="band">伴奏だけ</button><button type="button" data-v="vocal">声だけ</button></div>
+  </div>
+  <div id="list" style="display:flex;flex-direction:column;gap:16px"></div>
+  <p class="note" id="res"></p>
+</main>
+<script>
+const SONGS = __SONGS__;
+const CFG = {
+  rock: { bpm: 168, bars: 2, prog: [[57, 'M'], [59, 'M'], [56, 'm'], [61, 'm']], key: 64, scale: [0, 2, 4, 7, 9], reg: 12 },
+  prim: { bpm: 92, bars: 2, prog: [[38, 'd']], key: 62, scale: [0, 3, 5, 7, 10], reg: 0 },
+  fut: { bpm: 84, bars: 2, prog: [[48, 'M7'], [50, 'M'], [52, 'm7'], [53, 'M7']], key: 72, scale: [0, 2, 4, 7, 9, 11], reg: 0 }
+};
+const TRI = { M: [0, 4, 7], m: [0, 3, 7], M7: [0, 4, 7, 11], m7: [0, 3, 7, 10], d: [0, 7, 12] };
+const F = { a: [800, 1200, 2600], i: [300, 2300, 3100], u: [350, 1350, 2400], e: [520, 1900, 2650], o: [500, 900, 2450] };
+const mf = (n) => 440 * Math.pow(2, (n - 69) / 12);
+const hira = 'ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわをん';
+const vmap = { a: 'あかがさざただなはばぱまやらわぁゃゎ', i: 'いきぎしじちぢにひびぴみりぃ', u: 'うくぐすずつづぬふぶぷむゆるぅゅっん', e: 'えけげせぜてでねへべぺめれぇ', o: 'おこごそぞとどのほぼぽもよろをぉょ' };
+function vowelOf(ch, prev, i) {
+  let c = ch; const code = c.charCodeAt(0);
+  if (code >= 0x30a1 && code <= 0x30f6) c = String.fromCharCode(code - 0x60);
+  if (c === 'ー') return prev || 'a';
+  for (const k in vmap) if (vmap[k].includes(c)) return k;
+  return 'aoueaio'[(code + i) % 7] === 'o' ? 'o' : 'aoueaio'[(code + i) % 7];
+}
+const strip = (t) => [...t].filter((c) => !/[\s、。,.!?!?…・「」『』()()\-—]/.test(c));
+function rng(s) { let a = s >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+function noiseBuf(ctx, sec) { const b = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * sec), ctx.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; }
+function impulse(ctx, sec) { const n = Math.ceil(ctx.sampleRate * sec); const b = ctx.createBuffer(2, n, ctx.sampleRate); for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); } return b; }
+function distCurve(k) { const n = 512, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); } return c; }
+
+function lineDurOf(song, tx) { const cfg = CFG[song.key]; const bar = 240 / cfg.bpm; const n = strip(tx).length; return Math.max(cfg.bars, Math.ceil((n * (song.key === 'rock' ? 0.15 : 0.2)) / bar)) * bar; }
+function seqFor(song, opt) {
+  if (!opt || opt.len !== '30') return song.seq;
+  let i = song.seq.findIndex((x) => x.ch); if (i < 0) i = 0; const out = []; let t = 0;
+  for (let k = i; k < song.seq.length && t < 30; k++) { const sec = song.seq[k]; const lines = []; for (const tx of sec.lines) { if (t >= 30) break; lines.push(tx); t += lineDurOf(song, tx); } out.push(Object.assign({}, sec, { lines })); }
+  return out;
+}
+function build(ctx, song, out, opt) {
+  opt = opt || OPT; song = Object.assign({}, song, { seq: seqFor(song, opt) });
+  const cfg = CFG[song.key]; const R = rng(song.title.length * 977 + song.key.length * 31);
+  const beat = 60 / cfg.bpm, bar = beat * 4;
+  const mastc = ctx.createDynamicsCompressor(); const master = ctx.createGain(); master.gain.value = 0.9; mastc.connect(master); master.connect(out);
+  const comp = ctx.createGain(); comp.gain.value = opt.mix === 'vocal' ? 0 : (opt.mix === 'band' ? 0.9 : 0.62); comp.connect(mastc);
+  const rl = song.key === 'fut' ? 3.2 : song.key === 'prim' ? 2.2 : 1.1; const rg = song.key === 'fut' ? 0.5 : song.key === 'prim' ? 0.4 : 0.18;
+  const rev = ctx.createConvolver(); rev.buffer = impulse(ctx, rl); const revG = ctx.createGain(); revG.gain.value = rg; rev.connect(revG); revG.connect(comp);
+  const dry = ctx.createGain(); dry.connect(comp); dry.connect(rev);
+  const vcomp = ctx.createGain(); vcomp.gain.value = opt.mix === 'band' ? 0 : 1; vcomp.connect(mastc);
+  const rev2 = ctx.createConvolver(); rev2.buffer = impulse(ctx, rl); const rev2G = ctx.createGain(); rev2G.gain.value = rg * 0.8; rev2.connect(rev2G); rev2G.connect(vcomp);
+  const vdry = ctx.createGain(); vdry.connect(vcomp); vdry.connect(rev2);
+  const nb = noiseBuf(ctx, 1.5);
+  const env = (g, t, a, d, v) => { g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); };
+  const tone = (type, f, t, a, d, v, dest, filt) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); env(g, t, a, d, v); let n = o; if (filt) { const bq = ctx.createBiquadFilter(); bq.type = 'lowpass'; bq.frequency.value = filt; o.connect(bq); n = bq; } n.connect(g); g.connect(dest || dry); o.start(t); o.stop(t + a + d + 0.05); return o; };
+  const noise = (t, d, v, type, f, dest) => { const s = ctx.createBufferSource(); s.buffer = nb; const bq = ctx.createBiquadFilter(); bq.type = type; bq.frequency.value = f; const g = ctx.createGain(); env(g, t, 0.002, d, v); s.connect(bq); bq.connect(g); g.connect(dest || dry); s.start(t, R() * 0.5); s.stop(t + d + 0.05); };
+  const kick = (t, v) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); env(g, t, 0.003, 0.22, v); o.connect(g); g.connect(comp); o.start(t); o.stop(t + 0.3); };
+  const snare = (t, v) => { noise(t, 0.14, v * 0.6, 'highpass', 1800, comp); tone('triangle', 190, t, 0.002, 0.1, v * 0.6, comp); };
+  const hat = (t, v, d) => noise(t, d || 0.04, v * 0.55, 'highpass', 7000, comp);
+  const dist = ctx.createWaveShaper(); dist.curve = distCurve(40); const gtrBus = ctx.createGain(); gtrBus.gain.value = 0.11; dist.connect(gtrBus); gtrBus.connect(comp);
+  // 声(持続するフォルマント合成 v2)
+  const re = new Float32Array(48), im = new Float32Array(48); for (let h = 1; h < 48; h++) im[h] = 1 / Math.pow(h, 1.35);
+  const vo = ctx.createOscillator(); vo.setPeriodicWave(ctx.createPeriodicWave(re, im)); const vib = ctx.createOscillator(); const vibG = ctx.createGain(); vib.frequency.value = song.key === 'fut' ? 5.2 : 4.8; vibG.gain.value = 0; vib.connect(vibG); vibG.connect(vo.frequency);
+  const vEnv = ctx.createGain(); vEnv.gain.value = 0; const hum = opt.voice === 'hum';
+  const FG = [1, 0.5, 0.22]; const fl = [0, 1, 2].map((i) => { const b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.Q.value = [6, 8, 10][i]; b.frequency.value = F.a[i]; const g = ctx.createGain(); g.gain.value = FG[i]; vo.connect(b); b.connect(g); g.connect(vEnv); return b; });
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = hum ? 1500 : 5200; lp.Q.value = 0.5; vEnv.connect(lp);
+  const br = ctx.createBufferSource(); br.buffer = nb; br.loop = true; const brF = ctx.createBiquadFilter(); brF.type = 'bandpass'; brF.frequency.value = 2600; brF.Q.value = 0.8; const brG = ctx.createGain(); brG.gain.value = 0; br.connect(brF); brF.connect(brG); brG.connect(lp); br.start(0);
+  const vOut = ctx.createGain(); vOut.gain.value = (hum ? 2.6 : 2.2) * (song.key === 'rock' ? 1 : 1.1); lp.connect(vOut); vOut.connect(vdry);
+  vo.start(0); vib.start(0);
+  const vm = opt.voice === 'inst';
+  const voice = (f, v, t, d) => {
+    if (vm) { tone('triangle', f, t, 0.01, Math.min(d * 1.6, 0.9), 0.5, vdry, 3000); tone('sine', f * 2, t, 0.01, Math.min(d, 0.5), 0.15, vdry); return; }
+    vo.frequency.setTargetAtTime(f, t, 0.035); const fv = hum ? [300, 1000, 2300] : F[v]; fl.forEach((b, i) => b.frequency.setTargetAtTime(fv[i], t, 0.04));
+    vEnv.gain.setTargetAtTime(0.45, t, 0.03); vEnv.gain.setTargetAtTime(0.16, t + Math.max(0.06, d * 0.85), 0.03);
+    if (!hum) { brG.gain.setValueAtTime(0.0001, t); brG.gain.linearRampToValueAtTime(0.05, t + 0.012); brG.gain.linearRampToValueAtTime(0.0001, t + 0.06); }
+    vibG.gain.cancelScheduledValues(t); vibG.gain.setValueAtTime(0, t); if (d > 0.28) vibG.gain.linearRampToValueAtTime(song.key === 'prim' ? 2 : 5, t + Math.min(0.5, d));
+  };
+  const voiceOff = (t) => { if (!vm) { vEnv.gain.setTargetAtTime(0, t, 0.06); vibG.gain.setValueAtTime(0, t); } };
+
+  // 歌詞を並べて、各行の時間と音符を決める
+  let t = 0.5; const lines = []; const chordAt = (ti) => { const bi = Math.floor((ti - 0.5) / bar); return cfg.prog[((bi % cfg.prog.length) + cfg.prog.length) % cfg.prog.length]; };
+  song.seq.forEach((sec, si) => sec.lines.forEach((tx, li) => {
+    const cs = strip(tx); const n = cs.length; const bars = Math.max(cfg.bars, Math.ceil((n * (song.key === 'rock' ? 0.15 : 0.2)) / bar)); const dur = bars * bar;
+    const hi = sec.ch ? 1 : 0; let deg = Math.floor(R() * cfg.scale.length); let prev = null; const notes = [];
+    cs.forEach((c, k) => {
+      const ch = chordAt(t + (k / Math.max(1, n)) * dur); const root = ch[0], tri = TRI[ch[1]];
+      const strong = k % 4 === 0; let note;
+      if (strong || k === n - 1) { const target = (root + tri[Math.floor(R() * tri.length)]) % 12; let best = null; for (let o = -1; o < 3; o++) for (const sd of cfg.scale) { const cand = cfg.key + sd + o * 12 + hi * 5 + (song.key === 'prim' ? -12 : 0); if (((cand % 12) + 12) % 12 === target || k === n - 1) { if (best === null || Math.abs(cand - (prev ?? cfg.key)) < Math.abs(best - (prev ?? cfg.key))) best = cand; } } note = best ?? cfg.key; }
+      else { const step = [-2, -1, -1, 0, 1, 1, 2][Math.floor(R() * 7)]; deg = Math.max(0, Math.min(cfg.scale.length * 2 - 1, deg + step)); note = cfg.key + cfg.scale[deg % cfg.scale.length] + 12 * Math.floor(deg / cfg.scale.length) + hi * 5 + (song.key === 'prim' ? -12 : 0); }
+      if (song.key === 'fut') note += 0; prev = note; notes.push([vowelOf(c, k ? vowelOf(cs[k - 1], null, k - 1) : null, k), note]);
+    });
+    const span = dur * 0.9, step = span / Math.max(1, n);
+    const sh = vm ? 0 : (song.key === 'prim' ? 0 : -12); notes.forEach(([v, nt], k) => voice(mf(nt + sh), v, t + k * step, step));
+    voiceOff(t + span);
+    lines.push({ t0: t, t1: t + dur, si, li }); t += dur;
+  }));
+  const total = t + 2.5;
+
+  // 伴奏
+  const nbar = Math.ceil((total - 0.5) / bar);
+  for (let b = 0; b < nbar; b++) {
+    const tb = 0.5 + b * bar; const [root, q] = cfg.prog[b % cfg.prog.length]; const tri = TRI[q];
+    if (song.key === 'rock') {
+      for (let e = 0; e < 8; e++) { const te = tb + e * beat / 2; hat(te, e % 2 ? 0.12 : 0.2); if (e % 4 === 0) kick(te, 0.9); if (e === 2 || e === 6) snare(te, 0.55); if (e === 5) kick(te, 0.7); tone('sawtooth', mf(root - 12), te, 0.005, beat / 2 * 0.9, 0.3, comp, 700); if (e % 2 === 0 || e === 7) { [0, 7, 12].forEach((s) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = mf(root + s); o.detune.value = (R() - 0.5) * 14; env(g, te, 0.004, beat / 2 * 0.95, 0.5); o.connect(g); g.connect(dist); o.start(te); o.stop(te + beat); }); } }
+      if (b % 4 === 3) { snare(tb + 3.5 * beat, 0.5); snare(tb + 3.75 * beat, 0.5); }
+    } else if (song.key === 'prim') {
+      tone('sine', mf(38), tb, 0.3, bar * 0.98, 0.35, comp); tone('sine', mf(45), tb, 0.4, bar * 0.98, 0.18, comp);
+      const pat = [1, 0, 0.5, 0, 1, 0.6, 0, 0.5, 1, 0, 0.5, 0.5, 1, 0, 0.7, 0.6];
+      pat.forEach((v, e) => { if (!v) return; const te = tb + e * beat / 4; const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(e % 4 === 0 ? 130 : 190, te); o.frequency.exponentialRampToValueAtTime(e % 4 === 0 ? 70 : 110, te + 0.12); env(g, te, 0.003, 0.2, v * 0.8); o.connect(g); g.connect(comp); o.start(te); o.stop(te + 0.28); if (e % 2) noise(te, 0.05, 0.1, 'bandpass', 3500, comp); });
+      if (b % 2 === 0) { const fl2 = [74, 77, 79, 81, 84]; for (let q2 = 0; q2 < 3; q2++) { const tn = tb + (q2 * 1.25 + 0.5) * beat; const nn = fl2[Math.floor(R() * fl2.length)]; const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = mf(nn); env(g, tn, 0.05, beat * 0.9, 0.12); o.connect(g); g.connect(dry); o.start(tn); o.stop(tn + beat * 1.2); noise(tn, beat * 0.8, 0.03, 'bandpass', mf(nn) * 2, dry); } }
+    } else {
+      tri.forEach((s, i) => { [0, 7].forEach((dt) => { const o = ctx.createOscillator(), g = ctx.createGain(), bq = ctx.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.value = mf(root + s + dt * 0 + 12); o.detune.value = (i - 1.5) * 9 + dt; bq.type = 'lowpass'; bq.frequency.value = 900; g.gain.setValueAtTime(0.0001, tb); g.gain.linearRampToValueAtTime(0.07, tb + bar * 0.4); g.gain.linearRampToValueAtTime(0.0001, tb + bar * 1.05); o.connect(bq); bq.connect(g); g.connect(dry); o.start(tb); o.stop(tb + bar * 1.1); }); });
+      tone('sine', mf(root - 12), tb, 0.02, bar * 0.95, 0.3, comp);
+      for (let e = 0; e < 16; e++) { const te = tb + e * beat / 4; if (e % 2 === 0 || e % 3 === 0) tone('triangle', mf(root + 24 + tri[(e * 3) % tri.length]), te, 0.005, beat * 0.5, 0.08, dry); }
+      kick(tb, 0.55); kick(tb + 2 * beat, 0.4); hat(tb + beat, 0.06, 0.2); hat(tb + 3 * beat, 0.06, 0.2);
+    }
+  }
+  return { total, lines };
+}
+
+const OPT = { voice: 'sing', mix: 'all', len: '30' };
+const list = document.getElementById('list'); const cards = [];
+let cur = null;
+SONGS.forEach((s, idx) => {
+  const c = document.createElement('section'); c.className = 'card';
+  c.innerHTML = '<span class="era"></span><h2 class="tt"></h2><span class="ar"></span><button class="play" type="button">▶ 鳴らす</button><div class="bar"><i></i></div><div class="ly"></div>';
+  c.querySelector('.era').textContent = s.era + ' ・ ' + s.style; c.querySelector('.tt').textContent = '「' + s.title + '」'; c.querySelector('.ar').textContent = s.artist;
+  const ly = c.querySelector('.ly'); const lnEls = [];
+  const btn = c.querySelector('.play'); const bar = c.querySelector('.bar i');
+  const st = { c, btn, bar, ly, lnEls, ctx: null, info: null, raf: 0, song: s }; showLy(st);
+  btn.onclick = () => { if (st.ctx) { stop(st); return; } if (cur) stop(cur); start(st, s); };
+  cards.push(st); list.append(c);
+});
+function showLy(st) { st.ly.textContent = ''; st.lnEls.length = 0; seqFor(st.song, OPT).forEach((sec) => { const h = document.createElement('div'); h.className = 'sec'; h.textContent = sec.name; st.ly.append(h); sec.lines.forEach((tx) => { const d = document.createElement('div'); d.className = 'ln' + (sec.ch ? ' ch' : ''); d.textContent = tx; st.ly.append(d); st.lnEls.push(d); }); }); st.ly.scrollTop = 0; }
+function start(st, s) { showLy(st);
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { document.getElementById('res').textContent = 'この環境では音が出せません。'; return; }
+  const ctx = new AC(); st.ctx = ctx; cur = st; st.btn.dataset.on = '1'; st.btn.textContent = '■ とめる';
+  ctx.resume(); st.info = build(ctx, s, ctx.destination); const t0 = ctx.currentTime; let idx = -1;
+  const tick = () => { if (!st.ctx) return; const t = ctx.currentTime - t0; st.bar.style.width = Math.min(100, t / st.info.total * 100) + '%';
+    const i = st.info.lines.findIndex((l) => t >= l.t0 && t < l.t1); if (i !== idx) { idx = i; st.lnEls.forEach((e, k) => e.classList.toggle('cur', k === i)); if (i >= 0) { const e = st.lnEls[i]; st.ly.scrollTop = Math.max(0, e.offsetTop - st.ly.clientHeight / 2); } }
+    if (t > st.info.total) { stop(st); return; } st.raf = requestAnimationFrame(tick); }; tick();
+}
+function stop(st) { if (st.ctx) { try { st.ctx.close(); } catch (_) {} } st.ctx = null; cancelAnimationFrame(st.raf); st.btn.dataset.on = '0'; st.btn.textContent = '▶ 鳴らす'; st.bar.style.width = '0'; st.lnEls.forEach((e) => e.classList.remove('cur')); if (cur === st) cur = null; }
+document.querySelectorAll('#opts .grp').forEach((g) => g.querySelectorAll('button').forEach((b) => { b.onclick = () => { OPT[g.dataset.k] = b.dataset.v; g.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); if (!cur) cards.forEach(showLy); if (cur) { const s2 = cur; const sg = SONGS[cards.indexOf(s2)]; stop(s2); start(s2, sg); } }; }));
+window.__render = async (i, o) => { const OP = o || OPT; const s = SONGS[i]; const ctx = new OfflineAudioContext(2, 22050 * 170, 22050); const info = build(ctx, s, ctx.destination, OP); const buf = await ctx.startRendering(); const d = buf.getChannelData(0); const seg = []; const n = Math.ceil(info.total / 5); for (let k = 0; k < n; k++) { let sum = 0, cnt = 0; for (let j = Math.floor(k * 5 * 22050); j < Math.min(d.length, (k + 1) * 5 * 22050); j++) { sum += d[j] * d[j]; cnt++; } seg.push(+Math.sqrt(sum / Math.max(1, cnt)).toFixed(3)); } let pk = 0, nan = 0; for (let j = 0; j < d.length; j++) { if (!isFinite(d[j])) nan++; pk = Math.max(pk, Math.abs(d[j])); } return { total: +info.total.toFixed(1), peak: +pk.toFixed(2), nan, seg }; };
+</script>
