@@ -1007,7 +1007,8 @@ function mkLook(mb, m, key, k, pose, fr) {
   const grp = !!mb; const fem = mb ? mb.g === 'f' : ((m.vg || '')[(m.vg || '').length - 1] === 'f');
   const idn = mb ? hsh(mb.n) : (m.id | 0) + k * 7; const ai = key === 'ai_pure' || key === 'ai_collab';
   const rl = mb ? mb.r : ''; const byRole = /^Vo/.test(rl) ? 'mic' : /Dr/.test(rl) ? 'drum' : /Key|Cho/.test(rl) ? 'pc' : /Gt|Ba/.test(rl) ? 'gtr' : null;
-  const prop = m.era === -3 ? (k % 2 ? 'drum' : 'gtr') : m.era === -2 ? (k % 2 ? 'bone' : 'drum') : key === 'rap' ? 'mic' : key === 'dj' ? 'dj' : key === 'beat' ? 'pc' : ai ? 'mic' : (byRole || (grp ? ['mic', 'gtr', 'gtr', 'drum'][k % 4] : 'gtr'));
+  const rareProp = (m.era === -3 || m.era === -2) && rl ? (/三味線|琵琶|琴|弦/.test(rl) ? 'gtr' : /太鼓|鼓|手打ち|足踏み|ドラム/.test(rl) ? 'drum' : /笛|尺八|骨/.test(rl) ? 'bone' : /唄|語り|声|歌/.test(rl) ? 'none' : null) : null;
+  const prop = rareProp ? rareProp : m.era === -3 ? (k % 2 ? 'drum' : 'gtr') : m.era === -2 ? (k % 2 ? 'bone' : 'drum') : key === 'rap' ? 'mic' : key === 'dj' ? 'dj' : key === 'beat' ? 'pc' : ai ? 'mic' : (byRole || (grp ? ['mic', 'gtr', 'gtr', 'drum'][k % 4] : 'gtr'));
   return { skin: SKINS[idn % 4], hair: HAIRS[(idn >>> 1) % 6], cloth: CLOTHS[(idn + 3) % 6], pants: PANTS[idn % 3], fem, style: fem ? ['long', 'pony', 'short'][idn % 3] : ['short', 'spiky', 'short'][idn % 3], pose: pose || 'idle', fr: (fr | 0) + k, prop, robot: ai && m.era !== 6 ? true : false, fur: m.era === -2, suit: m.era === 6 && !ai, tie: '#ff7ab0' };
 }
 function mkPerformer(S_, k, grp, st, mood, fr, key) {
