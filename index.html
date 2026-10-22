@@ -807,7 +807,7 @@ const PL = (() => { const K = 'hit30000_plays', NEED = 5; const get = () => { tr
   return { NEED, n: get, ok: () => get() >= NEED || DBG_ERA != null, inc: () => { const v = get() + 1; try { localStorage.setItem(K, String(v)); } catch (_) {} return v; } }; })();
 const ERA_OPT = [[null, 'おまかせ'], [-1, '70年代'], [0, '80年代'], [1, '90年代'], [2, '00年代'], [3, '10年代'], [4, '20年代'], [5, '近未来']];
 { const eb = $('#dbg-era'); eb.append(el('span', 'lab', 'デバッグ: 時代を固定(人選びに反映)')); const cs = []; ERA_OPT.forEach(([v, l]) => { const c = el('button', 'chip' + (v === null ? ' on' : ''), v === null ? '固定しない' : l); c.type = 'button'; c.onclick = () => { DBG_ERA = v; cs.forEach((x) => x.classList.remove('on')); c.classList.add('on'); }; cs.push(c); eb.append(c); }); }
-$('#b-dbg-un').onclick = () => { const o = el('div', 'mdl'); const bx = el('div', 'box'); const u = unlockCard(); u.style.border = '2px solid #f2c230'; const ok = el('button', 'btn primary', 'OK'); ok.type = 'button'; ok.onclick = () => o.remove(); bx.append(u, ok); o.append(bx); o.onclick = (e) => { if (e.target === o) o.remove(); }; document.body.append(o); };
+$('#b-dbg-un').onclick = () => { const o = el('div', 'mdl'); const bx = el('div', 'box'); const u = unlockCard(); u.style.border = '2px solid #f2c230'; const ok = el('button', 'btn primary', 'OK'); ok.type = 'button'; ok.onclick = () => o.remove(); bx.append(u, ok); o.append(bx); o.onclick = (e) => { if (e.target === o) o.remove(); }; document.body.append(o); try { SFX.play('unlock'); } catch (_) {} };
 $('#b-dbg-rs').onclick = () => { try { localStorage.setItem('hit30000_plays', '0'); } catch (_) {} $('#b-dbg-rs').textContent = 'リセットしました(0回)'; };
 $('#b-dbg2').onclick = () => startRare(-2); $('#b-dbg6').onclick = () => startRare(6); $('#b-dbg3').onclick = () => startRare(-3);
 $('#b-bgm').onclick = () => { const o = BGM.toggle(); $('#b-bgm').textContent = o ? '♪' : '♪×'; };
@@ -1651,7 +1651,8 @@ const SFX = (() => {
   const kinds = {
     pop: (t) => { tn(t, 620, .09, 'sine', .11, 900); },
     pick: (t) => { tn(t, 880, .07, 'triangle', .11, 1320); tn(t + .06, 1320, .1, 'triangle', .09, 1760); },
-    back: (t) => { tn(t, 520, .1, 'sine', .1, 330); }
+    back: (t) => { tn(t, 520, .1, 'sine', .1, 330); },
+    unlock: (t) => { tn(t, mf(48), 1.6, 'sine', .1); [72, 76, 79, 84, 88].forEach((n, i) => { tn(t + i * .075, mf(n), .55, 'triangle', .09); tn(t + i * .075, mf(n + 12), .3, 'sine', .035); }); const e = t + .42; [60, 64, 67, 72, 79].forEach((n) => tn(e, mf(n), 1.9, 'triangle', .07)); for (let i = 0; i < 9; i++) tn(e + .12 + i * .06, mf(91 + (i % 4) * 3), .22, 'sine', .04); }
   };
   const jingle = (total) => play((t) => {
     const lv = total >= 390 ? 5 : total >= 320 ? 4 : total >= 240 ? 3 : total >= 160 ? 2 : 1;
@@ -1873,7 +1874,7 @@ function showEnding(e) {
   const b5 = el('button', 'btn line', '図鑑・殿堂を見る'); b5.type = 'button'; b5.onclick = () => { clearTimers(); S.auto = false; ZK.render(); show('s-zukan'); };
   a.append(bimg, bx, b1, b2, b4, b5, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
   try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false, dt: { ws: e.w.map((w) => [w.y, w.ti, w.tr, w.rk || '']), tx: e.tx, cs: cr[1], cm: dr.cm, tl: dr.tl, vs: (() => { try { return voicesOf(e, dr).map((v) => [v[0], v[1]]); } catch (_) { return []; } })(), mm: (S.mem || []).map((x) => [x.n || x.name || '', x.r || x.role || '']).filter((x) => x[0]).slice(0, 8) } }); } catch (_) {}
-  try { if (PL.inc() === PL.NEED) tail.insertBefore(unlockCard(), a); } catch (_) {}
+  try { if (PL.inc() === PL.NEED) tail.insertBefore(unlockCard(), a); setTimeout(() => { try { SFX.play('unlock'); } catch (_) {} }, 2600); } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
 </script>
