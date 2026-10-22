@@ -1021,7 +1021,9 @@ const CAPS_R = {
   '-2': { 0: ['焚き火のそばで、ひとり唸っている', '集落の若者が耳をかたむけている', '谷じゅうから人が集まってきた', '部族みんなが声をそろえている', '洞窟の壁に歌が描かれている'], 1: ['焚き火のそばで、ひとり唸っている', '集落の若者が耳をかたむけている', '谷じゅうから人が集まってきた', '部族みんなが声をそろえている', '洞窟の壁に歌が描かれている'], 2: ['声が火の粉と一緒に夜空へ昇っていく', '集落じゅうが手拍子を打っている', '足踏みで地面が揺れている', '谷の向こうからも歌声が返ってくる', '千年先まで残る夜になった'] },
   '6': { 0: ['居住区の隅で、ひとり弾いている', '小さなラウンジで演奏している', '星間放送のスタジオで歌っている', '星系じゅうに放送されている', '宇宙の記憶に刻まれるステージ'], 1: ['居住区の隅で、ひとり弾いている', '小さなラウンジで演奏している', '星間放送のスタジオで歌っている', '星系じゅうに放送されている', '宇宙の記憶に刻まれるステージ'], 2: ['無重力に歌声が浮かんでいる', 'ラウンジが歓声で満たされた', '星々の間に歌が響いている', '観客のドローンが一斉に光った', '宇宙の記憶に刻まれるステージ'] }
 };
-function capText(st, mood, era) { if (CAPS_R[era]) return CAPS_R[era][mood][st]; return CAPS[mood][st]; }
+const IJ = [['歌い継がれ', '聴き継がれ'], ['歌い続け', '鳴らし続け'], ['歌っていた', '鳴らしていた'], ['歌は歌だった', '音は音だった'], ['歌っている', '演奏している'], ['歌が', '曲が'], ['歌は', '曲は'], ['歌を', '曲を'], ['歌で', '音で'], ['歌', '曲']];
+function ij(t) { try { if (S.entry && S.entry.m.st === 'inst' && typeof t === 'string') IJ.forEach(([a, b]) => { t = t.split(a).join(b); }); } catch (_) {} return t; }
+function capText(st, mood, era) { if (CAPS_R[era]) return ij(CAPS_R[era][mood][st]); return ij(CAPS[mood][st]); }
 function sceneStage(g, st, mood, fr) {
   const dim = mood === 0 ? 0.55 : 1;
   if (st === 0) {
@@ -1530,7 +1532,7 @@ function dramaOf(e) {
   else cm = ['時代に名を刻んだ人生だった。', '曲が先に歩き出し、名前があとを追った。'][hh];
   if (total < 150) cm = ['ひっそりと、でも確かに歌っていた。', '誰にも気づかれなくても、歌は歌だった。'][hh];
   const tl = total >= 330 ? '伝説' : total >= 260 ? '名人生' : total >= 190 ? '味わい深い' : total >= 120 ? 'ふつう' : 'ひっそり';
-  return { sc, lab, why: why.slice(0, 4), ure, love, rare, rl, total, cm, tl };
+  cm = ij(cm); return { sc, lab, why: why.slice(0, 4), ure, love, rare, rl, total, cm, tl };
 }
 const SFX = (() => {
   let ctx = null;
@@ -1618,7 +1620,8 @@ function finale() {
   let closed = false; const close = () => { if (closed) return; closed = true; ov.classList.add('out'); setTimeout(() => ov.remove(), 700); kids.forEach((k, i) => { k.style.animation = 'finUp .55s ' + (0.15 + Math.min(i, 10) * 0.07) + 's both'; k.style.opacity = ''; }); };
   ov.onclick = close; setTimeout(close, 3400); try { BGM.end(); } catch (_) {}
 }
-function coherentEnding(tx, w, nm) {
+function coherentEnding(tx, w, nm) { return ij(coherentEnding0(tx, w, nm)); }
+function coherentEnding0(tx, w, nm) {
   const hits = w.filter((x) => x.tr >= 3).length, top = w.reduce((m, x) => Math.max(m, x.tr), 0);
   if (/店長|エンジニア|先生|裏方|イラスト|議員|別の仕事|やめ|解散後|提供|ラジオ|俳優/.test(tx)) return tx;
   const h = (nm || '').length % 3;
