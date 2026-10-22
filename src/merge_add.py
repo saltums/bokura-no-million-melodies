@@ -19,6 +19,19 @@ for f in sorted(glob.glob('/home/claude/add_t/t_*.json')):
     for e in ('old', 'mid', 'new'):
         s = set(b['t'][e]); b['t'][e] += [x for x in dict.fromkeys(d.get(e, [])) if x not in s and 1 < len(x) <= 24]
 print('pt', len(b['pt']), {e: len(v) for e, v in b['t'].items()})
+# 曲名+サビ(テーマ別)
+b['tt'] = {}
+for f in sorted(glob.glob('/home/claude/add_tt/tt_*.json')):
+    try: d = json.load(open(f, encoding='utf-8'))
+    except Exception as ex: print('SKIP', f, ex); continue
+    th = d.get('theme'); seen = set(); L = b['tt'].setdefault(th, [])
+    for x in d.get('items', []):
+        try:
+            t = x['t'].strip(); h1 = x['h1'].strip(); h2 = x.get('h2', '').strip(); e = x.get('e', 'all')
+            if not t or t in seen or len(t) > 24 or e not in ('all', 'old', 'mid', 'new') or not (4 <= len(h1) <= 34): continue
+            seen.add(t); L.append([t, e, h1, h2])
+        except Exception: continue
+print('tt', {k: len(v) for k, v in b['tt'].items()})
 # artist names
 for f in sorted(glob.glob('/home/claude/add_a/a_*.json')):
     try: d = json.load(open(f, encoding='utf-8'))

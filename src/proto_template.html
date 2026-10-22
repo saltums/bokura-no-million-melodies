@@ -794,20 +794,33 @@ function reskin(d) {
     const m = d.m, eb = eraBucket(m.era), used = new Set();
     const pk = (arr) => { if (!arr || !arr.length) return null; for (let i = 0; i < 40; i++) { const x = arr[Math.floor(Math.random() * arr.length)]; if (!used.has(x)) { used.add(x); return x; } } return null; };
     const olds = new Set(); const base = (t) => t.replace(/\s*[\(（].*$/, '');
-    (function walk(n) { n.s.forEach((it) => { if (it.t === 'r') { olds.add(it.ti); (it.tk || []).forEach((k) => olds.add(base(k.t))); } }); if (n.e) n.e.w.forEach((w) => olds.add(w.ti)); (n.n || []).forEach(walk); })(d.t);
+    const thOf = new Map(); (function walk(n) { n.s.forEach((it) => { if (it.t === 'r') { olds.add(it.ti); if (!thOf.has(it.ti)) thOf.set(it.ti, it.th); (it.tk || []).forEach((k) => { olds.add(base(k.t)); if (!thOf.has(base(k.t))) thOf.set(base(k.t), it.th); }); } }); if (n.e) n.e.w.forEach((w) => { olds.add(w.ti); if (!thOf.has(w.ti)) thOf.set(w.ti, w.th); }); (n.n || []).forEach(walk); })(d.t); const hookMap = new Map();
     let str = JSON.stringify(d); const pairs = [];
     const add = (old, nw) => { if (!old || !nw || old.length < 2) return; pairs.push([old, nw]); };
     const SX = /(の手前|のままで|で会おう|を失くした.{1,4}|について|の夜|の約束|ごっこ|ブルース)$/; const sfxUsed = new Set();
     const pkT = () => { for (let i = 0; i < 40; i++) { const x = (BANK.pt && Math.random() < 0.2) ? BANK.pt[Math.floor(Math.random() * BANK.pt.length)] : (() => { const sp = tSplit(eb); const pl = (Math.random() < 0.72 && sp.f.length) ? sp.f : sp.j; return pl[Math.floor(Math.random() * pl.length)]; })(); const mt = x.match(SX); const key = mt ? mt[1].slice(0, 3) : null; if (used.has(x) || (key && sfxUsed.has(key))) continue; used.add(x); if (key) sfxUsed.add(key); return x; } return pk(BANK.t[eb]); };
-    [...olds].filter((x) => x && x.length >= 2).sort((a, b) => b.length - a.length).forEach((o) => add(o, pkT()));
+    const pkTT = (th) => { const ar = ttPool(th, eb); if (!ar || ar.length < 5 || Math.random() < 0.08) return null; for (let i = 0; i < 40; i++) { const x = ar[Math.floor(Math.random() * ar.length)]; if (!used.has(x[0]) && x[0].length <= 24) { used.add(x[0]); hookMap.set(x[0], [x[2], x[3]]); return x[0]; } } return null; };
+    [...olds].filter((x) => x && x.length >= 2).sort((a, b) => b.length - a.length).forEach((o) => add(o, pkTT(thOf.get(o)) || pkT()));
     if (!m.pun) add(m.a, pk((BANK.a[m.st] || {})[eb]));
     pairs.forEach(([o, nw], i) => {
       const tk = '\u0001' + i + '\u0002';
       if (o.length >= 4) str = str.split(o).join(tk); else { str = str.split('"' + o + '"').join('"' + tk + '"').split('"' + o + ' (').join('"' + tk + ' (').split('「' + o + '」').join('「' + tk + '」'); }
     });
     pairs.forEach(([o, nw], i) => { str = str.split('\u0001' + i + '\u0002').join(nw); });
-    const out = JSON.parse(str); out._rs = true; return out;
+    const out = JSON.parse(str); out._rs = true;
+    (function w2(n) { n.s.forEach((it) => { if (it.t === 'r' && it.ly && it.ly.k !== 'inst') { const hk = hookMap.get(it.ti); if (hk) applyHook(it.ly, hk[0], hk[1]); } }); (n.n || []).forEach(w2); })(out.t);
+    return out;
   } catch (_) { return d; }
+}
+function ttPool(th, eb) { if (!BANK.tt || !BANK.tt[th]) return null; const key = th + '|' + eb; TTC[key] = TTC[key] || BANK.tt[th].filter((x) => x[1] === 'all' || x[1] === eb); return TTC[key]; }
+const TTC = {};
+function applyHook(ly, h1, h2) {
+  const oh = ly.h; if (!h1) return;
+  ly.o.forEach((r) => { const k = r[0]; const ls = ly.s[k]; if (!ls) return; let done = false; const out = [];
+    ls.forEach((x) => { if (oh && x === oh) { out.push(h1); if (!done && h2) { out.push(h2); done = true; } } else out.push(x); });
+    if (/Chorus|Hook|Drop/i.test(r[2] || '') && !out.includes(h1)) out.unshift(h1);
+    ly.s[k] = out; });
+  ly.h = h1;
 }
 function renameTo(d, nm) {
   nm = (nm || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 20); const m = d.m;
