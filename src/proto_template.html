@@ -408,6 +408,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 :root[data-theme="dark"] { --muted: #A9B1BD; }
 .zk-grid { display: flex; flex-wrap: wrap; gap: 6px; } .zk-grid span { padding: 6px 10px; border: 1px solid var(--line); font-size: 13px; } .zk-grid .on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-ink); font-weight: 700; } .zk-grid .off { color: var(--muted); border-style: dashed; }
 .zk-bar { height: 10px; background: var(--line); } .zk-bar i { display: block; height: 100%; background: var(--accent); border-right: 2px solid var(--accent-ink); }
+#gnav { position: fixed; left: 8px; bottom: 8px; z-index: 20; display: flex; gap: 6px; } #gnav button { min-height: 40px; padding: 0 12px; border: 1.5px solid var(--line); background: var(--bg, #fff); color: inherit; font: 700 13px/1 var(--f-b); }
 </style>
 
 <div class="wrap" id="app">
@@ -647,7 +648,7 @@ function stepBar(id) {
   STEP_NM.forEach((t, i) => { bar.append(el('i', i < cur ? 'done' : i === cur ? 'cur' : '')); nm.append(el('span', i === cur ? 'cur' : '', (i + 1) + ' ' + t)); });
   st.append(bar, nm);
 }
-function show(id) { stepBar(id); screens.forEach((s) => { $('#' + s).hidden = s !== id; }); window.scrollTo(0, 0); if (id !== 's-game') { try { BGM.stop(); } catch (_) {} } }
+function show(id) { try { const g = $('#gnav'); if (g) g.hidden = ['s-title', 's-game', 's-intro'].includes(id); } catch (_) {} stepBar(id); screens.forEach((s) => { $('#' + s).hidden = s !== id; }); window.scrollTo(0, 0); if (id !== 's-game') { try { BGM.stop(); } catch (_) {} } }
 
 const AWC = {
   p: [['自分の集落', 100], ['谷の集落', 2000], ['山向こうの部族', 12000], ['海の向こうの民', 30000]],
@@ -1718,6 +1719,7 @@ const ZK = (() => {
   try { if (location.hash === '#debug' || localStorage.getItem('hit30000_dbg') === '1') dbgOn(); } catch (_) {}
   $('#ttl').addEventListener('click', () => { tc_ += 1; if (tc_ >= 5) { dbgOn(); try { localStorage.setItem('hit30000_dbg', '1'); } catch (_) {} } }); }
 $('#b-zk').onclick = () => { ZK.render(); show('s-zukan'); };
+{ const g = el('div'); g.id = 'gnav'; g.hidden = true; const h = el('button', null, '⌂ ホーム'); h.type = 'button'; h.onclick = () => show('s-title'); const z = el('button', null, '図鑑'); z.type = 'button'; z.onclick = () => { ZK.render(); show('s-zukan'); }; g.append(h, z); document.body.append(g); }
 $('#zk-back').onclick = () => show('s-title');
 $('#zk-exp').onclick = () => { const c = ZK.exp(); $('#zk-code').value = c; const m = $('#zk-msg'); try { navigator.clipboard.writeText(c).then(() => { m.textContent = 'コードをコピーしました。メモなどに貼って控えてください。'; }, () => { $('#zk-code').select(); m.textContent = '下のコードを選択してコピーしてください。'; }); } catch (_) { $('#zk-code').select(); m.textContent = '下のコードを選択してコピーしてください。'; } };
 $('#zk-imp').onclick = () => { const ok = ZK.imp($('#zk-code').value); $('#zk-msg').textContent = ok ? '読み込みました。' : '読み込めませんでした。コードを確認してください。'; if (ok) ZK.render(); };
@@ -1858,7 +1860,8 @@ function showEnding(e) {
     const nt = el('p'); nt.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)'; nt.textContent = 'この端末では画像の直接シェアができません。4枚を長押しで保存して、Xの投稿に添付してください(Xは画像4枚まで)。';
     imgBox.append(nt); try { navigator.clipboard.writeText(text).catch(() => {}); } catch (_) {} };
   const b4 = el('button', 'btn primary', 'ホームに戻る'); b4.type = 'button'; b4.onclick = () => { clearTimers(); S.auto = false; show('s-title'); window.scrollTo(0, 0); };
-  a.append(bimg, bx, b1, b2, b4, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
+  const b5 = el('button', 'btn line', '図鑑・殿堂を見る'); b5.type = 'button'; b5.onclick = () => { clearTimers(); S.auto = false; ZK.render(); show('s-zukan'); };
+  a.append(bimg, bx, b1, b2, b4, b5, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
   try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false, dt: { ws: e.w.map((w) => [w.y, w.ti, w.tr, w.rk || '']), tx: e.tx, cs: cr[1], cm: dr.cm, tl: dr.tl, vs: (() => { try { return voicesOf(e, dr).map((v) => [v[0], v[1]]); } catch (_) { return []; } })(), mm: (S.mem || []).map((x) => [x.n || x.name || '', x.r || x.role || '']).filter((x) => x[0]).slice(0, 8) } }); } catch (_) {}
   try { if (PL.inc() === PL.NEED) { const u = el('div', 'card'); u.style.cssText = 'border:2px solid #f2c230;text-align:center'; u.append(el('div', null, '★ 新機能が解放されました'), el('div', 'small', PL.NEED + '回たどったごほうびに、人選びの画面で「時代」を選べるようになりました。江戸・原始・3000年のレア時代も指定できます。')); u.firstChild.style.cssText = 'font-weight:900;margin-bottom:4px'; tail.insertBefore(u, a); } } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
