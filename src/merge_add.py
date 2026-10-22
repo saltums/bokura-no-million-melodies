@@ -29,3 +29,18 @@ for f in sorted(glob.glob('/home/claude/add_a/a_*.json')):
             s = set(b['a'][st].get(e, [])); b['a'][st].setdefault(e, []); b['a'][st][e] += [x for x in dict.fromkeys(cells.get(e, [])) if x not in s]
 print('a', {st: {e: len(v) for e, v in d.items()} for st, d in list(b['a'].items())[:3]})
 json.dump(b, open(p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+# side choices
+import glob as _g
+sd = []; seen2 = set()
+for f in sorted(_g.glob('/home/claude/add_sd/sd_*.json')):
+    try: d = json.load(open(f, encoding='utf-8'))
+    except Exception as ex: print('SKIP', f, ex); continue
+    for x in d:
+        try:
+            if x['pr'] in seen2 or x['k'] not in ('a', 'g', 's') or x['e'] not in ('all', 'old', 'mid', 'new'): continue
+            os_ = [o for o in x['o'] if o.get('l') and o.get('ok') is not None and 0 < float(o['p']) <= 1 and 0 < float(o['g']) <= .2]
+            if len(os_) < 2: continue
+            x['pr'] = x['pr'].replace('さて、どうする。', '').strip(); seen2.add(x['pr']); sd.append({'k': x['k'], 'e': x['e'], 'lab': x.get('lab', '寄り道')[:8], 'pr': x['pr'], 'o': [{'l': o['l'], 'p': float(o['p']), 'g': float(o['g']), 'ok': o['ok'], 'ng': o.get('ng', '')} for o in os_]})
+        except Exception: continue
+b['sd'] = sd; print('sd', len(sd))
+json.dump(b, open(p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
