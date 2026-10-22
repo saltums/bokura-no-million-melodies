@@ -1669,6 +1669,19 @@ const ZK = (() => {
   const del = (ts) => { const d = load(); d.lives = d.lives.filter((l) => l.ts !== ts); save(d); };
   const exp = () => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(load())))); } catch (_) { return ''; } };
   const imp = (c) => { try { const d = JSON.parse(decodeURIComponent(escape(atob(c.trim())))); if (!d || d.v !== 1 || !Array.isArray(d.lives)) return false; const cur = load(); const have = new Set(cur.lives.map((l) => l.ts)); d.lives.forEach((l) => { if (!have.has(l.ts)) cur.lives.push(l); }); cur.lives.sort((a, b) => b.ts - a.ts); while (cur.lives.length > MAX) { let i = cur.lives.length - 1; while (i >= 0 && cur.lives[i].fav) i--; if (i < 0) break; cur.lives.splice(i, 1); } Object.entries(d.crowns || {}).forEach(([k, v]) => { cur.crowns[k] = Math.max(cur.crowns[k] || 0, v); }); Object.entries(d.ids || {}).forEach(([k, v]) => { cur.ids[k] = Math.max(cur.ids[k] || 0, v); }); return save(cur); } catch (_) { return false; } };
+  const detail = (l) => {
+    openSheetWith(l.cr + ' · ' + l.es + ' · ' + l.sn, l.a, 'var(--accent)', (b) => {
+      const dt = l.dt; const sec = (t) => { const h = el('div', 'small', t); h.style.cssText = 'font-weight:900;margin:14px 0 4px'; b.append(h); };
+      b.append(el('p', null, '作品' + l.w + '・' + l.bt + ' · 総合 ' + l.tot + '/400' + (dt && dt.tl ? ' 「' + dt.tl + '」' : '')));
+      if (!dt) { b.append(el('p', 'small', 'この記録は詳細の保存前にたどった人生のため、概要のみです。')); return; }
+      if (dt.cm) b.append(el('p', 'small', dt.cm));
+      if (dt.tx) { sec('結末'); b.append(el('p', null, dt.tx + '。')); }
+      if (dt.cs) b.append(el('p', 'small', dt.cs));
+      if (dt.mm && dt.mm.length) { sec('メンバー'); b.append(el('p', null, dt.mm.map((x) => x[0] + (x[1] ? '(' + x[1] + ')' : '')).join('、'))); }
+      if (dt.ws && dt.ws.length) { sec('作品'); dt.ws.forEach((w) => { const r = el('div', null, fmtY(w[0]) + '  「' + w[1] + '」 ' + (TIER[w[2]] || '') + (w[3] ? ' · ' + w[3] : '')); r.style.cssText = 'padding:5px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere'; b.append(r); }); }
+      if (dt.vs && dt.vs.length) { sec('世間の声'); dt.vs.forEach((v) => { const r = el('p', 'small', v[0] + ':' + v[1]); b.append(r); }); }
+    });
+  };
   const render = () => {
     const d = load(); const sum = $('#zk-sum'); sum.textContent = '';
     const totalReal = DATA.filter((x) => x.m.real).length; const ids = Object.keys(d.ids).length; const best = d.lives.reduce((m, l) => Math.max(m, l.tot), 0);
@@ -1687,6 +1700,7 @@ const ZK = (() => {
       const st = el('button', 'btn line', l.fav ? '★' : '☆'); st.type = 'button'; st.style.cssText = 'width:auto;min-width:48px;padding:8px 12px'; st.setAttribute('aria-label', '殿堂に残す');
       st.onclick = () => { toggle(l.ts); render(); };
       h.append(b, st); c.append(h);
+      const dv = el('button', 'btn line', '詳細を見る'); dv.type = 'button'; dv.style.cssText = 'font-size:12px;padding:6px 10px;margin-right:8px'; dv.onclick = () => detail(l); c.append(dv);
       if (!l.fav) { const x = el('button', 'btn line', '削除'); x.type = 'button'; x.style.cssText = 'font-size:12px;padding:6px 10px'; x.onclick = () => { del(l.ts); render(); }; c.append(x); }
       L.append(c);
     });
@@ -1839,7 +1853,7 @@ function showEnding(e) {
     const nt = el('p'); nt.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)'; nt.textContent = 'この端末では画像の直接シェアができません。4枚を長押しで保存して、Xの投稿に添付してください(Xは画像4枚まで)。';
     imgBox.append(nt); try { navigator.clipboard.writeText(text).catch(() => {}); } catch (_) {} };
   a.append(bimg, bx, b1, b2, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
-  try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false }); } catch (_) {}
+  try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false, dt: { ws: e.w.map((w) => [w.y, w.ti, w.tr, w.rk || '']), tx: e.tx, cs: cr[1], cm: dr.cm, tl: dr.tl, vs: (() => { try { return voicesOf(e, dr).map((v) => [v[0], v[1]]); } catch (_) { return []; } })(), mm: (S.mem || []).map((x) => [x.n || x.name || '', x.r || x.role || '']).filter((x) => x[0]).slice(0, 8) } }); } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
 </script>
