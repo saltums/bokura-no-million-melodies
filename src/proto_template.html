@@ -786,6 +786,8 @@ function renderStyles() {
   });
 }
 function eraBucket(e) { return e <= 0 ? 'old' : e <= 2 ? 'mid' : 'new'; }
+const TSP = {};
+function tSplit(eb) { if (!TSP[eb]) { const f = [], j = []; BANK.t[eb].forEach((x) => { (/^[A-Za-z0-9ァ-ヴ"'(!?.\-]/.test(x) ? f : j).push(x); }); TSP[eb] = { f, j }; } return TSP[eb]; }
 function reskin(d) {
   if (d._rs || d.m.rare || d.m.real) return d;
   try {
@@ -796,7 +798,7 @@ function reskin(d) {
     let str = JSON.stringify(d); const pairs = [];
     const add = (old, nw) => { if (!old || !nw || old.length < 2) return; pairs.push([old, nw]); };
     const SX = /(の手前|のままで|で会おう|を失くした.{1,4}|について|の夜|の約束|ごっこ|ブルース)$/; const sfxUsed = new Set();
-    const pkT = () => { for (let i = 0; i < 40; i++) { const x = (BANK.pt && Math.random() < 0.3) ? BANK.pt[Math.floor(Math.random() * BANK.pt.length)] : BANK.t[eb][Math.floor(Math.random() * BANK.t[eb].length)]; const mt = x.match(SX); const key = mt ? mt[1].slice(0, 3) : null; if (used.has(x) || (key && sfxUsed.has(key))) continue; used.add(x); if (key) sfxUsed.add(key); return x; } return pk(BANK.t[eb]); };
+    const pkT = () => { for (let i = 0; i < 40; i++) { const x = (BANK.pt && Math.random() < 0.2) ? BANK.pt[Math.floor(Math.random() * BANK.pt.length)] : (() => { const sp = tSplit(eb); const pl = (Math.random() < 0.72 && sp.f.length) ? sp.f : sp.j; return pl[Math.floor(Math.random() * pl.length)]; })(); const mt = x.match(SX); const key = mt ? mt[1].slice(0, 3) : null; if (used.has(x) || (key && sfxUsed.has(key))) continue; used.add(x); if (key) sfxUsed.add(key); return x; } return pk(BANK.t[eb]); };
     [...olds].filter((x) => x && x.length >= 2).sort((a, b) => b.length - a.length).forEach((o) => add(o, pkT()));
     if (!m.pun) add(m.a, pk((BANK.a[m.st] || {})[eb]));
     pairs.forEach(([o, nw], i) => {
