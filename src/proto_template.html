@@ -1341,13 +1341,13 @@ function playNode(node) {
   const items = injectLife(node.s); S.skip = reduce;
   $('#b-skip').hidden = items.length < 2;
   const step = () => {
-    if (!items.length) { $('#b-skip').hidden = true; finishNode(node); return; }
+    if (!items.length) { S.pending = false; $('#hint').hidden = true; $('#b-skip').hidden = true; finishNode(node); return; }
     S.pending = false; $('#hint').hidden = true; const it = items.shift();
     if (it.t === 'rdq') { if (!it.d) { step(); return; } S.skip = false; $('#b-skip').hidden = true; showFes(it.d, () => { if (!items.length) { S.timers.push(setTimeout(step, 900)); return; } S.pending = true; S.cur = step; if (S.auto) S.timers.push(setTimeout(step, 2600)); }); return; }
     renderItem(it);
     if (items.length && items[0].t === 'rdq') { const d0 = fesMake() || (Math.random() < 0.6 ? sideMake() : null); if (d0) items[0].d = d0; else items.shift(); }
     if (S.skip) { step(); return; }
-    S.pending = true; if (!items.length) { S.pending = false; S.timers.push(setTimeout(step, S.skip ? 300 : Math.min(5200, 1800 + String(it.tx || it.c || '').length * 70))); } else if (S.auto) { const wait = it.t === 'r' ? 3600 : Math.min(7000, 2200 + String(it.tx || '').length * 80); S.timers.push(setTimeout(step, wait)); } else { $('#hint').hidden = false; }
+    S.pending = true; if (!items.length) { S.pending = !S.skip; if (S.pending) $('#hint').hidden = false; S.timers.push(setTimeout(step, S.skip ? 300 : Math.min(5200, 1800 + String(it.tx || it.c || '').length * 70))); } else if (S.auto) { const wait = it.t === 'r' ? 3600 : Math.min(7000, 2200 + String(it.tx || '').length * 80); S.timers.push(setTimeout(step, wait)); } else { $('#hint').hidden = false; }
   };
   S.cur = step; step();
 }
