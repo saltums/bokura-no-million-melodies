@@ -887,12 +887,14 @@ function renderCustom() {
   const sr = $('#size-row'); sr.textContent = '';
   if (isBand) [null, ...szs].forEach((n) => { if (n !== null && !okS(n)) return; const c = el('button', 'chip' + (S.sz === n ? ' on' : ''), n === null ? 'おまかせ' : n + '人'); c.type = 'button'; c.onclick = () => { S.sz = n; renderCustom(); }; sr.append(c); });
   const er = $('#era-row'); er.textContent = '';
-  ERA_OPT.forEach(([v, l]) => { if (v !== null && !okE(v)) return; const c = el('button', 'chip' + (S.eraF === v ? ' on' : ''), l); c.type = 'button'; c.onclick = () => { S.eraF = v; renderCustom(); }; er.append(c); });
+  const RE_ = [[-3, '★江戸'], [-2, '★原始'], [6, '★3000年']];
+  [...ERA_OPT.slice(0, 1), ...(PL.ok() ? RE_ : []), ...ERA_OPT.slice(1)].forEach(([v, l]) => { if (v !== null && v !== -3 && v !== -2 && v !== 6 && !okE(v)) return; const c = el('button', 'chip' + (S.eraF === v ? ' on' : ''), l); c.type = 'button'; c.onclick = () => { S.eraF = v; renderCustom(); }; er.append(c); });
 }
 $('#b-fixed').onclick = () => { renderCands(); show('s-cand'); };
 $('#b-custom').onclick = () => { S.eraF = null; S.sz = null; $('#nm-in').value = ''; nameExamples(); renderCustom(); show('s-custom'); };
 $('#nm-more').onclick = nameExamples;
 $('#b-cgo').onclick = () => {
+  if (PL.ok() && (S.eraF === -3 || S.eraF === -2 || S.eraF === 6)) { let L = DATA.filter((d) => d.m.rare && d.m.era === S.eraF && d.m.st === S.style); if (!L.length) L = DATA.filter((d) => d.m.rare && d.m.era === S.eraF); const r = L[Math.floor(Math.random() * L.length)]; hydrate(r).then(() => startTree(renameTo(r, $('#nm-in').value))).catch(() => {}); return; }
   let pl = cPool().filter((d) => (S.sz == null || szOf(d) === S.sz) && (S.eraF == null || d.m.era === S.eraF));
   const rares = S.eraF == null && S.sz == null ? DATA.filter((d) => d.m.st === S.style && d.m.rare) : [];
   if (!pl.length) pl = cPool();
@@ -1866,7 +1868,7 @@ function showEnding(e) {
   const b5 = el('button', 'btn line', '図鑑・殿堂を見る'); b5.type = 'button'; b5.onclick = () => { clearTimers(); S.auto = false; ZK.render(); show('s-zukan'); };
   a.append(bimg, bx, b1, b2, b4, b5, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
   try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false, dt: { ws: e.w.map((w) => [w.y, w.ti, w.tr, w.rk || '']), tx: e.tx, cs: cr[1], cm: dr.cm, tl: dr.tl, vs: (() => { try { return voicesOf(e, dr).map((v) => [v[0], v[1]]); } catch (_) { return []; } })(), mm: (S.mem || []).map((x) => [x.n || x.name || '', x.r || x.role || '']).filter((x) => x[0]).slice(0, 8) } }); } catch (_) {}
-  try { if (PL.inc() === PL.NEED) { const u = el('div', 'card'); u.style.cssText = 'border:2px solid #f2c230;text-align:center'; u.append(el('div', null, '★ 新機能が解放されました'), el('div', 'small', PL.NEED + '回たどったごほうびに、人選びの画面で「時代」を選べるようになりました。江戸・原始・3000年のレア時代も指定できます。')); u.firstChild.style.cssText = 'font-weight:900;margin-bottom:4px'; tail.insertBefore(u, a); } } catch (_) {}
+  try { if (PL.inc() === PL.NEED) { const u = el('div', 'card'); u.style.cssText = 'border:2px solid #f2c230;text-align:center'; u.append(el('div', null, '★ 解放:レア時代へジャンプ!'), el('div', 'small', PL.NEED + '回たどったごほうびに、カスタムから江戸・原始・3000年のレア時代へジャンプできるようになりました!人選びの画面でも時代を選べます。')); u.firstChild.style.cssText = 'font-weight:900;margin-bottom:4px'; tail.insertBefore(u, a); } } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
 </script>
