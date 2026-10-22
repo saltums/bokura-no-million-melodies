@@ -338,6 +338,16 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
     <p class="small">時代ごとのBGMが流れます。右上の♪で切り替えられます。</p>
   </section>
 
+  <section class="scr" id="s-intro" hidden>
+    <div class="mast"><span class="kick" id="in-k"></span><h1 id="in-nm" style="font-size:34px;line-height:1.25;overflow-wrap:anywhere"></h1></div>
+    <div class="tags" id="in-tags"></div>
+    <p id="in-tx" style="margin:0;font:500 16px/1.8 var(--f-b)"></p>
+    <div id="in-bio" class="small"></div>
+    <span class="lab" id="in-ml"></span>
+    <div id="in-mem"></div>
+    <button class="btn primary" id="in-go" type="button">物語を始める</button>
+    <button class="btn line" id="in-bk" type="button">べつの人にする</button>
+  </section>
   <section class="scr" id="s-zukan" hidden>
     <div class="mast"><span class="kick">図鑑・殿堂</span><h2 style="margin:0;font:900 26px/1.3 var(--f-b)">たどった人生の記録</h2></div>
     <p class="small">記録は、いま使っているこのブラウザの中だけに保存されます。ブラウザのデータを消すと消えるので、大事な記録は「引き継ぎコード」で控えてください。</p>
@@ -453,7 +463,7 @@ function jacket(title) {
 function tc(tier) { return 'var(--t' + tier + ')'; }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
-const screens = ['s-zukan', 's-title', 's-top', 's-style', 's-mode', 's-custom', 's-cand', 's-game'];
+const screens = ['s-intro', 's-zukan', 's-title', 's-top', 's-style', 's-mode', 's-custom', 's-cand', 's-game'];
 // ---- 時代ごとのBGM(WebAudioで合成。外部ファイルなし) ----
 const BGM = (() => {
   let ctx = null, master = null, echo = null, timer = null, step = 0, nextT = 0, cfg = null, phrase = [], on = true, nz = null, era0 = null;
@@ -763,7 +773,7 @@ function confirmStart(d) {
   const m = d.m; const o = el('div', 'mdl'); const bx = el('div', 'box');
   bx.append(el('span', 'lab', 'この人生で始めますか?'), el('div', 'nm', m.a));
   bx.lastChild.style.cssText = 'font:400 24px/1.3 var(--f-d);overflow-wrap:anywhere';
-  const tg = el('div', 'tags'); tg.append(el('span', 'tag p', m.pe), el('span', 'tag', m.es), el('span', 'tag', m.ge), el('span', 'tag', m.sa)); if (m.real) tg.append(el('span', 'tag p', '着想型')); bx.append(tg, el('p', 'small', m.tx + '。'));
+  const tg = el('div', 'tags'); tg.append(el('span', 'tag p', m.pe), el('span', 'tag', m.es), el('span', 'tag', m.ge), el('span', 'tag', m.sa)); bx.append(tg);
   const row = el('div', 'row'); const no = el('button', 'btn line', 'キャンセル'); no.type = 'button'; const ok = el('button', 'btn primary', 'OK'); ok.type = 'button';
   no.onclick = () => o.remove(); ok.onclick = () => { o.remove(); startTree(d); }; row.append(no, ok); bx.append(row); o.append(bx); o.onclick = (e) => { if (e.target === o) o.remove(); }; document.body.append(o);
 }
@@ -777,7 +787,7 @@ function renderCands2(pick) {
     tg.append(el('span', 'tag', m.es));
     tg.append(el('span', 'tag', m.ge));
     tg.append(el('span', 'tag', m.sa));
-    if (m.real) tg.append(el('span', 'tag p', '着想型'));
+   
     if (m.ai) tg.append(el('span', 'tag', 'AI: ' + m.ai));
     c.append(tg);
     c.append(el('p', 'small', m.tx + '。'));
@@ -795,8 +805,20 @@ function clearTimers() { S.timers.forEach(clearTimeout); S.timers = []; }
 const PK = {};
 const hydrate = (d) => (d.t || !d.m.lz) ? Promise.resolve(d) : (PK[d.m.lz] || (PK[d.m.lz] = fetch(d.m.lz).then((r) => r.json()))).then((o) => { d.t = o[d.m.lk]; return d; });
 function startTree(entry) {
-  if (!entry.t && entry.m.lz) { hydrate(entry).then(() => startTree0(entry)).catch(() => { alert('データの読み込みに失敗しました'); }); return; }
-  startTree0(entry);
+  const go = () => { if (S.skipIntro) { S.skipIntro = false; startTree0(entry); } else showIntro(entry, () => startTree0(entry)); };
+  if (!entry.t && entry.m.lz) { hydrate(entry).then(go).catch(() => { alert('データの読み込みに失敗しました'); }); return; }
+  go();
+}
+function showIntro(entry, go) {
+  const m = entry.m; const prev = S.entry; S.entry = entry; S.top = m.top || S.top;
+  $('#in-k').textContent = m.es + ' / ' + m.sn; $('#in-nm').textContent = m.a;
+  const tg = $('#in-tags'); tg.textContent = ''; tg.append(el('span', 'tag p', m.pe), el('span', 'tag', m.ge), el('span', 'tag', m.sa));
+  $('#in-tx').textContent = m.en + '、' + m.tx + '。';
+  const bb = $('#in-bio'); bb.textContent = ''; try { const l0 = S.log; S.log = []; const rows = bioRows(); S.log = l0; rows.slice(0, 3).forEach((o) => bb.append(el('p', null, o[0] + ': ' + o[1]))); } catch (_) {}
+  const grp = m.top === 'グループ' || (m.mm && m.mm.length > 1); const mem = $('#in-mem'); mem.textContent = '';
+  if (m.mm && m.mm.length) { $('#in-ml').textContent = grp ? 'メンバー' : '支える人'; m.mm.forEach((x) => mem.append(memRow(x))); } else $('#in-ml').textContent = '';
+  S.entry = prev; $('#in-go').onclick = () => { S.entry = entry; go(); }; $('#in-bk').onclick = () => { show('s-cand'); };
+  show('s-intro');
 }
 function startTree0(entry) {
   clearTimers(); try { BGM.start(entry.m.era, entry.m.id); } catch (_) {}
@@ -1568,7 +1590,7 @@ function showEnding(e) {
   b3.onclick = () => { const tx = '『' + S.entry.m.a + '』 称号:' + cr[0] + ' / 作品' + e.w.length + ' / 最高' + bestTxt(best) + ' / 総合' + dr.total + '/400 ' + dr.cm + ' (レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure + ') #ぼくらのサウザンドメロディズ';
     const done = () => { b3.textContent = 'コピーしました'; };
     try { navigator.clipboard.writeText(tx).then(done, () => { b3.textContent = tx; }); } catch (_) { b3.textContent = tx; } };
-  const b1 = el('button', 'btn line', '同じ人生を別の選択で'); b1.type = 'button'; b1.onclick = () => { S.auto = false; startTree(S.entry); };
+  const b1 = el('button', 'btn line', '同じ人生を別の選択で'); b1.type = 'button'; b1.onclick = () => { S.auto = false; S.skipIntro = true; startTree(S.entry); };
   const b2 = el('button', 'btn line', '別の人生を始める'); b2.type = 'button'; b2.onclick = () => { clearTimers(); S.auto = false; show('s-top'); };
   const topW = e.w.reduce((m_, w) => (w.tr > m_.tr ? w : m_), e.w[0] || { tr: 0, ti: '' });
   const bars = (v) => '★'.repeat(Math.max(1, Math.round(v / 20))) + '☆'.repeat(5 - Math.max(1, Math.round(v / 20)));
