@@ -284,8 +284,8 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .mbadge { display: inline-flex; align-self: flex-start; font: 700 13px/1 var(--f-b); padding: 6px 9px; border: 1.5px solid var(--t1); color: var(--t1); }
 .mbadge.in { border-color: var(--ok); color: var(--ok); }
 .mem { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-family: var(--f-b); }
-.mem.hic { grid-template-columns: auto auto minmax(0, 1fr) } .mem .icw { grid-row: span 2; align-self: center; background: var(--surface); border: 1px solid var(--line); padding: 4px 2px 0 } .mic { display: block; width: 90px; height: 81px; image-rendering: pixelated } .mic.gone { filter: grayscale(1); opacity: .5 }
-.mem .rl2 { grid-row: span 2; align-self: center; font: 500 13px/1 var(--f-m); background: var(--fg); color: var(--bg); padding: 7px 8px; min-width: 52px; text-align: center; }
+.mem.hic { grid-template-columns: auto minmax(0, 1fr); align-items: center } .mem .mtx { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0 } .mem .icw { grid-row: span 2; align-self: center; background: var(--surface); border: 1px solid var(--line); padding: 4px 2px 0 } .mic { display: block; width: 90px; height: 81px; image-rendering: pixelated } .mic.gone { filter: grayscale(1); opacity: .5 }
+.mem .rl2 { font: 500 13px/1 var(--f-m); background: var(--fg); color: var(--bg); padding: 5px 8px; }
 .mem .mn { font-weight: 700; font-size: 15px; }
 .mem .mt { font-size: 13px; color: var(--muted); }
 .mem.gone .mn { text-decoration: line-through; color: var(--muted); }
@@ -693,6 +693,8 @@ function leafInfo(n) {
 function crownOf(w) {
   const n = w.length, hits = w.filter((x) => x.tr >= 3).length, big = w.filter((x) => x.tr >= 4).length, cult = w.filter((x) => x.tr === 1).length;
   const top = w.reduce((m, x) => Math.max(m, x.tr), 0), lastTwo = w.slice(-2).some((x) => x.tr >= 3), early = w.slice(0, Math.max(1, n - 2)).every((x) => x.tr <= 1);
+  const n5 = w.filter((x) => x.tr === 5).length;
+  if (n5 >= 3) return ['伝説のヒットメーカー', '社会現象を何度も起こした。名前が時代の目印になった。'];
   if (top === 5) return ['時代を塗り替えた人', '社会現象になった曲を、あなたは持っている。'];
   if (big >= 2) return ['ヒットメーカー', '大ヒットを何度も生んだ。'];
   if (big === 1 && hits === 1 && n >= 4) return ['一曲で名を残した人', 'たくさん作って、残ったのは一曲。それで十分だった。'];
@@ -1246,9 +1248,10 @@ function trkRow(t, mainTitle) {
   r.append(el('span', 'tn', String(t.n).padStart(2, '0')), tt, el('span', 'td', t.d)); return r;
 }
 function memRow(m_, gone) {
-  const r = el('div', 'mem hic' + (gone ? ' gone' : '')); { const ic = el('div', 'icw'); ic.append(iconOf(m_.n ? m_ : null, gone)); r.append(ic); } r.append(el('span', 'rl2', m_.r));
-  r.append(el('span', 'mn', m_.n + (m_.k ? '(' + m_.k + ')' : '') + (gone ? '  脱退' + (m_.y ? ' ' + fmtY(m_.y) : '') : '')));
-  r.append(el('span', 'mt', (m_.g ? (m_.g === 'm' ? '男性' : '女性') + ' · ' : '') + (m_.h ? m_.h + '出身' + (m_.t ? ' · ' : '') : '') + (m_.t || (m_.h ? '' : ' ')))); return r;
+  const r = el('div', 'mem hic' + (gone ? ' gone' : '')); { const ic = el('div', 'icw'); ic.append(iconOf(m_.n ? m_ : null, gone)); r.append(ic); }
+  const tx = el('div', 'mtx'); tx.append(el('span', 'rl2', m_.r)); tx.append(el('div', 'mn', m_.n + (gone ? '  脱退' + (m_.y ? ' ' + fmtY(m_.y) : '') : '')));
+  const sub = [m_.k ? '愛称「' + m_.k + '」' : '', m_.g ? (m_.g === 'm' ? '男性' : '女性') : '', m_.h ? m_.h + '出身' : '', m_.t || ''].filter(Boolean).join(' · ');
+  if (sub) tx.append(el('div', 'mt', sub)); r.append(tx); return r;
 }
 function openSheetWith(kick, title, tcv, build) {
   const sh = $('#sheet'); sh.style.setProperty('--tc', tcv || 'var(--accent)'); lastFocus = document.activeElement;
@@ -1571,10 +1574,20 @@ function finale() {
   let closed = false; const close = () => { if (closed) return; closed = true; ov.classList.add('out'); setTimeout(() => ov.remove(), 700); kids.forEach((k, i) => { k.style.animation = 'finUp .55s ' + (0.15 + Math.min(i, 10) * 0.07) + 's both'; k.style.opacity = ''; }); };
   ov.onclick = close; setTimeout(close, 3400); try { BGM.end(); } catch (_) {}
 }
+function coherentEnding(tx, w, nm) {
+  const hits = w.filter((x) => x.tr >= 3).length, top = w.reduce((m, x) => Math.max(m, x.tr), 0);
+  if (/店長|エンジニア|先生|裏方|イラスト|議員|別の仕事|やめ|解散後|提供|ラジオ|俳優/.test(tx)) return tx;
+  const h = (nm || '').length % 3;
+  if (hits >= 2 && top >= 4 && /小さな|静かに|ひっそり|通好み|少数|内輪|遠くても|冷めて|育たなかった|目立たなくても|少なくなった|届かなかった|誰にも知られ|大きくはなれ|大きな会場|消えた/.test(tx))
+    return ['数々の曲が時代を越えて歌い継がれ、名前は音楽の歴史に残った', '大きな舞台に立ち続け、ヒット曲は世代を越えて聴かれている', '代表曲を何度も更新し、確かな存在感を保ったまま歌い続けている'][h];
+  if (top <= 2 && /国民的|社会現象|時代を代表|伝説|語り継/.test(tx))
+    return ['大きな成功には届かなかったが、歌はひっそりと、確かに残っている', '数字には残らなくても、一部の人の大切な曲になった', '派手な成功はなくても、自分の音を鳴らし続けた'][h];
+  return tx;
+}
 function showEnding(e) {
   document.documentElement.style.setProperty('--dockh', '0px');
   const tail = $('#tail'); $('#gcols').classList.add('done');
-  const end = el('div', 'end in'); end.append(el('span', 'lab', '結末')); end.append(el('p', 'tx', e.tx + '。'));
+  const end = el('div', 'end in'); end.append(el('span', 'lab', '結末')); e.tx = coherentEnding(e.tx.replace(/。$/, ''), e.w, S.entry.m.a); end.append(el('p', 'tx', e.tx + '。'));
   tail.append(end);
   const cr = crownOf(e.w); const crown = el('div', 'crown'); crown.append(el('span', 'cl', '称号'), el('div', 'cn', cr[0]), el('div', 'cs', cr[1])); tail.append(crown);
   const dr = dramaOf(e); { const d = el('div', 'drama'); d.append(el('span', 'cl', 'この人生の評価')); const NS = 'http://www.w3.org/2000/svg'; const mk2 = (t, at) => { const n = document.createElementNS(NS, t); Object.entries(at || {}).forEach(([k, v]) => n.setAttribute(k, v)); return n; };

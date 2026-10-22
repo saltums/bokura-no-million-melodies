@@ -1,11 +1,43 @@
 # -*- coding: utf-8 -*-
 """着想型の人生 v2。分かれ道の数(3〜5)・追加イベント・時代ちがいの版に対応。
 各アーティストの仕様は arcs_new/*.py の ARCS(リスト)と PT(曲名の辞書)で与える。仕様はagent_brief.mdを参照。"""
-import copy, random, glob, os, importlib.util
+import copy, random, glob, os, re, importlib.util
 import ongaku_storyline_gen as g
 import lyrics, lyrics_struct, tracks, bio
 from arcs_gen import H, cl, era_of, pr_of, HIT, FLOP, FORM, KIND, ORD, WORDS, THEME, wk
 from parody_titles import PT as PT0
+
+ERA_WORDS = {"動画サイト": 2005, "SNS": 2008, "配信": 2006, "ストリーミング": 2012, "サブスク": 2014, "ショート動画": 2018, "ハッシュタグ": 2010, "ネット": 1998, "ホームページ": 1996, "ブログ": 2002, "関連欄": 2008, "ガラケー": 1997, "着うた": 2002, "ボカロ": 2007, "海外の動画": 2005, "バズ": 2008, "拡散": 2008, "リール": 2018, "インディーズ": 1980, "CD": 1982, "カセット": 1968}
+BRIDGE = re.compile(r"解散|活動を休止|休止す|休む|引退|区切り")
+BRIDGE_TX = ["しばらくの空白があった。それでも、また音を鳴らす日が来た。", "離れていた時間を経て、ふたたび歩き出した。", "何もしない季節が過ぎ、気がつくと楽器に手が伸びていた。"]
+
+
+def era_ok(tx, year):
+    return all(year >= y for w, y in ERA_WORDS.items() if w in tx)
+
+
+def cap_fives(tree, cap=2):
+    def walk(n, k):
+        for it in n["s"]:
+            if it.get("t") == "r":
+                if it["tr"] >= 5:
+                    k += 1
+                    if k > cap: it["tr"] = 4
+        if n.get("n"):
+            for c in n["n"]: walk(c, k)
+        elif n.get("e"):
+            # 葉の作品リストは、経路上の作品と同じ順で並んでいる
+            pass
+    # 経路ごとに「作品の当たり具合」を揃える: 葉のw[].trを再計算
+    def leaf_fix(n, path):
+        path = path + [it for it in n["s"] if it.get("t") == "r"]
+        if n.get("n"):
+            for c in n["n"]: leaf_fix(c, path)
+        elif n.get("e"):
+            for w, r in zip(n["e"]["w"], path):
+                if isinstance(w, dict) and "tr" in w: w["tr"] = r["tr"]
+    walk(tree, 0); leaf_fix(tree, [])
+
 
 ERA_Y = {-1: 1974, 0: 1983, 1: 1996, 2: 2004, 3: 2013, 4: 2021}
 STN = {"band": "バンド", "duo": "2人組ユニット", "solo": "シンガーソングライター", "rap": "ラッパー", "beat": "ボカロP・トラックメイカー", "dj": "DJ", "inst": "轟音インストバンド"}
@@ -58,7 +90,10 @@ def build(a, i, pool, era=None, nm=None):
     name = nm or a["nm"]
     meta = {"id": seed, "a": name, "pun": None, "top": top, "st": st if st != "dj" else "solo", "sn": STN.get(st, "シンガーソングライター"), "pe": "まじめ", "era": era, "en": E["name"], "es": E["short"], "sa": a["sa"], "ge": a["ge"],
             "tx": a["tx"], "ai": None, "mm": mm, "vg": a["vg"], "bio": bio.make(seed, st if st != "dj" else "solo", era, None, top == "グループ"), "real": True, "histTx": a["eh"], "cp": a.get("cp", [])}
-    th = a["th"]; D = a["d"]; N = len(D); cv = a["cv"]; ev = a["ev"]; ex = list(a.get("ex") or [])
+    th = a["th"]; D = a["d"]; N = len(D); cv = a["cv"]; ev = list(a["ev"]); ex = list(a.get("ex") or [])
+    _yy = y0 + 2
+    ex = [x for x in ex if era_ok(x, _yy)]
+    ev = [x if era_ok(x, _yy) else "活動は、少しずつ、確かな形になっていった。" for x in ev]
     rr = random.Random(H(a["k"], "ex", era)); rr.shuffle(ex)
     counter = [0]
 
@@ -86,7 +121,8 @@ def build(a, i, pool, era=None, nm=None):
         for x in (0, 1):
             sn = copy.deepcopy(seen); counter[0] = pos0
             e2 = eff + D[si][6 if x else 5]; dv2 = dv + x
-            seg = [X(D[si], x)] + evs(si + 1) + stage(si + 1, e2, dv2, sn)
+            lab_ = D[si][2 if x else 1]
+            seg = [X(D[si], x)] + ([{"t": "e", "tx": BRIDGE_TX[(si + x) % len(BRIDGE_TX)]}] if BRIDGE.search(lab_) else []) + evs(si + 1) + stage(si + 1, e2, dv2, sn)
             pos1 = pos0 + len(cv[min(si + 1, len(cv) - 1)])
             works = prior_works + [w for w in seg if w["t"] == "r"]
             if si + 1 < N:
@@ -99,7 +135,9 @@ def build(a, i, pool, era=None, nm=None):
     seen0 = []; counter[0] = 0
     s0 = evs(0)[:1] + stage(0, 0, 0, seen0)
     pos1 = len(cv[0]); w0 = [w for w in s0 if w["t"] == "r"]
-    return {"m": meta, "t": {"s": s0, "q": q(D[0]), "n": node(0, 0, 0, seen0, pos1, w0)}}
+    tree = {"s": s0, "q": q(D[0]), "n": node(0, 0, 0, seen0, pos1, w0)}
+    cap_fives(tree)
+    return {"m": meta, "t": tree}
 
 
 def build_all(dirpath='/home/claude/arcs_new', variants=True):

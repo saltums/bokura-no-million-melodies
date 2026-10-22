@@ -137,6 +137,14 @@ def main():
     import arcs2_gen
     _a2 = arcs2_gen.build_all(); [x['m'].__setitem__('_lz', 1) for x in _a2]; pool += _a2
     import random as _r
+    def _fixvg(n, vg):
+        for it in n.get('s', []):
+            if it.get('t') == 'r' and it.get('ly'): it['ly']['vg'] = vg
+        for c in n.get('n', []) or []: _fixvg(c, vg)
+    for _e in pool:
+        _m = _e['m']; _vo = [x for x in (_m.get('mm') or []) if str(x.get('r', '')).startswith('Vo') and x.get('g') in ('m', 'f')]
+        if _vo and _m.get('vg') in ('m', 'f') and _vo[0]['g'] != _m['vg'] and _e.get('t'):
+            _m['vg'] = _vo[0]['g']; _fixvg(_e['t'], _m['vg'])
     for _e in pool:
         _b = _e["m"].get("bio") or {}
         if _b.get("fd") and _e["m"].get("mm"):
