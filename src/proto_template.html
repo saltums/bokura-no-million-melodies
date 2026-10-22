@@ -1849,7 +1849,8 @@ function showEnding(e) {
     cvs.forEach((c, i) => { const im = new Image(); im.src = c.toDataURL('image/png'); im.alt = '結果の画像 ' + (i + 1); im.style.cssText = 'width:100%;border:1px solid var(--line)'; imgBox.append(im); });
     const nt = el('p'); nt.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)'; nt.textContent = 'この端末では画像の直接シェアができません。4枚を長押しで保存して、Xの投稿に添付してください(Xは画像4枚まで)。';
     imgBox.append(nt); try { navigator.clipboard.writeText(text).catch(() => {}); } catch (_) {} };
-  a.append(bimg, bx, b1, b2, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
+  const b4 = el('button', 'btn primary', 'ホームに戻る'); b4.type = 'button'; b4.onclick = () => { clearTimers(); S.auto = false; show('s-title'); window.scrollTo(0, 0); };
+  a.append(bimg, bx, b1, b2, b4, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
   try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false, dt: { ws: e.w.map((w) => [w.y, w.ti, w.tr, w.rk || '']), tx: e.tx, cs: cr[1], cm: dr.cm, tl: dr.tl, vs: (() => { try { return voicesOf(e, dr).map((v) => [v[0], v[1]]); } catch (_) { return []; } })(), mm: (S.mem || []).map((x) => [x.n || x.name || '', x.r || x.role || '']).filter((x) => x[0]).slice(0, 8) } }); } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
