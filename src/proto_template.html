@@ -328,7 +328,8 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .row .btn { flex: 1 1 220px; }
 .mdl .row .btn { flex: 1 1 0; }
 .chip, .erow .chip { min-height: 44px; padding: 8px 14px; }
-.rel .ti, .rel .meta, .heat .aw { white-space: normal; overflow: visible; text-overflow: clip; }
+.rel .ti, .rel .meta, .heat .aw { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.rel .top > div { min-width: 0; }
 .card.ev.mini p, .card.res.mini p { -webkit-line-clamp: 2; }
 .wrap { padding-bottom: 96px; }
 :root { --muted: #4A5463; }
@@ -666,7 +667,7 @@ function sideMake() {
   const eb = eraBucket(m.era), grp = m.top === 'グループ' || m.st === 'duo';
   const c = BANK.sd.filter((x) => (x.e === 'all' || x.e === eb) && (x.k === 'a' || (x.k === 'g') === grp) && !S.sdUsed.has(x.pr));
   if (!c.length) return null; const pk = c[Math.floor(Math.random() * c.length)]; S.sdUsed.add(pk.pr); S.sdN += 1;
-  return { kind: 'side', lab: pk.lab || '寄り道', prompt: pk.pr, opts: pk.o.map((o) => ({ l: o.l, p: o.p, g: o.g, ok: o.ok, ng: o.ng || o.ok, up: false })) };
+  return { kind: 'side', lab: pk.lab || '寄り道', prompt: pk.pr, opts: pk.o.map((o) => ({ l: o.l, p: o.p, g: o.g, ok: o.ok, ng: o.ng || o.ok, up: false, gs: o.gs, fu: [o.fu_ok, o.fu_ng] })) };
 }
 function showFes(d, done) {
   const tail = $('#tail'); tail.textContent = '';
@@ -677,7 +678,7 @@ function showFes(d, done) {
     b.onclick = () => {
       btns.forEach((x) => { x.disabled = true; }); b.classList.add('chosen');
       const ok = Math.random() < o.p; if (d.kind !== 'side') { S.rtN += 1; S.rtW = S.works; } if (d.kind === 'fes') S.fesN += 1; if (ok && d.kind !== 'side') S.fesOk += 1;
-      const T = awTab(S.entry.m); const pb0 = S.awP / T[S.stg][1] * 100, st0 = S.stg;
+      const T = awTab(S.entry.m); const pb0 = S.awP / T[S.stg][1] * 100, st0 = S.stg; if (o.fu) { const f0 = ok ? o.fu[0] : o.fu[1]; if (f0) (S.fuq = S.fuq || []).push(f0); } if (o.gs && !ok) { S.awP *= 0.93; S.heat = Math.max(0, S.heat - 0.4); }
       if (ok) {
         if (o.up && S.stg < T.length - 1) { S.stg += 1; const P2 = T[S.stg][1]; S.awP = Math.min(P2, S.awP + P2 * o.g); }
         else { const P = T[S.stg][1]; S.awP = Math.min(P, S.awP + (P - S.awP) * o.g * (o.fix ? 1 : 4)); }
@@ -810,7 +811,9 @@ function renderCands() {
   const ef = () => true; let base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real && ef(d)); if (!base.length) { S.eraF = null; base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real); } const pick = shuffle(base).slice(0, 3);
   { const reals = DATA.filter((d) => d.m.st === S.style && d.m.real && d.m.era !== undefined && ef(d)); if (reals.length && Math.random() < 0.45) pick[Math.floor(Math.random() * pick.length)] = reals[Math.floor(Math.random() * reals.length)]; }
   { const rares = DATA.filter((d) => d.m.st === S.style && d.m.rare); if (rares.length && Math.random() < 0.08) pick[Math.floor(Math.random() * pick.length)] = rares[Math.floor(Math.random() * rares.length)]; }
-  Promise.all(pick.map(hydrate)).then(() => renderCands2(pick.map(reskin))).catch(() => {});
+  { const fx = (d) => d.m.pun || d.m.real || d.m.rare; const spare = shuffle(base.filter((d) => !pick.includes(d))); const seenN = new Set();
+    for (let i = 0; i < pick.length; i++) { let g = 0; while (fx(pick[i]) && seenN.has(pick[i].m.a) && spare.length && g++ < 40) pick[i] = spare.shift(); if (fx(pick[i])) seenN.add(pick[i].m.a); } }
+  Promise.all(pick.map(hydrate)).then(() => { const names = new Set(); pick.forEach((d) => { if (d.m.pun || d.m.real || d.m.rare) names.add(d.m.a); }); const out = pick.map((d) => { if (d.m.pun || d.m.real || d.m.rare) return d; let r = reskin(d); for (let i = 0; i < 25 && names.has(r.m.a); i++) r = reskin(d); names.add(r.m.a); return r; }); renderCands2(out); }).catch(() => {});
 }
 function confirmStart(d) {
   const m = d.m; const o = el('div', 'mdl'); const bx = el('div', 'box');
@@ -859,13 +862,13 @@ function showIntro(entry, go) {
   $('#in-tx').textContent = m.en + '、' + m.tx + '。';
   const bb = $('#in-bio'); bb.textContent = ''; try { const l0 = S.log; S.log = []; const rows = bioRows(); S.log = l0; rows.slice(0, 3).forEach((o) => bb.append(el('p', null, o[0] + ': ' + o[1]))); } catch (_) {}
   const grp = m.top === 'グループ' || (m.mm && m.mm.length > 1); const mem = $('#in-mem'); mem.textContent = '';
-  if (m.mm && m.mm.length) { $('#in-ml').textContent = grp ? 'メンバー' : '支える人'; m.mm.forEach((x) => mem.append(memRow(x))); } else $('#in-ml').textContent = '';
+  if (!grp) mem.append(selfRow(m)); if (m.mm && m.mm.length) { $('#in-ml').textContent = grp ? 'メンバー' : '支える人'; m.mm.forEach((x) => mem.append(memRow(x))); } else $('#in-ml').textContent = '';
   S.entry = prev; $('#in-go').onclick = () => { S.entry = entry; go(); }; $('#in-bk').onclick = () => { show('s-cand'); }; $('#in-back').onclick = () => { show('s-cand'); };
   show('s-intro');
 }
 function startTree0(entry) {
   clearTimers(); try { BGM.start(entry.m.era, entry.m.id); } catch (_) {}
-  S.entry = entry; S.awP = 0; S.stg = 0; S.rtN = 0; S.rtW = -1; S.fesN = 0; S.fesOk = 0; S.evN = 0; S.sdN = 0; S.sdUsed = new Set(); S.evUsed = new Set(); S.evFam = new Set(); TIER = entry.m.tn || TIER_D; S.works = 0; S.best = 999; S.skip = false; S.heat = 0; S.tiers = []; S.ms = {}; S.dn = 0; S.path = []; S.log = []; S.lastY = null; S.mem = JSON.parse(JSON.stringify(entry.m.mm || [])); S.exMem = []; S.inMem = []; S.curEl = null; $('#gcols').classList.remove('done'); $('#gcols').classList.remove('deciding');
+  S.entry = entry; S.awP = 0; S.stg = 0; S.rtN = 0; S.rtW = -1; S.fesN = 0; S.fesOk = 0; S.evN = 0; S.relN = 0; S.fuq = []; S.selfDone = false; S.selfAt = Math.random() < 0.5 ? 3 + Math.floor(Math.random() * 3) : 0; S.sdN = 0; S.sdUsed = new Set(); S.evUsed = new Set(); S.evFam = new Set(); TIER = entry.m.tn || TIER_D; S.works = 0; S.best = 999; S.skip = false; S.heat = 0; S.tiers = []; S.ms = {}; S.dn = 0; S.path = []; S.log = []; S.lastY = null; S.mem = JSON.parse(JSON.stringify(entry.m.mm || [])); S.exMem = []; S.inMem = []; S.curEl = null; $('#gcols').classList.remove('done'); $('#gcols').classList.remove('deciding');
   $('#feed').textContent = ''; $('#tail').textContent = '';
   const m = entry.m;
   $('#h-nm').textContent = m.a; $('#h-y').textContent = '—'; $('#h-w').textContent = '0'; $('#h-b').textContent = m.rare ? '—' : '圏外'; setHeat(false);
@@ -1118,9 +1121,9 @@ function setHeat(up) {
 }
 function bestTxt(n) { const rkm = S.entry && S.entry.m.rk; if (rkm) { const t = { 999: 0, 998: 1, 20: 2, 8: 3, 2: 4, 1: 5 }[n]; return t == null ? '—' : rkm[t]; } return n === 999 ? '圏外' : n + '位'; }
 function milestone(it, r) {
-  const t = S.tiers, m = S.ms; let out = null;
+  const t = S.tiers, m = S.ms; let out = null; if (it.selft) out = 'セルフタイトルのアルバム';
   if (S.entry.m.rare && S.entry.m.era <= -2) { const ed = S.entry.m.era === -3; if (it.tr >= 2 && !m.chart) { m.chart = 1; out = ed ? '初めて宿場の外へ' : '初めて集落の外へ'; } if (it.tr >= 4 && !m.no1) { m.no1 = 1; out = ed ? '盆踊りの定番に' : '語り継がれる歌に'; } if (!out && it.tr >= 3 && t.length >= 2 && t.slice(-2).every((x) => x <= 1)) out = '長い不遇からの復活'; return out; }
-  if (it.tr >= 2 && !m.chart) { m.chart = 1; out = '初のチャートイン'; }
+  if (it.tr >= 2 && !m.chart) { m.chart = 1; out = it.selft ? out : '初のチャートイン'; }
   if (r.n <= 10 && !m.top10) { m.top10 = 1; out = '初のトップ10入り'; }
   if (r.n === 1 && !m.no1) { m.no1 = 1; out = '初の1位'; }
   if (!out && it.tr >= 3 && t.length >= 2 && t.slice(-2).every((x) => x <= 1)) out = '長い不遇からの復活';
@@ -1260,6 +1263,11 @@ function trkRow(t, mainTitle) {
   if (t.g) { const g = el('span', 'tg', t.g); tt.append(' ', g); }
   r.append(el('span', 'tn', String(t.n).padStart(2, '0')), tt, el('span', 'td', t.d)); return r;
 }
+function selfRow(m) {
+  const self = el('div', 'mem hic'); const ic = el('div', 'icw'); const cv = document.createElement('canvas'); cv.width = 30; cv.height = 27; cv.className = 'mic'; const g2 = cv.getContext('2d'); g2.imageSmoothingEnabled = false;
+  try { drawChar(g2, 7, 0, mkLook(null, m, m.st, 0, 'idle', 0)); } catch (_) {} ic.append(cv);
+  const tx = el('div', 'mtx'); tx.append(el('span', 'rl2', '本人'), el('div', 'mn', m.a), el('div', 'mt', 'この人生の主人公')); self.append(ic, tx); return self;
+}
 function memRow(m_, gone) {
   const r = el('div', 'mem hic' + (gone ? ' gone' : '')); { const ic = el('div', 'icw'); ic.append(iconOf(m_.n ? m_ : null, gone)); r.append(ic); }
   const tx = el('div', 'mtx'); tx.append(el('span', 'rl2', m_.r)); tx.append(el('div', 'mn', m_.n + (gone ? '  脱退' + (m_.y ? ' ' + fmtY(m_.y) : '') : '')));
@@ -1293,7 +1301,7 @@ function openMembers() {
   const grp = S.top === 'グループ';
   openSheetWith(S.entry.m.a, 'プロフィール', null, (b) => {
     const rows = bioRows(); if (rows.length) { const bg = el('div', 'bio'); rows.forEach(([k, v]) => { bg.append(el('b', null, k), el('span', null, v)); }); b.append(bg); }
-    if (!grp) { const self = el('div', 'mem hic'); const ic = el('div', 'icw'); const cv = document.createElement('canvas'); cv.width = 30; cv.height = 27; cv.className = 'mic'; const g2 = cv.getContext('2d'); g2.imageSmoothingEnabled = false; try { drawChar(g2, 7, 0, mkLook(null, S.entry.m, S.entry.m.st, 0, 'idle', 0)); } catch (_) {} ic.append(cv); self.append(ic, el('span', 'rl2', '本人'), el('span', 'mn', S.entry.m.a), el('span', 'mt', 'この人生の主人公')); b.append(self); }
+    if (!grp) b.append(selfRow(S.entry.m));
     b.append(el('span', 'lab', grp ? 'メンバー' : '支えてくれている人たち'));
     const w = el('div'); (S.mem || []).forEach((m_) => w.append(memRow(m_))); (S.exMem || []).forEach((m_) => w.append(memRow(m_, true))); b.append(w);
     if (!(S.mem || []).length) b.append(el('p', 'sh-note', 'まだ誰もいません。'));
@@ -1309,9 +1317,19 @@ function injectLife(list) {
   const m = S.entry.m; const life = !(m.rare || !BANK.ev);
   const eb = eraBucket(m.era), grp = ['グループ'].includes(m.top) || m.st === 'duo'; const out = [];
   list.forEach((it) => {
+    if (it.t === 'r') {
+      S.relN = (S.relN || 0) + 1;
+      if (life && !S.selfDone && S.selfAt && S.relN >= S.selfAt && m.a.length <= 18) {
+        S.selfDone = true; const old = it.ti; it = Object.assign({}, it, { ti: m.a, selft: true }); if (it.tk && it.tk.length) it.tk = it.tk.map((k, i) => (i === 0 || k.t === old ? Object.assign({}, k, { t: m.a }) : k));
+        const tx = grp ? ['ここまでの全部を詰め込んで、バンド名をそのままタイトルにしたアルバムを作ることにした。「これが名刺だ」と、全員の意見が一致した。', '「いま自分たちが何者か」を一枚で答えるため、アルバムの題名はバンド名にした。ジャケットには、メンバー全員の影が並んでいる。'][m.a.length % 2]
+          : ['ここまでの全部を詰め込んで、自分の名前をそのまま題名にしたアルバムを作ることにした。「これが名刺だ」と思えた。', '「いま自分は何者か」を一枚で答えるため、アルバムの題名は自分の名前にした。'][m.a.length % 2];
+        out.push({ t: 'e', tx, life: 1 });
+      }
+    }
     out.push(it);
     if (it.t !== 'r') return;
     out.push({ t: 'rdq' });
+    if (S.fuq && S.fuq.length) out.push({ t: 'e', tx: S.fuq.shift(), life: 1 });
     if (!life || S.evN >= 5 || Math.random() > 0.55) return;
     const up = it.tr >= 3, down = it.tr <= 1;
     const c = BANK.ev.filter((x) => (x.e === 'all' || x.e === eb) && (x.k === 'a' || (x.k === 'g') === grp) && (x.m === 'any' || (x.m === 'up' && up) || (x.m === 'down' && down)) && !S.evUsed.has(x.t) && (x.f == null || !S.evFam.has(x.f)));
@@ -1329,7 +1347,7 @@ function playNode(node) {
     renderItem(it);
     if (items.length && items[0].t === 'rdq') { const d0 = fesMake() || (Math.random() < 0.6 ? sideMake() : null); if (d0) items[0].d = d0; else items.shift(); }
     if (S.skip) { step(); return; }
-    S.pending = true; if (!items.length) { S.pending = false; S.timers.push(setTimeout(step, 500)); } else if (S.auto) { const wait = it.t === 'r' ? 3600 : Math.min(7000, 2200 + String(it.tx || '').length * 80); S.timers.push(setTimeout(step, wait)); } else { $('#hint').hidden = false; }
+    S.pending = true; if (!items.length) { S.pending = false; S.timers.push(setTimeout(step, S.skip ? 300 : Math.min(5200, 1800 + String(it.tx || it.c || '').length * 70))); } else if (S.auto) { const wait = it.t === 'r' ? 3600 : Math.min(7000, 2200 + String(it.tx || '').length * 80); S.timers.push(setTimeout(step, wait)); } else { $('#hint').hidden = false; }
   };
   S.cur = step; step();
 }
@@ -1623,13 +1641,13 @@ function showEnding(e) {
   tail.append(st);
   { const T = awTab(S.entry.m), P = T[S.stg][1]; const aw = el('p', 'dcm'); aw.append('たどり着いた広がり:' + T[S.stg][0] + '(認知度 ' + fmtPct(S.awP / P * 100) + '%・約' + fmtN(S.awP) + ')' + (S.fesOk ? '。祭りや遠征での成功 ' + S.fesOk + '回' : '')); tail.append(aw); }
   { const grp = S.top === 'グループ'; const cur = S.mem || [];
-    if (cur.length) { tail.append(el('span', 'lab', grp ? 'メンバー' : '支えてくれた人たち')); const mw = el('div'); cur.forEach((m_) => mw.append(memRow(m_))); (S.exMem || []).forEach((m_) => mw.append(memRow(m_, true))); tail.append(mw); } }
+    if (cur.length) { tail.append(el('span', 'lab', grp ? 'メンバー' : '支えてくれた人たち')); const mw = el('div'); if (!grp) mw.append(selfRow(S.entry.m)); cur.forEach((m_) => mw.append(memRow(m_))); (S.exMem || []).forEach((m_) => mw.append(memRow(m_, true))); tail.append(mw); } }
   tail.append(el('span', 'lab', 'ディスコグラフィ'));
   const ds = el('div', 'dsc');
   S.log.filter((x) => x.t === 'r').forEach((w) => {
     const item = el('div', 'dsi'); item.style.setProperty('--tc', tc(w.tr)); const dh = el('div', 'dh'); dh.append(jacket(w.ti));
     const mid = el('div'); mid.style.minWidth = '0'; mid.append(el('div', 'dt', '「' + w.ti + '」'));
-    mid.append(el('div', 'ds', fmtY(w.y) + ' · ' + w.o + ' · ' + w.lb + ' · ' + TIER[w.tr] + (w.tk ? ' · 全' + w.tk.length + '曲' : ''))); dh.append(mid);
+    mid.append(el('div', 'ds', fmtY(w.y) + ' · ' + w.o + (w.it && w.it.selft ? ' · セルフタイトル' : '') + ' · ' + w.lb + ' · ' + TIER[w.tr] + (w.tk ? ' · 全' + w.tk.length + '曲' : ''))); dh.append(mid);
     const r = rankOf(w.tr, w.ti); dh.append(el('div', 'dr' + (r.n === 999 ? ' out' : ''), r.txt)); item.append(dh);
     if (w.it && w.it.ly) { const ac = el('div', 'acts'); const lb = el('button', 'lbtn', w.it.ly.k === 'inst' ? '曲の展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = () => openLyrics(w.it); ac.append(lb); item.append(ac); }
     if (w.tk && w.tk.length > 1) w.tk.forEach((t) => item.append(trkRow(t, w.ti)));

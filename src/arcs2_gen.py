@@ -52,6 +52,7 @@ def load_specs(dirpath='/home/claude/arcs_new'):
         except Exception as e:
             print('SKIP', f, e); continue
         arcs += getattr(m, 'ARCS', []); pt.update(getattr(m, 'PT', {}))
+    pt = {k: list(dict.fromkeys(t.split('→')[-1].strip() for t in v)) for k, v in pt.items()}
     return arcs, pt
 
 

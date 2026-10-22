@@ -40,7 +40,7 @@ for f in sorted(_g.glob('/home/claude/add_sd/sd_*.json')):
             if x['pr'] in seen2 or x['k'] not in ('a', 'g', 's') or x['e'] not in ('all', 'old', 'mid', 'new'): continue
             os_ = [o for o in x['o'] if o.get('l') and o.get('ok') is not None and 0 < float(o['p']) <= 1 and 0 < float(o['g']) <= .2]
             if len(os_) < 2: continue
-            x['pr'] = x['pr'].replace('さて、どうする。', '').strip(); seen2.add(x['pr']); sd.append({'k': x['k'], 'e': x['e'], 'lab': x.get('lab', '寄り道')[:8], 'pr': x['pr'], 'o': [{'l': o['l'], 'p': float(o['p']), 'g': float(o['g']), 'ok': o['ok'], 'ng': o.get('ng', '')} for o in os_]})
+            x['pr'] = x['pr'].replace('さて、どうする。', '').strip(); seen2.add(x['pr']); sd.append({'k': x['k'], 'e': x['e'], 'lab': x.get('lab', '寄り道')[:8], 'pr': x['pr'], 'o': [dict({'l': o['l'], 'p': float(o['p']), 'g': float(o['g']), 'ok': o['ok'], 'ng': o.get('ng', '')}, **({'gs': 1, 'fu_ok': o.get('fu_ok', ''), 'fu_ng': o.get('fu_ng', '')} if o.get('gs') else {})) for o in os_]})
         except Exception: continue
 b['sd'] = sd; print('sd', len(sd))
 json.dump(b, open(p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))

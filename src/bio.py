@@ -57,4 +57,8 @@ def make(seed, style, era, ai_mode, group):
 
 def member_extra(seed, role, idx):
     r = random.Random(_s(seed, role, idx, "mbio"))
-    return {"h": place(r), "o": r.choice([-3, -2, -1, 0, 0, 1, 2, 3])}
+    r0 = random.Random(_s(seed, "bio")); r0.choice([17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 30, 32]); lp = place(r0)
+    pref = next((p for p, cs in PL if lp.startswith(p)), None)
+    cs = dict(PL).get(pref)
+    h = pref + r.choice(cs) if cs else place(r)
+    return {"h": h, "o": r.choice([-3, -2, -1, 0, 0, 1, 2, 3])}
