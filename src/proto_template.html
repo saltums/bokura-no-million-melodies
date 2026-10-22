@@ -108,7 +108,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .hud .nmrow { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .memb { flex: none; appearance: none; background: none; border: 1px solid var(--line); color: var(--muted); font: 700 13px/1 var(--f-b); min-height: 32px; padding: 0 10px; cursor: pointer; }
 .memb:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
-.hud .nm { flex: 1 1 auto; font: 400 16px/1.3 var(--f-d); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .nm { flex: 1 1 auto; font: 400 16px/1.3 var(--f-d); min-width: 0; white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .hud .st { font: 500 13px/1.4 var(--f-m); color: var(--muted); min-width: 0; }
 .hud .st b { color: var(--fg); font-weight: 500; }
 .heat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: center; }
@@ -234,8 +234,9 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .crown .cl { font: 500 13px/1 var(--f-m); letter-spacing: .12em; color: var(--muted); }
 .crown .cn { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .crown .cs { font-size: 14px; color: var(--muted); }
-.traj { display: flex; align-items: flex-end; gap: 4px; height: 72px; border-bottom: 2px solid var(--fg); padding-bottom: 0; }
-.traj i { flex: 1 1 0; min-width: 4px; max-width: 28px; background: var(--tc); }
+.traj { display: flex; align-items: stretch; gap: 4px; height: 110px; border-bottom: 2px solid var(--fg); padding-bottom: 0; }
+.traj .tcol { flex: 1 1 0; min-width: 14px; max-width: 34px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; } .traj .tcol i { width: 100%; background: var(--tc); } .traj .tcol span { position: absolute; bottom: -22px; font: 500 13px/1 var(--f-m); color: var(--muted); }
+.tlg { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 26px; font-size: 13px; } .tlg span { display: inline-flex; align-items: center; gap: 4px; } .tlg i { width: 12px; height: 12px; display: inline-block; }
 .iff { display: flex; flex-direction: column; gap: 8px; }
 .iff .it { border-left: 4px solid var(--line); padding: 4px 0 4px 12px; font-size: 14px; }
 .iff .it b { display: block; font-size: 14px; }
@@ -318,6 +319,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .wk .r.out { font-size: 13px; }
 
 /* UX改善 */
+.rhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; } .rbadge { font: 700 13px/1.2 var(--f-b); padding: 4px 8px; border: 2px solid currentColor; } .rbadge.ok { color: var(--ok); } .rbadge.ng { color: var(--ng); }
 .steps { display: flex; flex-direction: column; gap: 6px; } .steps .bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; } .steps .bar i { height: 8px; background: var(--line); } .steps .bar i.done { background: var(--fg); } .steps .bar i.cur { background: var(--accent); outline: 2px solid var(--accent-ink); outline-offset: -2px; }
 .steps .nm { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; font: 500 13px/1.3 var(--f-b); color: var(--muted); text-align: center; } .steps .nm span.cur { color: var(--fg); font-weight: 900; }
 .btn { word-break: keep-all; overflow-wrap: anywhere; }
@@ -1196,9 +1198,9 @@ function renderItem(it) {
   } else if (it.t === 'e') {
     const c = el('div', 'card ev in'); c.append(el('span', 'lab', '転機')); c.append(el('p', null, it.tx)); { const bb = mbBadge(it.mb); if (bb) c.append(bb); } c.addEventListener('click', () => c.classList.remove('mini')); f.prepend(c); S.curEl = c; collapseOld(c);
   } else {
-    const c = el('div', 'card res in'); c.append(el('span', 'lab', '選んだ結果'));
-    const p = el('p'); const pk = el('span', 'pk', '「' + it.c + '」を選んだ。'); p.append(pk, ' ');
-    p.append(el('span', it.ok ? 'ok' : 'ng', it.ok ? '[うまくいった] ' : '[裏目に出た] ')); p.append(it.tx);
+    const c = el('div', 'card res in'); const mt = String(it.tx || '').match(/\((認知度[^)]*|広がり[^)]*)\)\s*$/); const body = mt ? it.tx.slice(0, mt.index) : it.tx;
+    const hd = el('div', 'rhead'); hd.append(el('span', 'lab', '選んだ結果')); const bg = el('span', 'rbadge ' + (it.ok ? 'ok' : 'ng'), (it.ok ? 'うまくいった' : '裏目に出た') + (mt ? ' ・ ' + mt[1] : '')); hd.append(bg); c.append(hd);
+    const p = el('p'); const pk = el('span', 'pk', '「' + it.c + '」を選んだ。'); p.append(pk, ' '); p.append(body);
     c.append(p); { const bb = mbBadge(it.mb); if (bb) c.append(bb); } c.addEventListener('click', () => c.classList.remove('mini')); f.prepend(c); S.curEl = c; collapseOld(c);
   }
   updateHud(it);
@@ -1354,6 +1356,7 @@ function showDecision(node) {
   if (S.auto) { let bi = 0; node.n.forEach((k, i) => { if (bestSum(k) > bestSum(node.n[bi])) bi = i; }); S.timers.push(setTimeout(() => btns[bi].click(), 1800)); }
   requestAnimationFrame(() => { measureHud(); c_scroll(); });
 }
+function wrapT(t, n, mx) { t = String(t); const o = []; for (let i = 0; i < t.length && o.length < mx; i += n) o.push(t.slice(i, i + n)); if (t.length > n * mx) o[mx - 1] = o[mx - 1].slice(0, -1) + '…'; return o; }
 function cut(t, n) { t = String(t); return t.length > n ? t.slice(0, n - 1) + '…' : t; }
 function renderTimeline() {
   const NS = 'http://www.w3.org/2000/svg'; const mk = (tag, at) => { const n = document.createElementNS(NS, tag); Object.entries(at || {}).forEach(([k, v]) => n.setAttribute(k, v)); return n; };
@@ -1367,7 +1370,8 @@ function renderTimeline() {
     rows.push(row);
   });
   const W = 360, RX0 = 22, RX1 = 112, LX = 134, GAP = 54, PAD = 26;
-  let h = PAD; rows.forEach((r) => { r.h = GAP + r.ghosts.length * 17; h += r.h; }); h += PAD;
+  rows.forEach((r) => { const x = r.x; r.L = x.t === 'r' ? wrapT('「' + x.ti + '」', 16, 3) : x.t === 'e' ? wrapT(x.tx, 18, 5) : wrapT('分かれ道 ▸ ' + x.c, 18, 4); r.ex = Math.max(0, r.L.length - (x.t === 'r' ? 1 : 2)) * 15; });
+  let h = PAD; rows.forEach((r) => { r.h = GAP + r.ex + r.ghosts.length * 17; h += r.h; }); h += PAD;
   const svg = mk('svg', { viewBox: '0 0 ' + W + ' ' + h, class: 'tl', role: 'img', 'aria-label': '人生の年表。下から上へ時間が進み、丸が作品と出来事を表します。' });
   let y = h - PAD; const pts = [];
   rows.forEach((r) => { r.y = y; r.px = RX0 + Math.min(1, r.heat / 14) * (RX1 - RX0); pts.push([r.px, y]); y -= r.h; });
@@ -1378,19 +1382,19 @@ function renderTimeline() {
     const g = mk('g', { class: 'pop', style: 'animation-delay:' + (0.2 + i * 0.09) + 's' }); const x = r.x;
     if (x.t === 'r') {
       const rad = 7 + x.tr * 2.4; g.append(mk('circle', { cx: r.px, cy: r.y, r: rad, class: 'dt', style: '--tc:' + tc(x.tr) }));
-      const t1 = mk('text', { x: LX, y: r.y - 3, 'font-size': 13, 'font-weight': 700 }); t1.textContent = cut('「' + x.ti + '」', 15); g.append(t1);
-      const t2 = mk('text', { x: LX, y: r.y + 13, 'font-size': 11, class: 'm' }); t2.textContent = fmtY(x.y) + ' · ' + TIER[x.tr] + ' · ' + x.rk; g.append(t2);
+      const y0 = r.y - 3 - (r.L.length - 1) * 7.5; r.L.forEach((ln, k) => { const t1 = mk('text', { x: LX, y: y0 + k * 15, 'font-size': 13, 'font-weight': 700 }); t1.textContent = ln; g.append(t1); });
+      const t2 = mk('text', { x: LX, y: y0 + r.L.length * 15 - 2, 'font-size': 12, class: 'm' }); t2.textContent = fmtY(x.y) + ' · ' + TIER[x.tr] + ' · ' + x.rk; g.append(t2);
     } else if (x.t === 'e') {
       g.append(mk('circle', { cx: r.px, cy: r.y, r: 5, class: 'ev' }));
-      const t1 = mk('text', { x: LX, y: r.y + 4, 'font-size': 12 }); t1.textContent = cut(x.tx, 17); g.append(t1);
+      const y0 = r.y + 4 - (r.L.length - 1) * 7.5; r.L.forEach((ln, k) => { const t1 = mk('text', { x: LX, y: y0 + k * 15, 'font-size': 12 }); t1.textContent = ln; g.append(t1); });
     } else {
       g.append(mk('circle', { cx: r.px, cy: r.y, r: 6, class: 'dc' }));
-      const t1 = mk('text', { x: LX, y: r.y + 4, 'font-size': 12, 'font-weight': 700 }); t1.textContent = '分かれ道 ▸ ' + cut(x.c, 12); g.append(t1);
+      const y0 = r.y + 4 - (r.L.length - 1) * 7.5; r.L.forEach((ln, k) => { const t1 = mk('text', { x: LX, y: y0 + k * 15, 'font-size': 12, 'font-weight': 700 }); t1.textContent = ln; g.append(t1); });
       r.ghosts.forEach((gh, k) => {
         const gy = r.y - 20 - k * 17;
         g.append(mk('path', { d: 'M' + r.px + ' ' + r.y + ' Q ' + (r.px + 14) + ' ' + (r.y - 10) + ' ' + (r.px + 22) + ' ' + gy, class: 'gl' }));
         g.append(mk('circle', { cx: r.px + 22, cy: gy, r: 4, class: 'gh' }));
-        const gt = mk('text', { x: LX, y: gy + 4, 'font-size': 11, class: 'gt' }); gt.textContent = 'もし「' + cut(gh.lab, 7) + '」→' + TIER[gh.max]; g.append(gt);
+        const gt = mk('text', { x: LX, y: gy + 4, 'font-size': 11, class: 'gt' }); gt.textContent = 'もし「' + cut(gh.lab, 10) + '」→' + TIER[gh.max]; g.append(gt);
       });
     }
     svg.append(g);
@@ -1608,9 +1612,10 @@ function showEnding(e) {
     sv.append(mk2('polygon', { points: ax.map((x, k) => pt(k, Math.max(4, x[1])).join(',')).join(' '), fill: 'var(--accent)', 'fill-opacity': .55, stroke: 'var(--fg)', 'stroke-width': 2 }));
     ax.forEach((x, k) => { const q = pt(k, 100); const lx = k === 1 ? q[0] + 10 : k === 3 ? q[0] - 10 : q[0]; const ly = k === 0 ? q[1] - 8 : k === 2 ? q[1] + 16 : q[1] + 4; const t = mk2('text', { x: lx, y: ly, 'text-anchor': k === 1 ? 'start' : k === 3 ? 'end' : 'middle', 'font-size': 12, fill: 'var(--fg)', 'font-weight': 700 }); t.textContent = x[0] + ' ' + (k === 0 ? dr.rl : x[1]); sv.append(t); });
     d.append(sv); const dl = el('div', 'dr0'); dl.append(el('b', null, String(dr.total)), el('span', null, '/ 400 「' + dr.tl + '」')); d.append(dl); d.append(el('p', 'dcm', dr.cm)); if (dr.why.length) { const w = el('div', 'dw'); dr.why.forEach((x) => w.append(el('span', null, x))); d.append(w); } tail.append(d); }
-  const tj = el('div', 'traj'); tj.setAttribute('role', 'img'); tj.setAttribute('aria-label', '作品ごとの結果の推移');
-  e.w.forEach((w) => { const b = el('i'); b.style.height = (14 + w.tr * 17) + '%'; b.style.setProperty('--tc', tc(w.tr)); tj.append(b); });
-  tail.append(el('span', 'lab', '作品ごとの結果'), tj);
+  const tj = el('div', 'traj'); tj.setAttribute('role', 'img'); tj.setAttribute('aria-label', '作品ごとの当たり具合。左から発表順で、高いほどヒット。');
+  e.w.forEach((w, k) => { const col = el('div', 'tcol'); const b = el('i'); b.style.height = (14 + w.tr * 17) + '%'; b.style.setProperty('--tc', tc(w.tr)); b.title = '「' + w.ti + '」 ' + TIER[w.tr]; col.append(b, el('span', null, String(k + 1))); tj.append(col); });
+  const lg = el('div', 'tlg'); TIER.forEach((nm, i) => { const sp = el('span'); const sw = el('i'); sw.style.background = tc(i); sp.append(sw, nm); lg.append(sp); });
+  tail.append(el('span', 'lab', '作品ごとの当たり具合'), el('p', 'small', '左から発表順(1作目→最新作)。棒が高いほどヒットしました。'), tj, lg);
   if (S.log && S.log.length) { tail.append(el('span', 'lab', '人生の年表(下から上へ)')); try { tail.append(renderTimeline()); } catch (_) {} }
   const hits = e.w.filter((w) => w.tr >= 2).length; const best = e.w.reduce((m, w) => Math.min(m, rankOf(w.tr, w.ti).n), 999);
   const st = el('div', 'stats');
