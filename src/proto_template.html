@@ -134,9 +134,10 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 
 .card.rel .acts { flex-wrap: nowrap; gap: 6px; }
 .card.rel .acts > * { flex: 0 1 auto; min-width: 0; white-space: nowrap; }
-.card.rel .acts .lbtn { min-height: 40px; padding: 0 9px; font-size: 13px; }
-.card.rel .acts .chip { min-height: 40px; padding: 0 9px; font-size: 12px; }
-@media (max-width: 340px) { .card.rel .acts .lbtn, .card.rel .acts .chip { padding: 0 6px; font-size: 12px; } }
+.card.rel .acts .lbtn { min-height: 40px; padding: 0 8px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; }
+.card.rel .acts .chip { min-height: 40px; padding: 0 9px; font-size: 12px; box-sizing: border-box; }
+@media (max-width: 380px) { .card.rel .acts { gap: 4px; } .card.rel .acts .lbtn, .card.rel .acts .chip { padding: 0 6px; font-size: 12px; } }
+@media (max-width: 340px) { .card.rel .acts { flex-wrap: wrap; } .card.rel .acts .lbtn, .card.rel .acts .chip { padding: 0 4px; font-size: 11.5px; letter-spacing: -.02em; } }
 
 /* 選択肢はボトムシート */
 #tail > .dec { position: fixed; left: 0; right: 0; margin-inline: auto; bottom: 0; width: min(560px, 100%); z-index: 60; max-height: 74vh; overflow-y: auto; box-sizing: border-box; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -10px 28px rgba(0,0,0,.45), 0 0 0 100vmax rgba(0,0,0,.28); animation: sheetUp .28s ease-out; }
@@ -1286,7 +1287,7 @@ function renderItem(it) {
     c.append(top);
     const acts = el('div', 'acts'); acts.append(el('span', 'chip', TIER[it.tr]));
     if (it.tk && it.tk.length > 1) { const tb = el('button', 'lbtn', '収録曲(全' + it.tk.length + '曲)'); tb.type = 'button'; tb.onclick = (e) => { e.stopPropagation(); openTracks(it); }; acts.append(tb); }
-    if (it.ly) { const lb = el('button', 'lbtn', it.ly.k === 'inst' ? '曲の展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = (e) => { e.stopPropagation(); openLyrics(it); }; acts.append(lb); }
+    if (it.ly) { const lb = el('button', 'lbtn', it.ly.k === 'inst' ? '展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = (e) => { e.stopPropagation(); openLyrics(it); }; acts.append(lb); }
     c.append(acts);
     const det = el('div', 'det');
     const l = el('p'); l.append(el('span', 'k', (it.ly && it.ly.k === 'inst' ? '何を描いた曲か(' : '何を歌った曲か(') + it.th + ')')); l.append(it.pr); det.append(l);
@@ -1791,7 +1792,7 @@ function showEnding(e) {
     const mid = el('div'); mid.style.minWidth = '0'; mid.append(el('div', 'dt', '「' + w.ti + '」'));
     mid.append(el('div', 'ds', fmtY(w.y) + ' · ' + w.o + (w.it && w.it.selft ? ' · セルフタイトル' : '') + ' · ' + w.lb + ' · ' + TIER[w.tr] + (w.tk ? ' · 全' + w.tk.length + '曲' : ''))); dh.append(mid);
     const r = rankOf(w.tr, w.ti); dh.append(el('div', 'dr' + (r.n === 999 ? ' out' : ''), r.txt)); item.append(dh);
-    if (w.it && w.it.ly) { const ac = el('div', 'acts'); const lb = el('button', 'lbtn', w.it.ly.k === 'inst' ? '曲の展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = () => openLyrics(w.it); ac.append(lb); item.append(ac); }
+    if (w.it && w.it.ly) { const ac = el('div', 'acts'); const lb = el('button', 'lbtn', w.it.ly.k === 'inst' ? '展開を見る' : '歌詞を見る'); lb.type = 'button'; lb.onclick = () => openLyrics(w.it); ac.append(lb); item.append(ac); }
     if (w.tk && w.tk.length > 1) w.tk.forEach((t) => item.append(trkRow(t, w.ti)));
     ds.append(item);
   });
