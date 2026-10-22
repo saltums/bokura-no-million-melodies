@@ -86,6 +86,19 @@ def build(a, i, pool, era=None, nm=None):
         for j, m_ in enumerate(mm):
             m_["r"] = roles[j]
             if j < len(a.get("tr", [])): m_["t"] = a["tr"][j]
+        G = a.get("vg")
+        if G in ("m", "f"):
+            import re as _re, random as _rd
+            INSTR = _re.compile(r"^(Gt|Ba|Dr|Key|Pf|Sax|Tp|Vn|Vc|Cho|Tb|Per|DJ|Syn|Gu|Ag|Eg|Mp|Fl|Hr|Cl)", _re.I)
+            taken = {x["n"] for x in mm}
+            for j, m_ in enumerate(mm):
+                r0 = m_["r"]; isvo = r0.startswith("Vo") or not INSTR.match(r0)
+                if isvo and m_["g"] != G:
+                    rr = _rd.Random(H(a["k"], "vgfix", j, era))
+                    for _ in range(60):
+                        nm2 = rr.choice(tracks.FAM) + " " + rr.choice(tracks.GIV_M if G == "m" else tracks.GIV_F)
+                        if nm2 not in taken: break
+                    taken.discard(m_["n"]); taken.add(nm2); m_["n"] = nm2; m_["g"] = G
     top = "グループ" if st in ("band", "duo", "inst") else "ソロ"
     E = g.ERAS[era]
     name = nm or a["nm"]

@@ -113,6 +113,10 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 #s-cand .cand.mine { padding: 8px 12px; }
 #s-cand .cand.mine .small { display: none; }
 #s-cand .rare-mark { font-size: 12px; padding: 3px 7px; }
+.voices { display: flex; flex-direction: column; gap: 10px; }
+.vq { border-left: 3px solid var(--accent); background: var(--surface); padding: 10px 14px; }
+.vq .vw { font: 500 12px/1.3 var(--f-m); color: var(--muted); margin-bottom: 4px; letter-spacing: .04em; }
+.vq p { margin: 0; font: 500 15px/1.7 var(--f-b); overflow-wrap: anywhere; }
 .candbar { display: flex; justify-content: space-between; align-items: center; }
 .rr { appearance: none; background: none; border: 1px solid var(--line); color: var(--fg); width: 44px; height: 44px; font: 400 24px/1 var(--f-b); cursor: pointer; transition: transform .4s; }
 .rr:active { transform: rotate(360deg); }
@@ -1658,6 +1662,30 @@ function coherentEnding0(tx, w, nm) {
     return ['大きな成功には届かなかったが、歌はひっそりと、確かに残っている', '数字には残らなくても、一部の人の大切な曲になった', '派手な成功はなくても、自分の音を鳴らし続けた'][h];
   return tx;
 }
+
+function voicesOf(e, dr) {
+  const m = S.entry.m, a = m.a, ge = m.ge || '音楽', w = e.w || [], n = w.length;
+  const bw = w.reduce((x, y) => (y.tr > x.tr ? y : x), w[0] || { ti: '', tr: 0 }); const best = bw.ti, first = (w[0] || {}).ti || '';
+  const grp = S.top === 'グループ'; const who = grp ? 'このバンド' : 'この人'; const hs = ((a.length * 31 + n * 17 + dr.total) % 3);
+  const pick = (arr) => arr[(hs + a.length) % arr.length];
+  const tier = dr.total >= 330 ? 'L' : dr.love >= 60 && dr.ure < 45 ? 'C' : dr.ure >= 66 && dr.love < 45 ? 'H' : dr.total < 150 ? 'S' : 'N';
+  const old = m.era <= 1, net = m.era >= 3 && !m.rare && m.era <= 5; const rare = !!m.rare;
+  const V = [];
+  const fan = { L: ['人生のどこかで必ず' + a + 'が流れていた。' + best + 'は、今でも聴くと背筋が伸びる。', best + 'を初めて聴いた日のことを、ぜんぶ覚えている。'], C: [a + 'は大ヒットしなかったけれど、' + best + 'を聴いた夜のことは忘れない。', '売れてほしかった。でも、自分だけの宝物にしておきたい気持ちもあった。'], H: ['どこへ行っても' + a + 'が流れていた。' + best + 'は正直、もう聴き飽きた(でも歌える)。', '人気はすごかった。けど、初期のころの方が好きだった。'], S: ['誰も知らなくていい。' + first + 'は、わたしだけの一曲だった。', 'ライブに行くたびに、観客が少ないのが少し嬉しくて、少し悔しかった。'], N: [best + 'のサビを、気づいたら口ずさんでいた。', a + 'の新譜が出ると、つい聴いてしまう。'] }[tier];
+  V.push([rare ? '聴き手' : 'ファン', pick(fan)]);
+  const wr = { L: [a + 'は' + ge + 'の歴史に名前を刻んだ。' + best + 'が時代の空気を決めた、と言っていい。', '「' + ge + 'といえば」で最初に名前が挙がる存在になった。'], C: [a + 'は、数字より人の記憶に残る' + (grp ? 'バンド' : 'アーティスト') + 'だった。', '派手さはないが、' + n + '作を通して一本の筋が通っていた。'], H: [a + 'は時代の風を受けて大きく羽ばたいた。ただ、その代償も小さくなかったように見える。', '商業的には大成功。評価が分かれるのも、人気者の宿命だろう。'], S: [a + 'は、ほとんど誰にも気づかれないまま、確かな音を鳴らしていた。', '再評価されるべき' + (grp ? 'バンド' : 'ひと') + 'として、いつか名前が出てくるかもしれない。'], N: [a + 'は、' + ge + 'らしい手触りを持ちながら、自分の色を探し続けた。', '突出はしていないが、どの作品にも誠実さがあった。'] }[tier];
+  V.push(['音楽ライター', pick(wr)]);
+  if (!rare) {
+    V.push(['同じ時代のミュージシャン', pick([a + 'とは同じ時期に活動していた。' + (grp ? 'あの空気感は、あのメンバーでしか出せなかった。' : 'あの声の出し方は、真似しようとしてもできなかった。'), '正直、悔しかった。' + best + 'みたいな曲を書きたかった。', 'ライブ会場の楽屋で会うと、いつも静かで、ステージに立つと別人だった。'])]);
+    V.push([old ? '雑誌の読者欄' : net ? 'ネットの声' : 'ラジオの投稿', old ? pick(['「' + best + '」、カセットが擦り切れるまで聴きました。', a + 'の次の曲はいつ出るんですか。待ちきれません。', '友だちに薦めたら、翌週にはみんなが' + a + 'の話をしていた。']) : net ? pick(['「' + best + '」ずっとリピートしてる。', a + 'の曲、気づいたらプレイリストの半分になってる。', 'この人の曲、深夜に聴くとやばい。']) : pick(['番組に' + a + 'の曲をリクエストしました。', '通勤の車で' + best + 'が流れて、少し泣いた。', '今夜は' + a + 'の特集を聴きたいです。'])]);
+  } else {
+    V.push([m.era === 6 ? '星の旅人' : '語り部', pick([a + 'の唄は、次の世代にも歌い継がれている。', '「' + best + '」を覚えている者が、まだたくさんいる。', who + 'が鳴らした音は、いまも誰かの暮らしの中にある。'])]);
+  }
+  if (S.selfDone) V.push(['レコード店の店員', 'セルフタイトルのアルバムが出たとき、「ここから始まる」と思った。']);
+  else if (dr.love >= 60) V.push(['古くからの友人', '昔から変わらない。そのまま大きくなっていくのが、誇らしかった。']);
+  else V.push(['家族', pick(['最初は心配したけれど、いまは胸を張って「うちの子です」と言える。', '音楽をやめなかったことが、いちばんの才能だと思う。', '食卓で' + best + 'が流れたとき、みんな黙って聴いていた。'])]);
+  return V.map(([k, t]) => [k, ij(t)]);
+}
 function showEnding(e) {
   document.documentElement.style.setProperty('--dockh', '0px');
   const tail = $('#tail'); $('#gcols').classList.add('done');
@@ -1671,6 +1699,7 @@ function showEnding(e) {
     sv.append(mk2('polygon', { points: ax.map((x, k) => pt(k, Math.max(4, x[1])).join(',')).join(' '), fill: 'var(--accent)', 'fill-opacity': .55, stroke: 'var(--fg)', 'stroke-width': 2 }));
     ax.forEach((x, k) => { const q = pt(k, 100); const lx = k === 1 ? q[0] + 10 : k === 3 ? q[0] - 10 : q[0]; const ly = k === 0 ? q[1] - 8 : k === 2 ? q[1] + 16 : q[1] + 4; const t = mk2('text', { x: lx, y: ly, 'text-anchor': k === 1 ? 'start' : k === 3 ? 'end' : 'middle', 'font-size': 12, fill: 'var(--fg)', 'font-weight': 700 }); t.textContent = x[0] + ' ' + (k === 0 ? dr.rl : x[1]); sv.append(t); });
     d.append(sv); const dl = el('div', 'dr0'); dl.append(el('b', null, String(dr.total)), el('span', null, '/ 400 「' + dr.tl + '」')); d.append(dl); d.append(el('p', 'dcm', dr.cm)); if (dr.why.length) { const w = el('div', 'dw'); dr.why.forEach((x) => w.append(el('span', null, x))); d.append(w); } tail.append(d); }
+  try { const vs = voicesOf(e, dr); const vb = el('div', 'voices'); vb.append(el('span', 'lab', '世間の声')); vs.forEach(([k, t]) => { const q = el('div', 'vq'); q.append(el('div', 'vw', k), el('p', null, '「' + t.replace(/「/g, '『').replace(/」/g, '』') + '」')); vb.append(q); }); tail.append(vb); } catch (_) {}
   const tj = el('div', 'traj'); tj.setAttribute('role', 'img'); tj.setAttribute('aria-label', '作品ごとの当たり具合。左から発表順で、高いほどヒット。');
   e.w.forEach((w, k) => { const col = el('div', 'tcol'); const b = el('i'); b.style.height = (14 + w.tr * 17) + '%'; b.style.setProperty('--tc', tc(w.tr)); b.title = '「' + w.ti + '」 ' + TIER[w.tr]; col.append(b, el('span', null, String(k + 1))); tj.append(col); });
   const lg = el('div', 'tlg'); TIER.forEach((nm, i) => { const sp = el('span'); const sw = el('i'); sw.style.background = tc(i); sp.append(sw, nm); lg.append(sp); });
