@@ -1,4 +1,4 @@
-<title>ぼくらのサウザンドメロディズ</title>
+<title>ぼくらのミリオンメロディズ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=DM+Mono:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
 <style>
@@ -416,7 +416,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
   <section class="scr" id="s-title">
     <div class="mast">
       <span class="kick">音楽家の人生シミュレーション</span>
-      <div class="trow"><h1 id="ttl">ぼくらの<br>サウザンド<br>メロディズ</h1><div class="disc" aria-hidden="true"></div></div>
+      <div class="trow"><h1 id="ttl">ぼくらの<br>ミリオン<br>メロディズ</h1><div class="disc" aria-hidden="true"></div></div>
     </div>
     <p class="lead">バンド、シンガー、ラッパー、DJ。いろいろなミュージシャンの人生を、分かれ道ごとの選択で追体験します。売れるか売れないかは、性格と時代と運しだいです。</p>
     <button class="btn primary" id="b-start" type="button">はじめる</button>
@@ -828,6 +828,9 @@ function renderStyles() {
   });
 }
 function eraBucket(e) { return e <= 0 ? 'old' : e <= 2 ? 'mid' : 'new'; }
+const RT = (() => { const K = 'hit30000_rt'; let set = new Set(); try { set = new Set(JSON.parse(localStorage.getItem(K) || '[]')); } catch (_) {}
+  return { has: (x) => set.has(x), note: (arr) => { try { arr.forEach((x) => { set.delete(x); set.add(x); }); const a = [...set].slice(-1500); set = new Set(a); localStorage.setItem(K, JSON.stringify(a)); } catch (_) {} } }; })();
+function noteTitles(entry) { try { const a = []; (function walk(n) { n.s.forEach((it) => { if (it.t === 'r') a.push(it.ti); }); if (n.e) n.e.w.forEach((w) => a.push(w.ti)); (n.n || []).forEach(walk); })(entry.t); RT.note(a); } catch (_) {} }
 const TSP = {};
 function tSplit(eb) { if (!TSP[eb]) { const f = [], j = []; BANK.t[eb].forEach((x) => { (/^[A-Za-z0-9ァ-ヴ"'(!?.\-]/.test(x) ? f : j).push(x); }); TSP[eb] = { f, j }; } return TSP[eb]; }
 function reskin(d) {
@@ -840,8 +843,8 @@ function reskin(d) {
     let str = JSON.stringify(d); const pairs = [];
     const add = (old, nw) => { if (!old || !nw || old.length < 2) return; pairs.push([old, nw]); };
     const SX = /(の手前|のままで|で会おう|を失くした.{1,4}|について|の夜|の約束|ごっこ|ブルース)$/; const sfxUsed = new Set();
-    const pkT = () => { for (let i = 0; i < 40; i++) { const x = (BANK.pt && Math.random() < 0.2) ? BANK.pt[Math.floor(Math.random() * BANK.pt.length)] : (() => { const sp = tSplit(eb); const pl = (Math.random() < 0.72 && sp.f.length) ? sp.f : sp.j; return pl[Math.floor(Math.random() * pl.length)]; })(); const mt = x.match(SX); const key = mt ? mt[1].slice(0, 3) : null; if (used.has(x) || (key && sfxUsed.has(key))) continue; used.add(x); if (key) sfxUsed.add(key); return x; } return pk(BANK.t[eb]); };
-    const pkTT = (th) => { const ar = ttPool(th, eb); if (!ar || ar.length < 5 || Math.random() < 0.08) return null; for (let i = 0; i < 40; i++) { const x = ar[Math.floor(Math.random() * ar.length)]; if (!used.has(x[0]) && x[0].length <= 24) { used.add(x[0]); hookMap.set(x[0], [x[2], x[3]]); return x[0]; } } return null; };
+    const pkT = () => { for (let i = 0; i < 40; i++) { const x = (BANK.pt && Math.random() < 0.2) ? BANK.pt[Math.floor(Math.random() * BANK.pt.length)] : (() => { const sp = tSplit(eb); const pl = (Math.random() < 0.72 && sp.f.length) ? sp.f : sp.j; return pl[Math.floor(Math.random() * pl.length)]; })(); const mt = x.match(SX); const key = mt ? mt[1].slice(0, 3) : null; if (used.has(x) || (i < 30 && RT.has(x)) || (key && sfxUsed.has(key))) continue; used.add(x); if (key) sfxUsed.add(key); return x; } return pk(BANK.t[eb]); };
+    const pkTT = (th) => { const ar = ttPool(th, eb); if (!ar || ar.length < 5) return null; for (let i = 0; i < 60; i++) { const x = ar[Math.floor(Math.random() * ar.length)]; if (!used.has(x[0]) && x[0].length <= 24 && (i > 40 || !RT.has(x[0]))) { used.add(x[0]); hookMap.set(x[0], [x[2], x[3]]); return x[0]; } } return null; };
     [...olds].filter((x) => x && x.length >= 2).sort((a, b) => b.length - a.length).forEach((o) => add(o, pkTT(thOf.get(o)) || pkT()));
     if (!m.pun) add(m.a, pk((BANK.a[m.st] || {})[eb]));
     pairs.forEach(([o, nw], i) => {
@@ -979,7 +982,7 @@ function showIntro(entry, go) {
   S.entry = prev; $('#in-go').onclick = () => { S.entry = entry; go(); }; $('#in-bk').onclick = () => { show('s-cand'); }; $('#in-back').onclick = () => { show('s-cand'); };
   show('s-intro');
 }
-function startTree0(entry) {
+function startTree0(entry) { if (!S.skipNote) noteTitles(entry);
   clearTimers(); try { BGM.start(entry.m.era, entry.m.id); } catch (_) {}
   S.entry = entry; S.awP = 0; S.stg = 0; S.rtN = 0; S.rtW = -1; S.fesN = 0; S.fesOk = 0; S.evN = 0; S.relN = 0; S.fuq = []; S.selfDone = false; S.selfAt = Math.random() < 0.5 ? 3 + Math.floor(Math.random() * 3) : 0; S.sdN = 0; S.sdUsed = new Set(); S.evUsed = new Set(); S.evFam = new Set(); TIER = entry.m.tn || TIER_D; S.works = 0; S.best = 999; S.skip = false; S.heat = 0; S.tiers = []; S.ms = {}; S.dn = 0; S.path = []; S.log = []; S.lastY = null; S.mem = JSON.parse(JSON.stringify(entry.m.mm || [])); S.exMem = []; S.inMem = []; S.curEl = null; $('#gcols').classList.remove('done'); $('#gcols').classList.remove('deciding');
   $('#feed').textContent = ''; $('#tail').textContent = '';
@@ -1543,7 +1546,7 @@ function makeCard(dr, m, topTitle) {
   const W = 720, H = 900, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
   const F = (w, px) => w + ' ' + px + 'px "Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif';
   g.fillStyle = '#14181F'; g.fillRect(0, 0, W, H); g.fillStyle = '#FFD21F'; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
-  g.fillStyle = '#9aa4b2'; g.font = F(700, 26); g.textBaseline = 'alphabetic'; g.fillText('ぼくらのサウザンドメロディズ', 48, 74);
+  g.fillStyle = '#9aa4b2'; g.font = F(700, 26); g.textBaseline = 'alphabetic'; g.fillText('ぼくらのミリオンメロディズ', 48, 74);
   g.fillStyle = '#fff'; g.font = F(900, 54); let nm = m.a; while (g.measureText(nm).width > W - 96 && nm.length > 3) nm = nm.slice(0, -1); g.fillText(nm + (nm !== m.a ? '…' : ''), 48, 150);
   g.fillStyle = '#c8cfda'; g.font = F(500, 28); g.fillText(m.es + ' ・ ' + m.sn + ' ・ レア ' + dr.rl, 48, 196);
   const cx = W / 2, cy = 385, R = 118; const ax = [['レア', dr.rare, dr.rl], ['ドラマチック', dr.sc], ['愛され', dr.love], ['売れ度', dr.ure]];
@@ -1557,7 +1560,7 @@ function makeCard(dr, m, topTitle) {
   g.fillStyle = '#FFD21F'; g.font = F(900, 96); g.fillText(String(dr.total), 48, 655); const tw = g.measureText(String(dr.total)).width;
   g.fillStyle = '#c8cfda'; g.font = F(700, 30); g.fillText('/ 400 「' + dr.tl + '」', 48 + tw + 16, 655);
   g.fillStyle = '#fff'; g.font = F(700, 32); const words = dr.cm.split(''); let line = '', y = 715; words.forEach((ch) => { if (g.measureText(line + ch).width > W - 96) { g.fillText(line, 48, y); y += 46; line = ''; } line += ch; }); g.fillText(line, 48, y);
-  g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText('代表曲「' + (topTitle || '').slice(0, 20) + '」', 48, H - 84); g.fillText('#ぼくらのサウザンドメロディズ', 48, H - 42);
+  g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText('代表曲「' + (topTitle || '').slice(0, 20) + '」', 48, H - 84); g.fillText('#ぼくらのミリオンメロディズ', 48, H - 42);
   return cv;
 }
 
@@ -1565,8 +1568,8 @@ function makeCards(dr, m, e, topW) {
   const W = 720, H = 900; const FF = '"Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif'; const F = (w, px) => w + ' ' + px + 'px ' + FF;
   const base = (sub, idx) => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.textBaseline = 'alphabetic';
     g.fillStyle = '#14181F'; g.fillRect(0, 0, W, H); g.fillStyle = '#FFD21F'; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
-    g.fillStyle = '#9aa4b2'; g.font = F(700, 24); g.fillText('ぼくらのサウザンドメロディズ', 48, 64); g.textAlign = 'right'; g.fillText(sub + '  ' + idx + '/4', W - 48, 64); g.textAlign = 'left';
-    g.fillStyle = '#aab3c2'; g.font = F(700, 27); g.fillText('※この人生はフィクションです', 48, H - 62); g.fillStyle = '#7d8696'; g.font = F(500, 22); g.fillText('#ぼくらのサウザンドメロディズ', 48, H - 32); return [cv, g]; };
+    g.fillStyle = '#9aa4b2'; g.font = F(700, 24); g.fillText('ぼくらのミリオンメロディズ', 48, 64); g.textAlign = 'right'; g.fillText(sub + '  ' + idx + '/4', W - 48, 64); g.textAlign = 'left';
+    g.fillStyle = '#aab3c2'; g.font = F(700, 27); g.fillText('※この人生はフィクションです', 48, H - 62); g.fillStyle = '#7d8696'; g.font = F(500, 22); g.fillText('#ぼくらのミリオンメロディズ', 48, H - 32); return [cv, g]; };
   const fit = (g, t, w) => { let x = t; while (g.measureText(x).width > w && x.length > 2) x = x.slice(0, -1); return x + (x !== t ? '…' : ''); };
   const wrap = (g, t, x, y, w, lh, max) => { let line = '', n = 0; for (const ch of t) { if (g.measureText(line + ch).width > w) { g.fillText(line, x, y); y += lh; line = ''; n++; if (n >= max) return y; } line += ch; } g.fillText(line, x, y); return y + lh; };
   const out = [];
@@ -1843,14 +1846,14 @@ function showEnding(e) {
   }
   const a = el('div', 'row');
   const b3 = el('button', 'btn line', 'この人生をコピー'); b3.type = 'button';
-  b3.onclick = () => { const tx = '『' + S.entry.m.a + '』 称号:' + cr[0] + ' / 作品' + e.w.length + ' / 最高' + bestTxt(best) + ' / 総合' + dr.total + '/400 ' + dr.cm + ' (レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure + ') #ぼくらのサウザンドメロディズ';
+  b3.onclick = () => { const tx = '『' + S.entry.m.a + '』 称号:' + cr[0] + ' / 作品' + e.w.length + ' / 最高' + bestTxt(best) + ' / 総合' + dr.total + '/400 ' + dr.cm + ' (レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure + ') #ぼくらのミリオンメロディズ';
     const done = () => { b3.textContent = 'コピーしました'; };
     try { navigator.clipboard.writeText(tx).then(done, () => { b3.textContent = tx; }); } catch (_) { b3.textContent = tx; } };
   const b1 = el('button', 'btn line', '同じ人生を別の選択で'); b1.type = 'button'; b1.onclick = () => { S.auto = false; S.skipIntro = true; startTree(S.entry); };
   const b2 = el('button', 'btn line', '別の人生を始める'); b2.type = 'button'; b2.onclick = () => { clearTimers(); S.auto = false; show('s-top'); };
   const topW = e.w.reduce((m_, w) => (w.tr > m_.tr ? w : m_), e.w[0] || { tr: 0, ti: '' });
   const bars = (v) => '★'.repeat(Math.max(1, Math.round(v / 20))) + '☆'.repeat(5 - Math.max(1, Math.round(v / 20)));
-  const xt = ['『' + S.entry.m.a + '』(' + S.entry.m.es + '・' + S.entry.m.sn + ')', '総合' + dr.total + '/400「' + dr.tl + '」 ' + dr.cm, 'レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure, '代表曲「' + topW.ti + '」', '#ぼくらのサウザンドメロディズ'].join('\n');
+  const xt = ['『' + S.entry.m.a + '』(' + S.entry.m.es + '・' + S.entry.m.sn + ')', '総合' + dr.total + '/400「' + dr.tl + '」 ' + dr.cm, 'レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure, '代表曲「' + topW.ti + '」', '#ぼくらのミリオンメロディズ'].join('\n');
   const bx = el('a', 'btn line', 'Xに文章だけポスト'); bx.target = '_blank'; bx.rel = 'noopener noreferrer'; bx.href = 'https://x.com/intent/post?text=' + encodeURIComponent(xt) + '&url=' + encodeURIComponent(SHARE_URL); bx.style.textAlign = 'center'; bx.style.textDecoration = 'none';
   const note = el('p', 'xnote'); note.hidden = true; note.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)';
   bx.addEventListener('click', () => { const full = xt + '\n' + SHARE_URL; try { navigator.clipboard.writeText(full).catch(() => {}); } catch (_) {} note.textContent = 'Xが開かないときは、文面をコピーしたので、Xの投稿画面に貼り付けてください。'; note.hidden = false; });
