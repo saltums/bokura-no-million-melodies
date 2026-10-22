@@ -1224,8 +1224,10 @@ let lastFocus = null;
 function openLyrics(it) {
   const sh = $('#sheet'); sh.style.setProperty('--tc', tc(it.tr)); lastFocus = document.activeElement;
   const ly = it.ly; $('#sh-a').textContent = S.entry.m.a + ' · ' + fmtY(it.y) + ' · ' + it.o;
-  $('#sh-t').textContent = '「' + it.ti + '」';
+  const mt = (it.tk || []).find((t) => t.g === '表題曲'); const song = mt ? mt.t : it.ti;
+  $('#sh-t').textContent = '「' + song + '」';
   const b = $('#sh-b'); b.textContent = '';
+  if (song !== it.ti) b.append(el('p', 'sh-note', 'アルバム「' + it.ti + '」の表題曲です。'));
   b.append(el('span', 'badge', '構成: ' + ly.st));
   const addSecs = (rows, host) => rows.forEach(([k, lab, tag, hit]) => { const lines = ly.s[k]; if (!lines) return;
     const sec = el('div', 'sh-sec' + (hit ? ' hit' : '')); sec.append(el('div', 'sl', lab));
