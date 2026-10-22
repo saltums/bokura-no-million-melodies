@@ -358,6 +358,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
     <button class="btn line" id="b-dbg2" type="button">デバッグ: 原始の人生を見る</button>
     <button class="btn line" id="b-dbg6" type="button">デバッグ: 3000年の人生を見る</button>
     <button class="btn line" id="b-dbg3" type="button">デバッグ: 江戸の人生を見る</button>
+    <div id="dbg-era" class="erow"></div>
     <div id="dbg-real" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <p class="small">時代ごとのBGMが流れます。右上の♪で切り替えられます。</p>
@@ -727,6 +728,9 @@ $('#b-start').onclick = () => { S.auto = false; show('s-top'); };
 function bestSum(n) { if (n._b !== undefined) return n._b; n._b = n.e ? n.e.w.reduce((m, w) => m + w.tr * w.tr, 0) : Math.max(...n.n.map(bestSum)); return n._b; }
 const startRare = (era) => { const L = DATA.filter((d) => d.m.rare && d.m.era === era); const d = L[Math.floor(Math.random() * L.length)]; S.auto = false; S.top = d.m.top; S.style = d.m.st; startTree(d); };
 { const box = $('#dbg-real'); const lab = el('span', 'lab', 'デバッグ: 着想型の人生(' + DATA.filter((x) => x.m.real).length + '組)を選んで遊ぶ'); box.append(lab); DATA.filter((x) => x.m.real).forEach((d) => { const b = el('button', 'btn line', d.m.a + '(' + d.m.sn.replace(/\(.*$/, '') + '・' + d.m.es + ')'); b.type = 'button'; b.onclick = () => { S.auto = false; S.top = d.m.top; S.style = d.m.st; startTree(d); }; box.append(b); }); }
+let DBG_ERA = null;
+const ERA_OPT = [[null, 'おまかせ'], [-1, '70年代'], [0, '80年代'], [1, '90年代'], [2, '00年代'], [3, '10年代'], [4, '20年代'], [5, '近未来']];
+{ const eb = $('#dbg-era'); eb.append(el('span', 'lab', 'デバッグ: 時代を固定(人選びに反映)')); const cs = []; ERA_OPT.forEach(([v, l]) => { const c = el('button', 'chip' + (v === null ? ' on' : ''), v === null ? '固定しない' : l); c.type = 'button'; c.onclick = () => { DBG_ERA = v; cs.forEach((x) => x.classList.remove('on')); c.classList.add('on'); }; cs.push(c); eb.append(c); }); }
 $('#b-dbg2').onclick = () => startRare(-2); $('#b-dbg6').onclick = () => startRare(6); $('#b-dbg3').onclick = () => startRare(-3);
 $('#b-bgm').onclick = () => { const o = BGM.toggle(); $('#b-bgm').textContent = o ? '♪' : '♪×'; };
 $('#b-bgm').textContent = BGM.on ? '♪' : '♪×';
@@ -780,7 +784,6 @@ function renameTo(d, nm) {
     const out = JSON.parse(str); out._rs = d._rs; out.m.pun = null; out.m.a = nm; return out;
   } catch (_) { return d; }
 }
-const ERA_OPT = [[null, 'おまかせ'], [-1, '70年代'], [0, '80年代'], [1, '90年代'], [2, '00年代'], [3, '10年代'], [4, '20年代'], [5, '近未来']];
 const szOf = (d) => (d.m.np || (d.m.mm || []).length || 0);
 const cPool = () => DATA.filter((d) => d.m.st === S.style && !d.m.rare);
 function nameExamples() { const ex = $('#nm-ex'); ex.textContent = ''; const eb = (e) => eraBucket(e); const all = []; const bk = BANK.a[S.style] || {}; Object.keys(bk).forEach((k) => (bk[k] || []).forEach((n) => all.push(n))); shuffle(all.slice()).slice(0, 6).forEach((n) => { const c = el('button', 'chip', n); c.type = 'button'; c.onclick = () => { $('#nm-in').value = n; }; ex.append(c); }); }
@@ -811,7 +814,7 @@ $('#b-cgo').onclick = () => {
 function renderCands() {
   $('#k-cand').textContent = S.top + ' / ' + STYLE_LABEL[S.style];
   const box = $('#cand-list'); box.textContent = '';
-  const ef = () => true; let base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real && ef(d)); if (!base.length) { S.eraF = null; base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real); } const pick = shuffle(base).slice(0, 3);
+  const ef = (d) => DBG_ERA == null || d.m.era === DBG_ERA; let base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real && ef(d)); if (!base.length) { base = DATA.filter((d) => d.m.st === S.style && !d.m.rare && !d.m.real); } const pick = shuffle(base).slice(0, 3);
   { const reals = DATA.filter((d) => d.m.st === S.style && d.m.real && d.m.era !== undefined && ef(d)); if (reals.length && Math.random() < 0.45) pick[Math.floor(Math.random() * pick.length)] = reals[Math.floor(Math.random() * reals.length)]; }
   { const rares = DATA.filter((d) => d.m.st === S.style && d.m.rare); if (rares.length && Math.random() < 0.08) pick[Math.floor(Math.random() * pick.length)] = rares[Math.floor(Math.random() * rares.length)]; }
   { const fx = (d) => d.m.pun || d.m.real || d.m.rare; const spare = shuffle(base.filter((d) => !pick.includes(d))); const seenN = new Set();
