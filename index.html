@@ -100,6 +100,22 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 @keyframes glow { 0%, 100% { box-shadow: 0 0 0 2px rgba(242,194,48,.25), 0 0 14px rgba(242,194,48,.3); } 50% { box-shadow: 0 0 0 2px rgba(242,194,48,.5), 0 0 28px rgba(242,194,48,.65); } }
 @keyframes sheen { 0% { left: -40%; } 60%, 100% { left: 130%; } }
 @media (prefers-reduced-motion: reduce) { .cand.rare, .cand.rare::after { animation: none; } }
+
+/* 人選び: スクロールなしで収める */
+#s-cand { gap: 8px; }
+#s-cand h2 { font-size: 20px; line-height: 1.25; margin: 0; }
+#s-cand > .small { display: none; }
+#s-cand .candbar .back, #s-cand .rr { min-height: 36px; height: 36px; }
+#s-cand .rr { width: 36px; font-size: 20px; }
+#s-cand #cand-list { gap: 8px; }
+#s-cand .cand { padding: 9px 12px; gap: 5px; }
+#s-cand .cand .nm { font-size: 18px; line-height: 1.2; }
+#s-cand .cand .tag { font-size: 12px; padding: 4px 6px; }
+#s-cand .cand .tags { gap: 4px; }
+#s-cand .cand .small { font-size: 12px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0; }
+#s-cand .cand.mine { padding: 8px 12px; }
+#s-cand .cand.mine .small { display: none; }
+#s-cand .rare-mark { font-size: 12px; padding: 3px 7px; }
 .candbar { display: flex; justify-content: space-between; align-items: center; }
 .rr { appearance: none; background: none; border: 1px solid var(--line); color: var(--fg); width: 44px; height: 44px; font: 400 24px/1 var(--f-b); cursor: pointer; transition: transform .4s; }
 .rr:active { transform: rotate(360deg); }
