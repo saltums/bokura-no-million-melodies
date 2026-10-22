@@ -116,6 +116,12 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 #s-cand .cand.mine { padding: 8px 12px; }
 #s-cand .cand.mine .small { display: none; }
 #s-cand .rare-mark { font-size: 12px; padding: 3px 7px; }
+.vq { display: flex; gap: 12px; align-items: flex-start; }
+.vq .vic { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); }
+.vq.med .vic { border-radius: 4px; background: var(--fg); color: var(--bg); }
+.vq .vbd { min-width: 0; flex: 1; }
+.vq.med { border-left-color: var(--fg); }
+.vq.med p { font-family: var(--f-m); font-size: 14px; }
 .voices { display: flex; flex-direction: column; gap: 10px; }
 .vq { border-left: 3px solid var(--accent); background: var(--surface); padding: 10px 14px; }
 .vq .vw { font: 500 12px/1.3 var(--f-m); color: var(--muted); margin-bottom: 4px; letter-spacing: .04em; }
@@ -1716,6 +1722,20 @@ function coherentEnding0(tx, w, nm) {
   return tx;
 }
 
+const _sv = (d) => '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+const VICON = {
+  fan: _sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'),
+  pen: _sv('<path d="M4 20l1-5L16 4l4 4L9 19z"/><path d="M14 6l4 4"/>'),
+  note: _sv('<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'),
+  mag: _sv('<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/>'),
+  news: _sv('<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M7 8h6M7 12h10M7 16h10"/>'),
+  radio: _sv('<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8l10-5"/><circle cx="16" cy="14" r="3"/><path d="M6 12h4M6 15h4"/>'),
+  bubble: _sv('<path d="M4 5h16v11H10l-5 4v-4H4z"/>'),
+  mail: _sv('<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 6l9 7 9-7"/>'),
+  record: _sv('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>'),
+  friends: _sv('<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 20c0-2.5 1.5-4.5 4-4.5"/>'),
+  home: _sv('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>')
+};
 function voicesOf(e, dr) {
   const m = S.entry.m, a = m.a, ge = m.ge || '音楽', w = e.w || [], n = w.length;
   const bw = w.reduce((x, y) => (y.tr > x.tr ? y : x), w[0] || { ti: '', tr: 0 }); const best = bw.ti, first = (w[0] || {}).ti || '';
@@ -1725,19 +1745,21 @@ function voicesOf(e, dr) {
   const old = m.era <= 1, net = m.era >= 3 && !m.rare && m.era <= 5; const rare = !!m.rare;
   const V = [];
   const fan = { L: ['人生のどこかで必ず' + a + 'が流れていた。' + best + 'は、今でも聴くと背筋が伸びる。', best + 'を初めて聴いた日のことを、ぜんぶ覚えている。'], C: [a + 'は大ヒットしなかったけれど、' + best + 'を聴いた夜のことは忘れない。', '売れてほしかった。でも、自分だけの宝物にしておきたい気持ちもあった。'], H: ['どこへ行っても' + a + 'が流れていた。' + best + 'は正直、もう聴き飽きた(でも歌える)。', '人気はすごかった。けど、初期のころの方が好きだった。'], S: ['誰も知らなくていい。' + first + 'は、わたしだけの一曲だった。', 'ライブに行くたびに、観客が少ないのが少し嬉しくて、少し悔しかった。'], N: [best + 'のサビを、気づいたら口ずさんでいた。', a + 'の新譜が出ると、つい聴いてしまう。'] }[tier];
-  V.push([rare ? '聴き手' : 'ファン', pick(fan)]);
+  V.push([rare ? '聴き手' : 'ファン', pick(fan), 'fan']);
   const wr = { L: [a + 'は' + ge + 'の歴史に名前を刻んだ。' + best + 'が時代の空気を決めた、と言っていい。', '「' + ge + 'といえば」で最初に名前が挙がる存在になった。'], C: [a + 'は、数字より人の記憶に残る' + (grp ? 'バンド' : 'アーティスト') + 'だった。', '派手さはないが、' + n + '作を通して一本の筋が通っていた。'], H: [a + 'は時代の風を受けて大きく羽ばたいた。ただ、その代償も小さくなかったように見える。', '商業的には大成功。評価が分かれるのも、人気者の宿命だろう。'], S: [a + 'は、ほとんど誰にも気づかれないまま、確かな音を鳴らしていた。', '再評価されるべき' + (grp ? 'バンド' : 'ひと') + 'として、いつか名前が出てくるかもしれない。'], N: [a + 'は、' + ge + 'らしい手触りを持ちながら、自分の色を探し続けた。', '突出はしていないが、どの作品にも誠実さがあった。'] }[tier];
-  V.push(['音楽ライター', pick(wr)]);
+  V.push(['音楽ライター', pick(wr), 'pen']);
   if (!rare) {
-    V.push(['同じ時代のミュージシャン', pick([a + 'とは同じ時期に活動していた。' + (grp ? 'あの空気感は、あのメンバーでしか出せなかった。' : 'あの声の出し方は、真似しようとしてもできなかった。'), '正直、悔しかった。' + best + 'みたいな曲を書きたかった。', 'ライブ会場の楽屋で会うと、いつも静かで、ステージに立つと別人だった。'])]);
-    V.push([old ? '雑誌の読者欄' : net ? 'ネットの声' : 'ラジオの投稿', old ? pick(['「' + best + '」、カセットが擦り切れるまで聴きました。', a + 'の次の曲はいつ出るんですか。待ちきれません。', '友だちに薦めたら、翌週にはみんなが' + a + 'の話をしていた。']) : net ? pick(['「' + best + '」ずっとリピートしてる。', a + 'の曲、気づいたらプレイリストの半分になってる。', 'この人の曲、深夜に聴くとやばい。']) : pick(['番組に' + a + 'の曲をリクエストしました。', '通勤の車で' + best + 'が流れて、少し泣いた。', '今夜は' + a + 'の特集を聴きたいです。'])]);
+    V.push(['同じ時代のミュージシャン', pick([a + 'とは同じ時期に活動していた。' + (grp ? 'あの空気感は、あのメンバーでしか出せなかった。' : 'あの声の出し方は、真似しようとしてもできなかった。'), '正直、悔しかった。' + best + 'みたいな曲を書きたかった。', 'ライブ会場の楽屋で会うと、いつも静かで、ステージに立つと別人だった。']), 'note']);
+    { const stars = Math.max(1, Math.min(5, Math.round(dr.total / 80))); const rv = { L: ['時代を決めた一枚。迷わず満点に近い。', '聴き逃すと後悔する。'], C: ['派手さはないが、聴くほど味が出る。', '通好みの佳作。'], H: ['売れ線の完成度は高い。が、尖りは丸くなった。', 'ヒットの裏に、計算が見える。'], S: ['地味だが誠実。もっと聴かれていい。', '時代と噛み合わなかった惜しい一枚。'], N: ['手堅い仕上がり。次作に期待したい。', 'ところどころに光る瞬間がある。'] }[tier]; V.push(['音楽誌のレビュー', '★'.repeat(stars) + '☆'.repeat(5 - stars) + '  ' + pick(rv), 'mag']); }
+    if (old) V.push(['新聞の記事', pick([a + 'のライブに、' + (dr.love >= 60 ? '会場から入りきれない人があふれた。' : '静かな拍手が長く続いた。'), '若者の間で' + a + 'の名前が話題になっている。', '地元出身の' + ge + 'の担い手として、' + a + 'が注目されている。']), 'news']);
+    V.push([old ? '雑誌の読者欄' : net ? 'ネットの声' : 'ラジオの投稿', old ? pick(['「' + best + '」、カセットが擦り切れるまで聴きました。', a + 'の次の曲はいつ出るんですか。待ちきれません。', '友だちに薦めたら、翌週にはみんなが' + a + 'の話をしていた。']) : net ? pick(['「' + best + '」ずっとリピートしてる。', a + 'の曲、気づいたらプレイリストの半分になってる。', 'この人の曲、深夜に聴くとやばい。']) : pick(['番組に' + a + 'の曲をリクエストしました。', '通勤の車で' + best + 'が流れて、少し泣いた。', '今夜は' + a + 'の特集を聴きたいです。']), (old ? 'mail' : net ? 'bubble' : 'radio')]);
   } else {
-    V.push([m.era === 6 ? '星の旅人' : '語り部', pick([a + 'の唄は、次の世代にも歌い継がれている。', '「' + best + '」を覚えている者が、まだたくさんいる。', who + 'が鳴らした音は、いまも誰かの暮らしの中にある。'])]);
+    V.push([m.era === 6 ? '星の旅人' : '語り部', pick([a + 'の唄は、次の世代にも歌い継がれている。', '「' + best + '」を覚えている者が、まだたくさんいる。', who + 'が鳴らした音は、いまも誰かの暮らしの中にある。']), 'bubble']);
   }
-  if (S.selfDone) V.push(['レコード店の店員', 'セルフタイトルのアルバムが出たとき、「ここから始まる」と思った。']);
-  else if (dr.love >= 60) V.push(['古くからの友人', '昔から変わらない。そのまま大きくなっていくのが、誇らしかった。']);
-  else V.push(['家族', pick(['最初は心配したけれど、いまは胸を張って「うちの子です」と言える。', '音楽をやめなかったことが、いちばんの才能だと思う。', '食卓で' + best + 'が流れたとき、みんな黙って聴いていた。'])]);
-  return V.map(([k, t]) => [k, ij(t)]);
+  if (S.selfDone) V.push(['レコード店の店員', 'セルフタイトルのアルバムが出たとき、「ここから始まる」と思った。', 'record']);
+  else if (dr.love >= 60) V.push(['古くからの友人', '昔から変わらない。そのまま大きくなっていくのが、誇らしかった。', 'friends']);
+  else V.push(['家族', pick(['最初は心配したけれど、いまは胸を張って「うちの子です」と言える。', '音楽をやめなかったことが、いちばんの才能だと思う。', '食卓で' + best + 'が流れたとき、みんな黙って聴いていた。']), 'home']);
+  return V.map(([k, t, ic]) => [k, ij(t), ic]);
 }
 function showEnding(e) {
   document.documentElement.style.setProperty('--dockh', '0px');
@@ -1752,7 +1774,7 @@ function showEnding(e) {
     sv.append(mk2('polygon', { points: ax.map((x, k) => pt(k, Math.max(4, x[1])).join(',')).join(' '), fill: 'var(--accent)', 'fill-opacity': .55, stroke: 'var(--fg)', 'stroke-width': 2 }));
     ax.forEach((x, k) => { const q = pt(k, 100); const lx = k === 1 ? q[0] + 10 : k === 3 ? q[0] - 10 : q[0]; const ly = k === 0 ? q[1] - 8 : k === 2 ? q[1] + 16 : q[1] + 4; const t = mk2('text', { x: lx, y: ly, 'text-anchor': k === 1 ? 'start' : k === 3 ? 'end' : 'middle', 'font-size': 12, fill: 'var(--fg)', 'font-weight': 700 }); t.textContent = x[0] + ' ' + (k === 0 ? dr.rl : x[1]); sv.append(t); });
     d.append(sv); const dl = el('div', 'dr0'); dl.append(el('b', null, String(dr.total)), el('span', null, '/ 400 「' + dr.tl + '」')); d.append(dl); d.append(el('p', 'dcm', dr.cm)); if (dr.why.length) { const w = el('div', 'dw'); dr.why.forEach((x) => w.append(el('span', null, x))); d.append(w); } tail.append(d); }
-  try { const vs = voicesOf(e, dr); const vb = el('div', 'voices'); vb.append(el('span', 'lab', '世間の声')); vs.forEach(([k, t]) => { const q = el('div', 'vq'); q.append(el('div', 'vw', k), el('p', null, '「' + t.replace(/「/g, '『').replace(/」/g, '』') + '」')); vb.append(q); }); tail.append(vb); } catch (_) {}
+  try { const vs = voicesOf(e, dr); const vb = el('div', 'voices'); vb.append(el('span', 'lab', '世間の声')); vs.forEach(([k, t, ic]) => { const med = ['mag', 'news', 'radio', 'bubble', 'mail'].includes(ic); const q = el('div', 'vq' + (med ? ' med' : '')); const icn = el('span', 'vic'); icn.innerHTML = VICON[ic] || VICON.fan; icn.setAttribute('aria-hidden', 'true'); const bd = el('div', 'vbd'); bd.append(el('div', 'vw', k + (med ? '' : '')), el('p', null, (med ? '' : '「') + t.replace(/「/g, '『').replace(/」/g, '』') + (med ? '' : '」'))); q.append(icn, bd); vb.append(q); }); tail.append(vb); } catch (_) {}
   const tj = el('div', 'traj'); tj.setAttribute('role', 'img'); tj.setAttribute('aria-label', '作品ごとの当たり具合。左から発表順で、高いほどヒット。');
   e.w.forEach((w, k) => { const col = el('div', 'tcol'); const b = el('i'); b.style.height = (14 + w.tr * 17) + '%'; b.style.setProperty('--tc', tc(w.tr)); b.title = '「' + w.ti + '」 ' + TIER[w.tr]; col.append(b, el('span', null, String(k + 1))); tj.append(col); });
   const lg = el('div', 'tlg'); TIER.forEach((nm, i) => { const sp = el('span'); const sw = el('i'); sw.style.background = tc(i); sp.append(sw, nm); lg.append(sp); });
