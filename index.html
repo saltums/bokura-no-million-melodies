@@ -717,7 +717,7 @@ function fesMake() {
     { l: '今の場所を固める', p: 1, g: .08, ok: '「' + cur + '」での足場が、しっかりした。', ng: '', up: false, fix: true }] };
 }
 function sideMake() {
-  const m = S.entry.m; if (!BANK.sd || m.rare || S.sdN >= 4 || S.works < 1) return null;
+  const m = S.entry.m; if (!BANK.sd || m.rare || S.sdN >= 7 || S.works < 1) return null;
   const eb = eraBucket(m.era), grp = m.top === 'グループ' || m.st === 'duo';
   const c = BANK.sd.filter((x) => (x.e === 'all' || x.e === eb) && (x.k === 'a' || (x.k === 'g') === grp) && !S.sdUsed.has(x.pr));
   if (!c.length) return null; const pk = c[Math.floor(Math.random() * c.length)]; S.sdUsed.add(pk.pr); S.sdN += 1;
@@ -1406,10 +1406,10 @@ function injectLife(list) {
     if (it.t !== 'r') return;
     out.push({ t: 'rdq' });
     if (S.fuq && S.fuq.length) out.push({ t: 'e', tx: S.fuq.shift(), life: 1 });
-    if (!life || S.evN >= 5 || Math.random() > 0.55) return;
+    if (!life || S.evN >= 8 || Math.random() > 0.7) return;
     const up = it.tr >= 3, down = it.tr <= 1;
     const c = BANK.ev.filter((x) => (x.e === 'all' || x.e === eb) && (x.k === 'a' || (x.k === 'g') === grp) && (x.m === 'any' || (x.m === 'up' && up) || (x.m === 'down' && down)) && !S.evUsed.has(x.t) && (x.f == null || !S.evFam.has(x.f)));
-    if (!c.length) return; const pk = c[Math.floor(Math.random() * c.length)]; S.evUsed.add(pk.t); if (pk.f != null) S.evFam.add(pk.f); S.evN += 1; out.push({ t: 'e', tx: pk.t, life: 1 });
+    if (!c.length) return; const pk = c[Math.floor(Math.random() * c.length)]; S.evUsed.add(pk.t); if (pk.f != null) S.evFam.add(pk.f); S.evN += 1; out.push({ t: 'e', tx: pk.t, life: 1 }); if (Math.random() < 0.6) out.push({ t: 'rdq' });
   });
   return out;
 }
@@ -1421,7 +1421,7 @@ function playNode(node) {
     S.pending = false; $('#hint').hidden = true; const it = items.shift();
     if (it.t === 'rdq') { if (!it.d) { step(); return; } S.skip = false; $('#b-skip').hidden = true; showFes(it.d, () => { if (!items.length) { S.timers.push(setTimeout(step, 900)); return; } S.pending = true; S.cur = step; if (S.auto) S.timers.push(setTimeout(step, 2600)); }); return; }
     renderItem(it);
-    if (items.length && items[0].t === 'rdq') { const d0 = fesMake() || (Math.random() < 0.6 ? sideMake() : null); if (d0) items[0].d = d0; else items.shift(); }
+    if (items.length && items[0].t === 'rdq') { const d0 = fesMake() || (Math.random() < 0.85 ? sideMake() : null); if (d0) items[0].d = d0; else items.shift(); }
     if (S.skip) { step(); return; }
     S.pending = true; if (!items.length) { S.pending = !S.skip; if (S.pending) $('#hint').hidden = false; S.timers.push(setTimeout(step, S.skip ? 300 : Math.min(5200, 1800 + String(it.tx || it.c || '').length * 70))); } else if (S.auto) { const wait = it.t === 'r' ? 3600 : Math.min(7000, 2200 + String(it.tx || '').length * 80); S.timers.push(setTimeout(step, wait)); } else { $('#hint').hidden = false; }
   };
