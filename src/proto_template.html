@@ -430,6 +430,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
     <button class="btn line" id="b-dbg3" type="button">デバッグ: 江戸の人生を見る</button>
     <button class="btn line" id="b-dbg-un" type="button">デバッグ: 解放ポップアップを見る</button>
     <button class="btn line" id="b-dbg-rs" type="button">デバッグ: プレイ回数を0に戻す</button>
+    <button class="btn line" id="b-dbg-sv" type="button">デバッグ: アンケートを見る</button>
     <div id="dbg-era" class="erow"></div>
     <div id="dbg-real" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
@@ -807,6 +808,7 @@ const PL = (() => { const K = 'hit30000_plays', NEED = 5; const get = () => { tr
 const ERA_OPT = [[null, 'おまかせ'], [-1, '70年代'], [0, '80年代'], [1, '90年代'], [2, '00年代'], [3, '10年代'], [4, '20年代'], [5, '近未来']];
 { const eb = $('#dbg-era'); eb.append(el('span', 'lab', 'デバッグ: 時代を固定(人選びに反映)')); const cs = []; ERA_OPT.forEach(([v, l]) => { const c = el('button', 'chip' + (v === null ? ' on' : ''), v === null ? '固定しない' : l); c.type = 'button'; c.onclick = () => { DBG_ERA = v; cs.forEach((x) => x.classList.remove('on')); c.classList.add('on'); }; cs.push(c); eb.append(c); }); }
 $('#b-dbg-un').onclick = () => { const o = el('div', 'mdl'); const bx = el('div', 'box'); const u = unlockCard(); u.style.border = '2px solid #f2c230'; const ok = el('button', 'btn primary', 'OK'); ok.type = 'button'; ok.onclick = () => o.remove(); bx.append(u, ok); o.append(bx); o.onclick = (e) => { if (e.target === o) o.remove(); }; document.body.append(o); try { SFX.play('unlock'); } catch (_) {} };
+$('#b-dbg-sv').onclick = () => surveyModal(true);
 $('#b-dbg-rs').onclick = () => { try { localStorage.setItem('hit30000_plays', '0'); } catch (_) {} $('#b-dbg-rs').textContent = 'リセットしました(0回)'; };
 $('#b-dbg2').onclick = () => startRare(-2); $('#b-dbg6').onclick = () => startRare(6); $('#b-dbg3').onclick = () => startRare(-3);
 $('#b-bgm').onclick = () => { const o = BGM.toggle(); $('#b-bgm').textContent = o ? '♪' : '♪×'; };
@@ -908,6 +910,17 @@ $('#b-cgo').onclick = () => {
   if (rares.length && Math.random() < 0.08) d = rares[Math.floor(Math.random() * rares.length)];
   hydrate(d).then(() => startTree(renameTo(reskin(d), $('#nm-in').value))).catch(() => {});
 };
+function surveyModal(force) {
+  const url = TALLY_URL; if (!url && !force) return;
+  const o = el('div', 'mdl'); const bx = el('div', 'box');
+  bx.append(el('span', 'lab', 'アンケートのお願い'), el('div', 'nm', SURVEY_AT + '回、遊んでくれてありがとう!'));
+  bx.lastChild.style.cssText = 'font:400 22px/1.4 var(--f-d);overflow-wrap:anywhere';
+  const t = el('p', 'small', 'あと1分だけ、感想を教えてください。選択式が中心で、名前などの入力はいりません。いただいた声は、この先の改良に使います。'); t.style.margin = '8px 0 12px';
+  const row = el('div', 'row'); const later = el('button', 'btn line', 'またこんど'); later.type = 'button'; later.onclick = () => o.remove();
+  const go = el('a', 'btn primary', '回答する'); go.href = url || '#'; go.target = '_blank'; go.rel = 'noopener'; go.style.cssText = 'text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center';
+  go.onclick = () => { if (!url) { go.textContent = '(URL未設定)'; return false; } setTimeout(() => o.remove(), 300); };
+  row.append(later, go); bx.append(t, row); o.append(bx); o.onclick = (e) => { if (e.target === o) o.remove(); }; document.body.append(o);
+}
 function unlockCard() { const u = el('div', 'card'); u.style.cssText = 'border:2px solid #f2c230;text-align:center'; u.append(el('div', null, '★ 解放:レア時代へジャンプ!'), el('div', 'small', PL.NEED + '回たどったごほうびに、カスタムから江戸・原始・3000年のレア時代へジャンプできるようになりました!人選びの画面でも時代を選べます。')); u.firstChild.style.cssText = 'font-weight:900;margin-bottom:4px'; return u; }
 const ERA_PK = [[null, 'おまかせ'], [-3, '★江戸'], [-2, '★原始'], [6, '★3000年'], [-1, '70年代'], [0, '80年代'], [1, '90年代'], [2, '00年代'], [3, '10年代'], [4, '20年代'], [5, '近未来']];
 function renderCands() {
@@ -1543,6 +1556,8 @@ function renderTimeline() {
   const len = line.getTotalLength ? line.getTotalLength() : 1000; line.style.setProperty('--len', Math.ceil(len) + 'px');
   return wrap;
 }
+const TALLY_URL = ''; // TallyのフォームURL(例: 'https://tally.so/r/xxxxxx')。空のあいだはアンケートを出さない
+const SURVEY_AT = 3;
 const SHARE_URL = 'https://saltums.github.io/bokura-no-million-melody/';
 function makeCard(dr, m, topTitle) {
   const W = 720, H = 900, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
@@ -1876,7 +1891,7 @@ function showEnding(e) {
   const b5 = el('button', 'btn line', '図鑑・殿堂を見る'); b5.type = 'button'; b5.onclick = () => { clearTimers(); S.auto = false; ZK.render(); show('s-zukan'); };
   a.append(bimg, bx, b1, b2, b4, b5, b3, note); tail.append(a); tail.append(imgBox); finale(); try { setTimeout(() => SFX.jingle(dr.total), 700); } catch (_) {}
   try { const m = S.entry.m; ZK.record({ ts: Date.now(), id: m.id, a: m.a, es: m.es, sn: m.sn, cr: cr[0], tot: dr.total, w: e.w.length, bt: bestTxt(best), fav: false, dt: { ws: e.w.map((w) => [w.y, w.ti, w.tr, w.rk || '']), tx: e.tx, cs: cr[1], cm: dr.cm, tl: dr.tl, vs: (() => { try { return voicesOf(e, dr).map((v) => [v[0], v[1]]); } catch (_) { return []; } })(), mm: (S.mem || []).map((x) => [x.n || x.name || '', x.r || x.role || '']).filter((x) => x[0]).slice(0, 8) } }); } catch (_) {}
-  try { if (PL.inc() === PL.NEED) tail.insertBefore(unlockCard(), a); setTimeout(() => { try { SFX.play('unlock'); } catch (_) {} }, 2600); } catch (_) {}
+  try { const pn_ = PL.inc(); if (pn_ === SURVEY_AT && TALLY_URL) setTimeout(() => surveyModal(false), 1800); if (pn_ === PL.NEED) { tail.insertBefore(unlockCard(), a); setTimeout(() => { try { SFX.play('unlock'); } catch (_) {} }, 2600); } } catch (_) {}
   measureHud(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
 </script>
