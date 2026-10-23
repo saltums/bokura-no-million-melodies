@@ -1,4 +1,4 @@
-<title>ぼくらのミリオンメロディズ</title>
+<title>ぼくらのミリオンメロディ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=DM+Mono:wght@400;500&family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
 <style>
@@ -390,6 +390,7 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
 .wk .r.out { font-size: 13px; }
 
 /* UX改善 */
+.subt { margin: 6px 0 0; font: 700 clamp(11px, 3.3vw, 14px)/1.4 var(--f-b); letter-spacing: .14em; color: var(--muted); }
 .trow { display: flex; align-items: center; justify-content: space-between; gap: 12px; } .trow h1 { min-width: 0; margin: 0; } .trow .disc { flex: 0 0 auto; align-self: center; width: clamp(84px, 24vw, 120px); height: clamp(84px, 24vw, 120px); }
 #s-title .mast { padding-block: 12px 0; }
 .rhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; } .rbadge { font: 700 13px/1.2 var(--f-b); padding: 4px 8px; border: 2px solid currentColor; } .rbadge.ok { color: var(--ok); } .rbadge.ng { color: var(--ng); }
@@ -416,7 +417,8 @@ h2 { font: 400 26px/1.35 var(--f-d); text-wrap: balance; }
   <section class="scr" id="s-title">
     <div class="mast">
       <span class="kick">音楽家の人生シミュレーション</span>
-      <div class="trow"><h1 id="ttl">ぼくらの<br>ミリオン<br>メロディズ</h1><div class="disc" aria-hidden="true"></div></div>
+      <div class="trow"><h1 id="ttl">ぼくらの<br>ミリオン<br>メロディ</h1><div class="disc" aria-hidden="true"></div></div>
+      <p class="subt">Another Life / Another Music</p>
     </div>
     <p class="lead">バンド、シンガー、ラッパー、DJ。いろいろなミュージシャンの人生を、分かれ道ごとの選択で追体験します。売れるか売れないかは、性格と時代と運しだいです。</p>
     <button class="btn primary" id="b-start" type="button">はじめる</button>
@@ -1546,7 +1548,7 @@ function makeCard(dr, m, topTitle) {
   const W = 720, H = 900, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
   const F = (w, px) => w + ' ' + px + 'px "Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif';
   g.fillStyle = '#14181F'; g.fillRect(0, 0, W, H); g.fillStyle = '#FFD21F'; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
-  g.fillStyle = '#9aa4b2'; g.font = F(700, 26); g.textBaseline = 'alphabetic'; g.fillText('ぼくらのミリオンメロディズ', 48, 74);
+  g.fillStyle = '#9aa4b2'; g.font = F(700, 26); g.textBaseline = 'alphabetic'; g.fillText('ぼくらのミリオンメロディ', 48, 74);
   g.fillStyle = '#fff'; g.font = F(900, 54); let nm = m.a; while (g.measureText(nm).width > W - 96 && nm.length > 3) nm = nm.slice(0, -1); g.fillText(nm + (nm !== m.a ? '…' : ''), 48, 150);
   g.fillStyle = '#c8cfda'; g.font = F(500, 28); g.fillText(m.es + ' ・ ' + m.sn + ' ・ レア ' + dr.rl, 48, 196);
   const cx = W / 2, cy = 385, R = 118; const ax = [['レア', dr.rare, dr.rl], ['ドラマチック', dr.sc], ['愛され', dr.love], ['売れ度', dr.ure]];
@@ -1560,7 +1562,7 @@ function makeCard(dr, m, topTitle) {
   g.fillStyle = '#FFD21F'; g.font = F(900, 96); g.fillText(String(dr.total), 48, 655); const tw = g.measureText(String(dr.total)).width;
   g.fillStyle = '#c8cfda'; g.font = F(700, 30); g.fillText('/ 400 「' + dr.tl + '」', 48 + tw + 16, 655);
   g.fillStyle = '#fff'; g.font = F(700, 32); const words = dr.cm.split(''); let line = '', y = 715; words.forEach((ch) => { if (g.measureText(line + ch).width > W - 96) { g.fillText(line, 48, y); y += 46; line = ''; } line += ch; }); g.fillText(line, 48, y);
-  g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText('代表曲「' + (topTitle || '').slice(0, 20) + '」', 48, H - 84); g.fillText('#ぼくらのミリオンメロディズ', 48, H - 42);
+  g.fillStyle = '#9aa4b2'; g.font = F(500, 26); g.fillText('代表曲「' + (topTitle || '').slice(0, 20) + '」', 48, H - 84); g.fillText('#ぼくらのミリオンメロディ', 48, H - 42);
   return cv;
 }
 
@@ -1568,8 +1570,8 @@ function makeCards(dr, m, e, topW) {
   const W = 720, H = 900; const FF = '"Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif'; const F = (w, px) => w + ' ' + px + 'px ' + FF;
   const base = (sub, idx) => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.textBaseline = 'alphabetic';
     g.fillStyle = '#14181F'; g.fillRect(0, 0, W, H); g.fillStyle = '#FFD21F'; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
-    g.fillStyle = '#9aa4b2'; g.font = F(700, 24); g.fillText('ぼくらのミリオンメロディズ', 48, 64); g.textAlign = 'right'; g.fillText(sub + '  ' + idx + '/4', W - 48, 64); g.textAlign = 'left';
-    g.fillStyle = '#aab3c2'; g.font = F(700, 27); g.fillText('※この人生はフィクションです', 48, H - 62); g.fillStyle = '#7d8696'; g.font = F(500, 22); g.fillText('#ぼくらのミリオンメロディズ', 48, H - 32); return [cv, g]; };
+    g.fillStyle = '#9aa4b2'; g.font = F(700, 24); g.fillText('ぼくらのミリオンメロディ', 48, 64); g.textAlign = 'right'; g.fillText(sub + '  ' + idx + '/4', W - 48, 64); g.textAlign = 'left';
+    g.fillStyle = '#aab3c2'; g.font = F(700, 27); g.fillText('※この人生はフィクションです', 48, H - 62); g.fillStyle = '#7d8696'; g.font = F(500, 22); g.fillText('#ぼくらのミリオンメロディ', 48, H - 32); return [cv, g]; };
   const fit = (g, t, w) => { let x = t; while (g.measureText(x).width > w && x.length > 2) x = x.slice(0, -1); return x + (x !== t ? '…' : ''); };
   const wrap = (g, t, x, y, w, lh, max) => { let line = '', n = 0; for (const ch of t) { if (g.measureText(line + ch).width > w) { g.fillText(line, x, y); y += lh; line = ''; n++; if (n >= max) return y; } line += ch; } g.fillText(line, x, y); return y + lh; };
   const out = [];
@@ -1846,14 +1848,14 @@ function showEnding(e) {
   }
   const a = el('div', 'row');
   const b3 = el('button', 'btn line', 'この人生をコピー'); b3.type = 'button';
-  b3.onclick = () => { const tx = '『' + S.entry.m.a + '』 称号:' + cr[0] + ' / 作品' + e.w.length + ' / 最高' + bestTxt(best) + ' / 総合' + dr.total + '/400 ' + dr.cm + ' (レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure + ') #ぼくらのミリオンメロディズ';
+  b3.onclick = () => { const tx = '『' + S.entry.m.a + '』 称号:' + cr[0] + ' / 作品' + e.w.length + ' / 最高' + bestTxt(best) + ' / 総合' + dr.total + '/400 ' + dr.cm + ' (レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure + ') #ぼくらのミリオンメロディ';
     const done = () => { b3.textContent = 'コピーしました'; };
     try { navigator.clipboard.writeText(tx).then(done, () => { b3.textContent = tx; }); } catch (_) { b3.textContent = tx; } };
   const b1 = el('button', 'btn line', '同じ人生を別の選択で'); b1.type = 'button'; b1.onclick = () => { S.auto = false; S.skipIntro = true; startTree(S.entry); };
   const b2 = el('button', 'btn line', '別の人生を始める'); b2.type = 'button'; b2.onclick = () => { clearTimers(); S.auto = false; show('s-top'); };
   const topW = e.w.reduce((m_, w) => (w.tr > m_.tr ? w : m_), e.w[0] || { tr: 0, ti: '' });
   const bars = (v) => '★'.repeat(Math.max(1, Math.round(v / 20))) + '☆'.repeat(5 - Math.max(1, Math.round(v / 20)));
-  const xt = ['『' + S.entry.m.a + '』(' + S.entry.m.es + '・' + S.entry.m.sn + ')', '総合' + dr.total + '/400「' + dr.tl + '」 ' + dr.cm, 'レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure, '代表曲「' + topW.ti + '」', '#ぼくらのミリオンメロディズ'].join('\n');
+  const xt = ['『' + S.entry.m.a + '』(' + S.entry.m.es + '・' + S.entry.m.sn + ')', '総合' + dr.total + '/400「' + dr.tl + '」 ' + dr.cm, 'レア' + dr.rl + ' ドラマチック' + dr.sc + ' 愛され' + dr.love + ' 売れ度' + dr.ure, '代表曲「' + topW.ti + '」', '#ぼくらのミリオンメロディ'].join('\n');
   const bx = el('a', 'btn line', 'Xに文章だけポスト'); bx.target = '_blank'; bx.rel = 'noopener noreferrer'; bx.href = 'https://x.com/intent/post?text=' + encodeURIComponent(xt) + '&url=' + encodeURIComponent(SHARE_URL); bx.style.textAlign = 'center'; bx.style.textDecoration = 'none';
   const note = el('p', 'xnote'); note.hidden = true; note.style.cssText = 'grid-column:1/-1;margin:0;font-size:12px;line-height:1.6;color:var(--muted)';
   bx.addEventListener('click', () => { const full = xt + '\n' + SHARE_URL; try { navigator.clipboard.writeText(full).catch(() => {}); } catch (_) {} note.textContent = 'Xが開かないときは、文面をコピーしたので、Xの投稿画面に貼り付けてください。'; note.hidden = false; });
